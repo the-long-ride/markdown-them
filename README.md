@@ -4,12 +4,25 @@
 
 # Markdown Them
 
-Convert various document files into Markdown (.md) seamlessly inside Visual Studio Code.
+Convert various document files into Markdown (.md) from VS Code, a local web app, an Electron desktop app, or Node.js.
  
 - **Supported formats:** `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
 - **Concurrent batch processing:** Convert dozens of files at once with optimized performance.
 - **Preview mode:** Instantly view converted markdown for your active document.
 - **Node.js package:** Use the same converter outside VS Code with `@the-long-ride/markdown-them`.
+
+## Markdown Them Variants
+
+Markdown Them comes in four variants so you can use the same converter wherever it fits your workflow:
+
+| Variant | Best for | Local/privacy model | Where to start |
+|---|---|---|---|
+| **VS Code extension** | Explorer context menu, active editor previews, developer workflows | Runs inside VS Code on your machine | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) or [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
+| **Web app** | Browser-based conversion with no install | Client-side only; no document uploads or outbound conversion requests | `npm run start:web` |
+| **Desktop app** | Local file, folder, and text conversion with an app shell | Electron app running on your computer; optional output folder selection | `npm run start:desktop` |
+| **Node.js package** | Scripts, CLIs, automation, and server-side tooling you control | Runs in your Node.js process | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them) |
+
+Each app links back to this section so users can discover the other Markdown Them variants from wherever they start.
 
 ## Usage
 
@@ -28,6 +41,31 @@ Convert various document files into Markdown (.md) seamlessly inside Visual Stud
 
 > [!NOTE]
 > Currently, `.pptx` and other office formats (`.odt`, `.odp`, `.ods`, `.rtf`) extract text and tables only; images are ignored to keep output files lightweight & easier to read.
+
+## Desktop and Web Apps
+
+This repo also includes a shared React UI for a local-only web app and an Electron desktop app.
+
+- **Web app:** client-side conversion only. It accepts multiple files or text input and does not send files to a server.
+- **Desktop app:** Electron shell with custom window controls. It accepts text input, one or many files, and multiple folders. File conversions write sibling `.md` files next to the originals.
+- **Offline PDF handling:** the web bundle copies a local PDF.js worker into `dist/web/assets`, so PDF parsing does not need a CDN worker.
+- **DevTools:** `Ctrl+Shift+I` toggles Electron DevTools only in development runs. Production/preview runs disable DevTools.
+
+Local app commands:
+
+```bash
+npm run start:web
+npm run start:desktop
+npm run preview:desktop
+```
+
+Build-only commands:
+
+```bash
+npm run build:web
+npm run build:desktop
+npm run build:apps
+```
 
 ### 4. Troubleshooting
 If a file fails to convert, you can view detailed error logs and stack traces by opening the **Developer: Toggle Developer Tools** command (from the Command Palette) and checking the **Console** tab.
@@ -85,8 +123,12 @@ NPM_TOKEN
 ## Source Layout
 
 - `src/core`: shared document-to-Markdown conversion logic.
+- `src/app`: shared React UI and browser-only conversion adapter.
+- `src/electron`: Electron main/preload process for the desktop app.
+- `src/shared`: shared format metadata and filename helpers.
 - `src/vscode`: VS Code command registrations and editor integration.
 - `src/nodejs-package`: Node.js package entry point.
+- `scripts`: app build and local startup scripts.
 - `nodejs-package`: publishable npm package metadata, README, license, and generated `dist`.
 
 ## Safely Powered By
