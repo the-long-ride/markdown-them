@@ -2,6 +2,58 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Electron App",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+      },
+      "args": [
+        "--remote-debugging-port=39731",
+        "${workspaceFolder}/dist/desktop/main.js"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "preLaunchTask": "app: build desktop",
+      "outFiles": [
+        "${workspaceFolder}/dist/desktop/**/*.js"
+      ],
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ]
+    },
+    {
+      "name": "Electron Renderer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 39731,
+      "timeout": 30000,
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ]
+    },
+    {
+      "name": "Web App",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://127.0.0.1:5173",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "app: start web",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"
+      ]
+    },
+    {
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
@@ -12,6 +64,16 @@
         "${workspaceFolder}/out/**/*.js"
       ],
       "preLaunchTask": "npm: watch"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Electron App + Renderer",
+      "configurations": [
+        "Electron App",
+        "Electron Renderer"
+      ],
+      "stopAll": true
     }
   ]
 }
