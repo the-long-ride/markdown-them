@@ -1,4 +1,5 @@
 import {
+  convertTextToMarkdown,
   convertFileToMarkdown as convertFromPath,
   generateMarkdown,
   inferOutputPath,
@@ -16,4 +17,4 @@ export async function convertAndReturnMarkdown(filePath: string): Promise<string
   return generateMarkdown(filePath);
 }
 
-export { generateMarkdown, inferOutputPath };
+export { convertTextToMarkdown, generateMarkdown, inferOutputPath };
