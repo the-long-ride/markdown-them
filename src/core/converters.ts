@@ -1,7 +1,6 @@
 import { restoreWorker } from "./polyfill";
 import * as path from "path";
 import * as fs from "fs/promises";
-import { readFileSync } from "fs";
 import * as mammoth from "mammoth";
 import JSZip from "jszip";
 import { XMLParser } from "fast-xml-parser";
@@ -37,7 +36,7 @@ export async function generateMarkdown(filePath: string): Promise<string> {
       return turndownService.turndown(htmlContent);
     }
     case ".pdf": {
-      const dataBuffer = readFileSync(filePath);
+      const dataBuffer = await fs.readFile(filePath);
       return await pdf2md(dataBuffer);
     }
     case ".xlsx":
@@ -87,41 +86,36 @@ async function convertXlsx(filePath: string): Promise<string> {
   const sharedStrings = await readSharedStrings(zip);
   const sheets = toArray(workbook?.workbook?.sheets?.sheet);
 
-  let md = "";
+  const markdown: string[] = [];
 
   for (const sheet of sheets) {
-    const sheetName = String(sheet?.["@_name"] || "Sheet");
+    const sheetName = normalizeMarkdownHeading(String(sheet?.["@_name"] || "Sheet"));
     const relationshipId = sheet?.["@_r:id"];
     const sheetPath = relationshipId ? relationships.get(String(relationshipId)) : undefined;
 
-    md += `## ${sheetName}\n\n`;
+    if (markdown.length > 0) {
+      markdown.push("");
+    }
+
+    markdown.push(`## ${sheetName}`, "");
 
     if (!sheetPath) {
-      md += "\n";
       continue;
     }
 
     const worksheetXml = await readZipText(zip, sheetPath);
     if (!worksheetXml) {
-      md += "\n";
       continue;
     }
 
     const worksheet = xmlParser.parse(worksheetXml);
     const rows = toArray(worksheet?.worksheet?.sheetData?.row);
+    const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings));
 
-    rows.forEach((row, rowIndex) => {
-      const rowData = readXlsxRow(row, sharedStrings);
-      md += "| " + rowData.join(" | ") + " |\n";
-
-      if (rowIndex === 0) {
-        md += "|" + rowData.map(() => "---").join("|") + "|\n";
-      }
-    });
-    md += "\n";
+    appendMarkdownTable(markdown, tableRows);
   }
 
-  return md;
+  return markdown.join("\n").trimEnd();
 }
 
 async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string>> {
@@ -173,7 +167,7 @@ function readXlsxRow(row: any, sharedStrings: string[]): string[] {
       values.push("");
     }
 
-    values.push(readXlsxCell(cell, sharedStrings).replace(/\r?\n/g, " "));
+    values.push(readXlsxCell(cell, sharedStrings));
     nextColumn = column + 1;
   }
 
@@ -190,7 +184,8 @@ function readXlsxCell(cell: any, sharedStrings: string[]): string {
   const rawValue = readRichText(cell?.v);
 
   if (type === "s") {
-    return sharedStrings[parseInt(rawValue, 10)] || "";
+    const sharedStringIndex = rawValue.trim() === "" ? NaN : Number(rawValue);
+    return Number.isInteger(sharedStringIndex) && sharedStringIndex >= 0 ? sharedStrings[sharedStringIndex] || "" : "";
   }
 
   if (type === "b") {
@@ -246,6 +241,38 @@ function columnIndexFromCellRef(cellRef: string): number {
   }, 0);
 }
 
+function appendMarkdownTable(markdown: string[], rows: string[][]): void {
+  if (rows.length === 0) {
+    return;
+  }
+
+  const columnCount = rows.reduce((max, row) => Math.max(max, row.length), 0);
+  if (columnCount === 0) {
+    return;
+  }
+
+  rows.forEach((row, rowIndex) => {
+    const cells = normalizeMarkdownTableRow(row, columnCount);
+    markdown.push(`| ${cells.join(" | ")} |`);
+
+    if (rowIndex === 0) {
+      markdown.push(`| ${Array.from({ length: columnCount }, () => "---").join(" | ")} |`);
+    }
+  });
+}
+
+function normalizeMarkdownTableRow(row: string[], columnCount: number): string[] {
+  return Array.from({ length: columnCount }, (_, index) => escapeMarkdownTableCell(row[index] || ""));
+}
+
+function escapeMarkdownTableCell(value: string): string {
+  return value.replace(/\r\n|\r|\n/g, " ").replace(/\|/g, "\\|");
+}
+
+function normalizeMarkdownHeading(value: string): string {
+  return value.replace(/\r\n|\r|\n/g, " ").trim() || "Sheet";
+}
+
 function toArray<T>(value: T | T[] | undefined): T[] {
   if (value === undefined || value === null) {
     return [];
@@ -256,10 +283,10 @@ function toArray<T>(value: T | T[] | undefined): T[] {
 
 function officeAstToMarkdown(ast: any): string {
   if (!ast || !ast.content || !Array.isArray(ast.content)) {
-    return typeof ast?.toText === "function" ? ast.toText() : JSON.stringify(ast, null, 2);
+    return typeof ast?.toText === "function" ? ast.toText() : stringifyFallback(ast);
   }
 
-  let markdown = "";
+  const markdown: string[] = [];
 
   function processFormatting(text: string, formatting?: any): string {
     if (!text) {
@@ -302,7 +329,7 @@ function officeAstToMarkdown(ast: any): string {
         if (sizeStr) {
           const sizeMatch = String(sizeStr).match(/(\d+)/);
           if (sizeMatch) {
-            const size = parseInt(sizeMatch[1], 10);
+            const size = Number(sizeMatch[1]);
             if (size >= 36) {
               return `\n# ${pText}\n`;
             }
@@ -328,21 +355,20 @@ function officeAstToMarkdown(ast: any): string {
           return "";
         }
 
-        let tableMd = "\n";
-        node.children.forEach((row: any, i: number) => {
-          tableMd += processNode(row);
-          if (i === 0) {
-            const cellCount = row.children?.length || 0;
-            tableMd += "|" + "---|".repeat(cellCount) + "\n";
-          }
+        const tableMd = [""];
+        const rows = node.children.map((row: any) => {
+          return (row.children || []).map((cell: any) => processNode(cell).replace(/\r\n|\r|\n/g, " ").trim());
         });
 
-        return tableMd + "\n";
+        appendMarkdownTable(tableMd, rows);
+        return `${tableMd.join("\n")}\n`;
       }
       case "row":
-        return "| " + (node.children || []).map(processNode).join(" | ") + " |\n";
+        return `| ${(node.children || [])
+          .map((child: any) => escapeMarkdownTableCell(processNode(child).replace(/\r\n|\r|\n/g, " ").trim()))
+          .join(" | ")} |\n`;
       case "cell":
-        return (node.children || []).map(processNode).join(" ").replace(/\n/g, " ").trim();
+        return (node.children || []).map(processNode).join(" ").replace(/\r\n|\r|\n/g, " ").trim();
       default:
         if (node.children) {
           return node.children.map(processNode).join("");
@@ -352,8 +378,16 @@ function officeAstToMarkdown(ast: any): string {
   }
 
   ast.content.forEach((node: any) => {
-    markdown += processNode(node);
+    markdown.push(processNode(node));
   });
 
-  return markdown.replace(/\n{3,}/g, "\n\n").trim();
+  return markdown.join("").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function stringifyFallback(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2) || "";
+  } catch {
+    return String(value);
+  }
 }

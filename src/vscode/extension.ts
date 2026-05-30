@@ -6,12 +6,9 @@ export function activate(context: vscode.ExtensionContext) {
   const disposable1 = vscode.commands.registerCommand(
     "markdown-them.convertToMarkdown",
     async (...args) => {
-      let uris: vscode.Uri[] = [];
-      if (args && args.length > 1 && Array.isArray(args[1])) {
-        uris = args[1];
-      } else if (args && args.length > 0 && args[0] instanceof vscode.Uri) {
-        uris = [args[0]];
-      } else {
+      const uris = getCommandFileUris(args);
+
+      if (uris.length === 0) {
         vscode.window.showInformationMessage("Please right-click on files in the Explorer to convert.");
         return;
       }
@@ -22,59 +19,49 @@ export function activate(context: vscode.ExtensionContext) {
           title: "Converting to Markdown",
           cancellable: false,
         },
-        async () => {
+        async (progress) => {
           const config = vscode.workspace.getConfiguration("markdown-them");
           const maxConcurrent = Math.min(16, Math.max(1, config.get<number>("maxConcurrentConversions", 6)));
+          const total = uris.length;
+          let completed = 0;
+          let succeeded = 0;
+          let failed = 0;
 
-          let active = 0;
-          let index = 0;
-          const queue = [...uris];
+          progress.report({ message: `0/${total}` });
 
-          await new Promise<void>((resolve) => {
-            const tryNext = () => {
-              while (active < maxConcurrent && index < queue.length) {
-                const uri = queue[index++];
-                active++;
-
-                convertFileToMarkdown(uri.fsPath)
-                  .then((mdPath) => {
-                    console.log(`Successfully converted: ${uri.fsPath} to ${mdPath}`);
-                    vscode.window.showInformationMessage(`Successfully converted: ${path.basename(mdPath)}`);
-                  })
-                  .catch((e: any) => {
-                    console.error(`Failed to convert ${uri.fsPath}:`, e);
-                    vscode.window.showErrorMessage(`Failed to convert ${path.basename(uri.fsPath)}: ${e.message}`);
-                  })
-                  .finally(() => {
-                    active--;
-                    if (active === 0 && index >= queue.length) {
-                      resolve();
-                    } else {
-                      tryNext();
-                    }
-                  });
-              }
-            };
-
-            tryNext();
+          await runLimited(uris, maxConcurrent, async (uri) => {
+            try {
+              const mdPath = await convertFileToMarkdown(uri.fsPath);
+              succeeded++;
+              console.log(`Successfully converted: ${uri.fsPath} to ${mdPath}`);
+            } catch (error) {
+              failed++;
+              console.error(`Failed to convert ${uri.fsPath}:`, error);
+            } finally {
+              completed++;
+              progress.report({
+                increment: 100 / total,
+                message: `${completed}/${total}`,
+              });
+            }
           });
+
+          if (failed === 0) {
+            vscode.window.showInformationMessage(
+              `Markdown Them: Converted ${succeeded} ${succeeded === 1 ? "file" : "files"}.`,
+            );
+          } else {
+            vscode.window.showWarningMessage(
+              `Markdown Them: Converted ${succeeded} ${succeeded === 1 ? "file" : "files"}, ${failed} failed. Check Developer Tools for details.`,
+            );
+          }
         },
       );
     },
   );
 
   const disposable2 = vscode.commands.registerCommand("markdown-them.convertCurrentToMarkdown", async () => {
-    let filePath = "";
-
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-      filePath = editor.document.uri.fsPath;
-    } else {
-      const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
-      if (activeTab && (activeTab.input as any)?.uri) {
-        filePath = ((activeTab.input as any).uri as vscode.Uri).fsPath;
-      }
-    }
+    const filePath = getActiveFilePath();
 
     if (!filePath) {
       vscode.window.showErrorMessage("No active file to convert.");
@@ -92,9 +79,9 @@ export function activate(context: vscode.ExtensionContext) {
         preview: false,
         viewColumn: vscode.ViewColumn.Beside,
       });
-    } catch (e: any) {
-      console.error(`Failed to convert ${filePath}:`, e);
-      vscode.window.showErrorMessage(`Failed to convert ${path.basename(filePath)}: ${e.message}`);
+    } catch (error) {
+      console.error(`Failed to convert ${filePath}:`, error);
+      vscode.window.showErrorMessage(`Failed to convert ${path.basename(filePath)}: ${getErrorMessage(error)}`);
     }
   });
 
@@ -107,10 +94,12 @@ export function activate(context: vscode.ExtensionContext) {
       prompt: "Number of files converted simultaneously (1 - 16)",
       value: String(current),
       validateInput: (raw) => {
-        const n = parseInt(raw, 10);
-        if (isNaN(n) || !Number.isInteger(n)) {
+        const value = raw.trim();
+        if (!/^\d+$/.test(value)) {
           return "Please enter a whole number.";
         }
+
+        const n = Number(value);
         if (n < 1 || n > 16) {
           return "Value must be between 1 and 16.";
         }
@@ -122,7 +111,7 @@ export function activate(context: vscode.ExtensionContext) {
       return;
     }
 
-    const value = Math.min(16, Math.max(1, parseInt(input, 10)));
+    const value = Number(input.trim());
     await config.update("maxConcurrentConversions", value, vscode.ConfigurationTarget.Global);
     vscode.window.showInformationMessage(`Markdown Them: Max concurrent conversions set to ${value}.`);
   });
@@ -131,3 +120,52 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {}
+
+function getCommandFileUris(args: unknown[]): vscode.Uri[] {
+  const candidates = Array.isArray(args[1]) ? args[1] : args[0] instanceof vscode.Uri ? [args[0]] : [];
+  const seen = new Set<string>();
+  const uris: vscode.Uri[] = [];
+
+  for (const candidate of candidates) {
+    if (!(candidate instanceof vscode.Uri) || candidate.scheme !== "file" || seen.has(candidate.fsPath)) {
+      continue;
+    }
+
+    seen.add(candidate.fsPath);
+    uris.push(candidate);
+  }
+
+  return uris;
+}
+
+function getActiveFilePath(): string | undefined {
+  const editorUri = vscode.window.activeTextEditor?.document.uri;
+  if (editorUri?.scheme === "file") {
+    return editorUri.fsPath;
+  }
+
+  const activeTabInput = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+  if (activeTabInput instanceof vscode.TabInputText && activeTabInput.uri.scheme === "file") {
+    return activeTabInput.uri.fsPath;
+  }
+
+  return undefined;
+}
+
+async function runLimited<T>(items: T[], limit: number, worker: (item: T) => Promise<void>): Promise<void> {
+  let index = 0;
+  const workerCount = Math.min(limit, items.length);
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      while (index < items.length) {
+        const item = items[index++];
+        await worker(item);
+      }
+    }),
+  );
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
