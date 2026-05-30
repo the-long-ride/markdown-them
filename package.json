@@ -66,9 +66,16 @@
   "scripts": {
     "vscode:prepublish": "npm run bundle:vscode",
     "compile": "tsc -p ./",
+    "typecheck:apps": "tsc -p ./tsconfig.app.json",
     "watch": "tsc -watch -p ./",
     "bundle:vscode": "esbuild ./src/vscode/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
     "bundle": "npm run bundle:vscode",
+    "build:web": "node scripts/build-apps.mjs web",
+    "build:desktop": "node scripts/build-apps.mjs desktop",
+    "build:apps": "node scripts/build-apps.mjs all",
+    "start:web": "node scripts/start-web.mjs",
+    "start:desktop": "node scripts/start-desktop.mjs",
+    "preview:desktop": "node scripts/start-desktop.mjs --production",
     "clean:node-package": "node -e \"require('fs').rmSync('nodejs-package/dist',{recursive:true,force:true})\"",
     "build:node-package": "npm run clean:node-package && tsc -p ./tsconfig.node-package.json",
     "prepare:artifacts": "node -e \"require('fs').mkdirSync('artifacts',{recursive:true})\"",
@@ -78,18 +85,26 @@
     "publish:vsix": "npm run pack:vsix"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@opendocsg/pdf2md": "^0.2.6",
     "fast-xml-parser": "^5.8.0",
+    "gsap": "^3.15.0",
     "jszip": "^3.10.1",
+    "lucide-react": "^1.17.0",
     "mammoth": "^1.12.0",
     "officeparser": "^6.1.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
     "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
     "@types/turndown": "^5.0.6",
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.9.1",
+    "electron": "^42.3.0",
     "esbuild": "^0.28.0",
     "typescript": "^6.0.3"
   },
