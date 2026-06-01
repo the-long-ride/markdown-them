@@ -1,0 +1,49 @@
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  max-width: min(640px, calc(100vw - 48px));
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  transform: translateX(-50%);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  justify-self: start;
+  gap: 8px 16px;
+  color: var(--footer-text);
+  font-size: 12px;
+}
+
+.titlebar .app-footer {
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar .app-footer span {
+  white-space: nowrap;
+}
+
+.app-footer a {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}

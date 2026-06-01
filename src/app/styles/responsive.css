@@ -1,0 +1,168 @@
+@media (max-width: 1100px) {
+  .workspace {
+    gap: 16px;
+    padding: 22px;
+  }
+
+  .files-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .files-panel,
+  .output-list-panel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 820px) {
+  .workspace,
+  .desktop-shell .workspace {
+    min-height: 100dvh;
+    height: auto;
+    padding: 18px;
+    overflow: visible;
+  }
+
+  .topline,
+  .tool-grid,
+  .files-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .topline {
+    display: grid;
+  }
+
+  .topline-actions {
+    width: 100%;
+  }
+
+  .topline-actions .segmented {
+    flex: 1 1 auto;
+  }
+
+  .trust-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-badge {
+    width: 100%;
+  }
+
+  .segmented {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .split-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .editor {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 560px) {
+  .workspace,
+  .desktop-shell .workspace {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .brand-lockup {
+    align-items: center;
+  }
+
+  .brand-lockup img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-lockup h1 {
+    font-size: 20px;
+  }
+
+  .brand-lockup p {
+    font-size: 12px;
+  }
+
+  .topline-actions {
+    gap: 8px;
+  }
+
+  .segmented {
+    min-width: 0;
+  }
+
+  .segmented button {
+    padding: 0 8px;
+  }
+
+  .trust-badge {
+    min-height: 48px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    padding: 8px;
+  }
+
+  .trust-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .glass-panel {
+    padding: 12px;
+  }
+
+  .output-list-panel {
+    padding: 10px;
+  }
+
+  .drop-zone {
+    min-height: 132px;
+    padding: 18px;
+  }
+
+  .drop-copy strong {
+    font-size: 18px;
+  }
+
+  .panel-head {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .compact-download {
+    min-height: 32px;
+  }
+
+  .compact-download span {
+    display: none;
+  }
+
+  .file-row {
+    grid-template-columns: 24px minmax(0, 1fr) 34px;
+    padding: 7px;
+  }
+
+  .file-row .icon-button {
+    width: 34px;
+    min-width: 34px;
+    min-height: 34px;
+  }
+
+  .app-footer {
+    gap: 6px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

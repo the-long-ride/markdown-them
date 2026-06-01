@@ -1,0 +1,136 @@
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.brand-lockup img {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--logo-line);
+  border-radius: 8px;
+  background: var(--logo-bg);
+  box-shadow: var(--logo-shadow);
+}
+
+.brand-lockup h1,
+.brand-lockup p,
+.panel-head h2 {
+  margin: 0;
+}
+
+.brand-lockup h1 {
+  font-size: 22px;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.brand-lockup p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.trust-badge {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  min-height: 56px;
+  gap: 10px;
+  padding: 9px 13px 9px 10px;
+  border: 1px solid var(--trust-line);
+  border-radius: 8px;
+  --badge-accent: #68d8bd;
+  --badge-accent-soft: rgba(104, 216, 189, 0.13);
+  background: var(--trust-surface);
+  color: var(--trust-text);
+  box-shadow:
+    inset 0 1px 0 var(--line-soft),
+    0 14px 34px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(18px);
+}
+
+.trust-badge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--trust-sheen), transparent 55%);
+  pointer-events: none;
+}
+
+.trust-badge::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 20%, var(--trust-sweep), transparent 48%);
+  transform: translateX(-120%);
+  transition: transform 520ms ease;
+}
+
+.trust-badge:hover::after {
+  transform: translateX(120%);
+}
+
+.trust-badge:nth-child(2) {
+  --badge-accent: #f7c873;
+  --badge-accent-soft: rgba(247, 200, 115, 0.13);
+}
+
+.trust-badge:nth-child(3) {
+  --badge-accent: #9bb8ff;
+  --badge-accent-soft: rgba(155, 184, 255, 0.12);
+}
+
+:root[data-theme="light"] .trust-badge {
+  --badge-accent-soft: color-mix(in srgb, var(--badge-accent) 13%, transparent);
+}
+
+:root[data-theme="light"] .trust-badge:nth-child(2) {
+  --badge-accent: #e2a82f;
+}
+
+:root[data-theme="light"] .trust-badge:nth-child(3) {
+  --badge-accent: #5f76d8;
+}
+
+.trust-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--badge-accent) 38%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--badge-accent) 14%, transparent);
+  color: var(--badge-accent);
+  box-shadow: inset 0 1px 0 var(--line-soft);
+}
+
+.trust-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.trust-copy strong,
+.trust-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trust-copy strong {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.trust-copy small {
+  color: var(--trust-detail);
+  font-size: 11px;
+}

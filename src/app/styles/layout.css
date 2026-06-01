@@ -1,0 +1,161 @@
+.app-shell {
+  isolation: isolate;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  min-height: 100dvh;
+  background: var(--shell-bg);
+  color: var(--text);
+}
+
+.app-shell::before,
+.app-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.app-shell::before {
+  background-image:
+    linear-gradient(var(--grid-line-a) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-b) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.76), transparent 78%);
+  opacity: var(--shell-mask-opacity);
+}
+
+.app-shell::after {
+  background: var(--shell-shine);
+  mix-blend-mode: var(--shell-shine-blend);
+  opacity: var(--shell-shine-opacity);
+}
+
+.desktop-shell {
+  overflow: hidden;
+  height: 100vh;
+  min-height: 100vh;
+}
+
+.desktop-shell::before,
+.desktop-shell::after {
+  position: absolute;
+}
+
+.workspace {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 18px;
+  min-height: 100dvh;
+  padding: 28px;
+  overflow: visible;
+}
+
+.desktop-shell .workspace {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: calc(100vh - 38px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace.is-dragging::after {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 80%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  box-shadow:
+    inset 0 0 0 1px var(--line-soft),
+    0 0 44px color-mix(in srgb, var(--accent) 18%, transparent);
+  pointer-events: none;
+  animation: dragPulse 1s ease-in-out infinite alternate;
+}
+
+.titlebar {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  height: 38px;
+  border-bottom: 1px solid var(--titlebar-line);
+  background: var(--titlebar-bg);
+  backdrop-filter: blur(20px);
+  -webkit-app-region: drag;
+}
+
+.titlebar-title {
+  padding-left: 14px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.window-controls {
+  display: grid;
+  grid-auto-flow: column;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+
+.window-controls button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 38px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.window-controls button:hover {
+  background: var(--control-hover-bg);
+}
+
+.window-controls .close-control:hover {
+  background: color-mix(in srgb, var(--danger) 82%, transparent);
+}
+
+.topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.topline-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trust-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(178px, 1fr));
+  align-items: center;
+  justify-content: start;
+  gap: 10px;
+  max-width: 1320px;
+}
+
+.tool-grid,
+.files-layout,
+.mode-surface {
+  min-height: 0;
+}
+
+.tool-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.files-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+}

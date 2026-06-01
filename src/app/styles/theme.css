@@ -1,0 +1,167 @@
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #121212;
+  color: var(--text);
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  --text: #f4f0ea;
+  --text-strong: #ffffff;
+  --text-soft: rgba(244, 240, 234, 0.9);
+  --muted: rgba(244, 240, 234, 0.68);
+  --muted-soft: rgba(244, 240, 234, 0.62);
+  --primary-text: #161616;
+  --shell-bg:
+    linear-gradient(135deg, rgba(104, 216, 189, 0.2), transparent 31%),
+    linear-gradient(315deg, rgba(247, 200, 115, 0.16), transparent 36%),
+    linear-gradient(180deg, #171817 0%, #111211 100%);
+  --grid-line-a: rgba(255, 255, 255, 0.045);
+  --grid-line-b: rgba(255, 255, 255, 0.035);
+  --shell-mask-opacity: 0.36;
+  --shell-shine:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.05) 48%, transparent 56%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%);
+  --shell-shine-blend: screen;
+  --shell-shine-opacity: 0.55;
+  --titlebar-bg: rgba(12, 12, 12, 0.54);
+  --titlebar-line: rgba(255, 255, 255, 0.1);
+  --logo-bg: rgba(255, 255, 255, 0.08);
+  --logo-line: rgba(255, 255, 255, 0.14);
+  --logo-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.24),
+    0 0 26px rgba(104, 216, 189, 0.16);
+  --panel: rgba(255, 255, 255, 0.11);
+  --panel-strong: rgba(255, 255, 255, 0.17);
+  --panel-start: rgba(255, 255, 255, 0.075);
+  --panel-sheen-a: rgba(255, 255, 255, 0.08);
+  --panel-sheen-b: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.18);
+  --line-soft: rgba(255, 255, 255, 0.14);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --control-bg: rgba(255, 255, 255, 0.1);
+  --control-bg-soft: rgba(255, 255, 255, 0.08);
+  --control-hover-bg: rgba(255, 255, 255, 0.15);
+  --active-bg:
+    linear-gradient(135deg, rgba(104, 216, 189, 0.15), rgba(247, 200, 115, 0.12)),
+    rgba(255, 255, 255, 0.16);
+  --active-text: #ffffff;
+  --trust-surface:
+    linear-gradient(135deg, var(--badge-accent-soft), transparent 64%),
+    rgba(255, 255, 255, 0.08);
+  --trust-line: rgba(255, 255, 255, 0.16);
+  --trust-text: rgba(244, 240, 234, 0.9);
+  --trust-detail: rgba(244, 240, 234, 0.62);
+  --trust-sheen: rgba(255, 255, 255, 0.08);
+  --trust-sweep: rgba(255, 255, 255, 0.12);
+  --accent: #68d8bd;
+  --accent-strong: #f7c873;
+  --accent-cool: #9bb8ff;
+  --danger: #ff6b6b;
+  --focus-ring: rgba(247, 200, 115, 0.9);
+  --button-hover-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  --editor-bg: rgba(10, 10, 10, 0.38);
+  --editor-focus-bg: rgba(10, 10, 10, 0.5);
+  --editor-text: #fffaf2;
+  --drop-border: rgba(255, 255, 255, 0.22);
+  --drop-bg:
+    linear-gradient(135deg, rgba(104, 216, 189, 0.08), transparent 62%),
+    rgba(255, 255, 255, 0.06);
+  --drop-hover-bg:
+    linear-gradient(135deg, rgba(104, 216, 189, 0.13), transparent 62%),
+    rgba(255, 255, 255, 0.08);
+  --drop-scan-bg:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent),
+    linear-gradient(180deg, transparent, rgba(104, 216, 189, 0.08), transparent);
+  --output-bg: rgba(10, 10, 10, 0.2);
+  --status-bg: rgba(255, 255, 255, 0.07);
+  --empty-border: rgba(255, 255, 255, 0.12);
+  --empty-bg: rgba(255, 255, 255, 0.035);
+  --toast-bg: rgba(18, 18, 18, 0.72);
+  --toast-text: #ffffff;
+  --footer-text: rgba(244, 240, 234, 0.64);
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  --shadow-lift: 0 28px 90px rgba(0, 0, 0, 0.42);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  background: #f4f7f2;
+  --text: #20231f;
+  --text-strong: #11150f;
+  --text-soft: rgba(32, 35, 31, 0.88);
+  --muted: rgba(48, 58, 46, 0.68);
+  --muted-soft: rgba(48, 58, 46, 0.62);
+  --primary-text: #11150f;
+  --shell-bg:
+    linear-gradient(135deg, rgba(35, 151, 130, 0.14), transparent 31%),
+    linear-gradient(315deg, rgba(226, 168, 47, 0.2), transparent 36%),
+    linear-gradient(180deg, #f8faf7 0%, #eef3ee 100%);
+  --grid-line-a: rgba(35, 43, 33, 0.08);
+  --grid-line-b: rgba(35, 43, 33, 0.055);
+  --shell-mask-opacity: 0.42;
+  --shell-shine:
+    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.42) 48%, transparent 56%),
+    linear-gradient(180deg, rgba(35, 151, 130, 0.06), transparent 42%);
+  --shell-shine-blend: normal;
+  --shell-shine-opacity: 0.68;
+  --titlebar-bg: rgba(245, 248, 243, 0.76);
+  --titlebar-line: rgba(35, 43, 33, 0.12);
+  --logo-bg: rgba(255, 255, 255, 0.82);
+  --logo-line: rgba(35, 43, 33, 0.14);
+  --logo-shadow:
+    0 10px 28px rgba(35, 43, 33, 0.14),
+    0 0 26px rgba(35, 151, 130, 0.16);
+  --panel: rgba(255, 255, 255, 0.74);
+  --panel-strong: rgba(255, 255, 255, 0.9);
+  --panel-start: rgba(255, 255, 255, 0.66);
+  --panel-sheen-a: rgba(255, 255, 255, 0.58);
+  --panel-sheen-b: rgba(255, 255, 255, 0.36);
+  --line: rgba(35, 43, 33, 0.14);
+  --line-soft: rgba(35, 43, 33, 0.12);
+  --line-strong: rgba(35, 151, 130, 0.32);
+  --control-bg: rgba(255, 255, 255, 0.68);
+  --control-bg-soft: rgba(255, 255, 255, 0.58);
+  --control-hover-bg: rgba(255, 255, 255, 0.9);
+  --active-bg:
+    linear-gradient(135deg, rgba(35, 151, 130, 0.16), rgba(226, 168, 47, 0.18)),
+    rgba(255, 255, 255, 0.92);
+  --active-text: #11150f;
+  --trust-surface:
+    linear-gradient(135deg, var(--badge-accent-soft), transparent 64%),
+    rgba(255, 255, 255, 0.7);
+  --trust-line: rgba(35, 43, 33, 0.13);
+  --trust-text: rgba(32, 35, 31, 0.9);
+  --trust-detail: rgba(48, 58, 46, 0.62);
+  --trust-sheen: rgba(255, 255, 255, 0.5);
+  --trust-sweep: rgba(255, 255, 255, 0.64);
+  --accent: #239782;
+  --accent-strong: #e2a82f;
+  --accent-cool: #5f76d8;
+  --danger: #d63f42;
+  --focus-ring: rgba(35, 151, 130, 0.9);
+  --button-hover-shadow: 0 10px 24px rgba(35, 43, 33, 0.12);
+  --editor-bg: rgba(255, 255, 255, 0.76);
+  --editor-focus-bg: #ffffff;
+  --editor-text: #161b16;
+  --drop-border: rgba(35, 43, 33, 0.24);
+  --drop-bg:
+    linear-gradient(135deg, rgba(35, 151, 130, 0.08), transparent 62%),
+    rgba(255, 255, 255, 0.58);
+  --drop-hover-bg:
+    linear-gradient(135deg, rgba(35, 151, 130, 0.13), transparent 62%),
+    rgba(255, 255, 255, 0.86);
+  --drop-scan-bg:
+    linear-gradient(90deg, transparent, rgba(35, 151, 130, 0.13), transparent),
+    linear-gradient(180deg, transparent, rgba(35, 151, 130, 0.1), transparent);
+  --output-bg: rgba(255, 255, 255, 0.6);
+  --status-bg: rgba(35, 43, 33, 0.06);
+  --empty-border: rgba(35, 43, 33, 0.16);
+  --empty-bg: rgba(255, 255, 255, 0.44);
+  --toast-bg: rgba(255, 255, 255, 0.86);
+  --toast-text: #17211d;
+  --footer-text: rgba(48, 58, 46, 0.66);
+  --shadow: 0 20px 58px rgba(48, 66, 49, 0.16);
+  --shadow-lift: 0 26px 70px rgba(48, 66, 49, 0.22);
+}
