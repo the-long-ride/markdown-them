@@ -3,7 +3,9 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as mammoth from "mammoth";
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from "./markdown-utils";
+import { convertOdfData } from "./odf";
 import { convertPptxData } from "./pptx";
+import { convertRtfToMarkdown } from "./rtf";
 import { convertXlsxData } from "./xlsx";
 
 const pdf2md = require("@opendocsg/pdf2md");
@@ -36,10 +38,9 @@ export async function generateMarkdown(filePath: string): Promise<string> {
     case ".odt":
     case ".odp":
     case ".ods":
-    case ".rtf": {
-      const officeResult: unknown = await officeParser.parseOffice(filePath);
-      return officeAstToMarkdown(officeResult as any);
-    }
+      return await convertOdf(filePath, ext.slice(1) as "odt" | "odp" | "ods");
+    case ".rtf":
+      return await convertRtf(filePath);
     default:
       throw new Error(`Unsupported file type: ${ext}`);
   }
@@ -68,4 +69,39 @@ export function inferOutputPath(filePath: string): string {
 async function convertXlsx(filePath: string): Promise<string> {
   const data = await fs.readFile(filePath);
   return convertXlsxData(data);
+}
+
+async function convertOdf(filePath: string, kind: "odt" | "odp" | "ods"): Promise<string> {
+  const data = await fs.readFile(filePath);
+
+  try {
+    const markdown = await convertOdfData(data, kind);
+    if (markdown.trim()) {
+      return markdown;
+    }
+  } catch {
+    // Fall through to the generic Office parser for unusual OpenDocument files.
+  }
+
+  return convertOfficeFallback(filePath);
+}
+
+async function convertRtf(filePath: string): Promise<string> {
+  const data = await fs.readFile(filePath);
+
+  try {
+    const markdown = convertRtfToMarkdown(data);
+    if (markdown.trim()) {
+      return markdown;
+    }
+  } catch {
+    // Fall through to the generic Office parser for unusual RTF files.
+  }
+
+  return convertOfficeFallback(filePath);
+}
+
+async function convertOfficeFallback(filePath: string): Promise<string> {
+  const officeResult: unknown = await officeParser.parseOffice(filePath);
+  return officeAstToMarkdown(officeResult as any);
 }

@@ -40,7 +40,7 @@ Each app links back to this section so users can discover the other Markdown The
 - Or, go to **File > Preferences > Settings** and search for `Markdown Them`.
 
 > [!NOTE]
-> `.pptx` conversion extracts slide text, tables, and main content images as inline Base64 data URIs. Backgrounds, repeated logos, and small decorative icons are filtered to keep Markdown readable. Other office formats (`.odt`, `.odp`, `.ods`, `.rtf`) still use text/table-only fallback extraction.
+> `.pptx`, `.odt`, and `.odp` conversion extracts structured text plus main content images as inline Base64 data URIs where available. Backgrounds, repeated logos, and small decorative icons are filtered to keep Markdown readable. `.ods` extracts sheets as Markdown tables, and `.rtf` preserves common text styling, headings, and bullets.
 
 ## Desktop and Web Apps
 
@@ -138,9 +138,9 @@ Special thanks to the open-source authors and contributors whose incredible libr
 
 - [`mammoth`](https://github.com/mwilliamson/mammoth.js): Robust conversion of `.docx` documents.
 - [`@opendocsg/pdf2md`](https://github.com/opengovsg/pdf2md): Reliable text extraction from `.pdf` files.
-- [`jszip`](https://github.com/Stuk/jszip) + [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser): Lightweight `.xlsx` parsing into structured markdown tables and `.pptx` parsing with inline main-content images.
+- [`jszip`](https://github.com/Stuk/jszip) + [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser): Lightweight `.xlsx`, `.ods`, `.odt`, `.odp`, and `.pptx` parsing into structured Markdown with inline main-content images where available.
 - [`turndown`](https://github.com/mixmark-io/turndown): Converting `.html` files (or mammoth's HTML output) cleanly to Markdown.
-- [`officeparser`](https://github.com/harshankur/officeParser): A fallback text extractor for `.odt`, `.odp`, `.ods`, and `.rtf` files.
+- [`officeparser`](https://github.com/harshankur/officeParser): A fallback text extractor for unusual Office/OpenDocument/RTF files.
 
 ## Credits & Links
 [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) 

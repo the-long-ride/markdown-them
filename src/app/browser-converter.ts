@@ -1,6 +1,8 @@
 import { parseOffice, terminateOcr } from "officeparser";
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from "../core/markdown-utils";
+import { convertOdfData } from "../core/odf";
 import { convertPptxData } from "../core/pptx";
+import { convertRtfToMarkdown } from "../core/rtf";
 import { convertXlsxData } from "../core/xlsx";
 import { getFileExtension, markdownOutputName } from "../shared/formats";
 
@@ -10,7 +12,7 @@ export interface BrowserConversionResult {
   outputName: string;
 }
 
-const browserOfficeExtensions = new Set([".docx", ".pdf", ".odt", ".odp", ".ods", ".rtf"]);
+const browserOfficeExtensions = new Set([".docx", ".pdf"]);
 
 export async function convertBrowserFile(file: File): Promise<BrowserConversionResult> {
   const extension = getFileExtension(file.name);
@@ -31,6 +33,11 @@ export async function convertBrowserFile(file: File): Promise<BrowserConversionR
       break;
     case ".pptx":
       markdown = await convertPptxData(await file.arrayBuffer());
+      break;
+    case ".odt":
+    case ".odp":
+    case ".ods":
+      markdown = await convertOdfFile(file, extension.slice(1) as "odt" | "odp" | "ods");
       break;
     case ".rtf":
       markdown = await convertRtfFile(file);
@@ -68,22 +75,26 @@ async function convertOfficeFile(file: File): Promise<string> {
 
 async function convertRtfFile(file: File): Promise<string> {
   try {
-    return await convertOfficeFile(file);
+    const markdown = convertRtfToMarkdown(await file.arrayBuffer());
+    if (markdown.trim()) {
+      return markdown;
+    }
   } catch {
-    return rtfToMarkdown(await file.text());
+    // Fall through to the generic Office parser for unusual RTF files.
   }
+
+  return convertOfficeFile(file);
 }
 
-function rtfToMarkdown(rtf: string): string {
-  const text = rtf
-    .replace(/\\par[d]?/g, "\n")
-    .replace(/\\line/g, "\n")
-    .replace(/\\'[0-9a-fA-F]{2}/g, (match) => String.fromCharCode(parseInt(match.slice(2), 16)))
-    .replace(/[{}]/g, "")
-    .replace(/\\[a-zA-Z]+-?\d* ?/g, "")
-    .replace(/\\./g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+async function convertOdfFile(file: File, kind: "odt" | "odp" | "ods"): Promise<string> {
+  try {
+    const markdown = await convertOdfData(await file.arrayBuffer(), kind);
+    if (markdown.trim()) {
+      return markdown;
+    }
+  } catch {
+    // Fall through to the generic Office parser for unusual OpenDocument files.
+  }
 
-  return convertTextToMarkdown(text);
+  return convertOfficeFile(file);
 }

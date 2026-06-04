@@ -40,3 +40,5 @@ console.log(outputPath, defaultOutputPath, markdown.slice(0, 120));
 `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
 
 `.pptx` output includes slide text, tables, and main content images as inline Base64 data URIs while filtering common background, logo, and icon noise.
+
+`.odt` and `.odp` use structured OpenDocument parsing with inline main content images where available, `.ods` outputs sheets as Markdown tables, and `.rtf` preserves common text styling, headings, and bullets.
