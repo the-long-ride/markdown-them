@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DragEvent } from "react";
 import { desktopApi, fileAccept } from "./app-constants";
 import type { Mode } from "./app-types";
@@ -8,6 +8,7 @@ import { TextMode } from "./components/TextMode";
 import { Titlebar } from "./components/Titlebar";
 import { Topline } from "./components/Topline";
 import { TrustStrip } from "./components/TrustStrip";
+import { LegalPage } from "./components/LegalPage";
 import { useIntroAnimation, useModeAnimation } from "./hooks/useAppAnimations";
 import { useFileConverter } from "./hooks/useFileConverter";
 import { useTextConverter } from "./hooks/useTextConverter";
@@ -28,10 +29,40 @@ export function App() {
   useIntroAnimation(workspaceRef);
   useModeAnimation(contentRef, workspaceRef, modeAnimationReadyRef, mode);
 
+  const [currentView, setCurrentView] = useState<"app" | "privacy" | "terms">(() => {
+    if (typeof window !== "undefined" && !desktopApi) {
+      const hash = window.location.hash;
+      if (hash === "#/privacy") return "privacy";
+      if (hash === "#/terms") return "terms";
+    }
+    return "app";
+  });
+
+  useEffect(() => {
+    if (isDesktop) {
+      return;
+    }
+
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === "#/privacy") {
+        setCurrentView("privacy");
+      } else if (hash === "#/terms") {
+        setCurrentView("terms");
+      } else {
+        setCurrentView("app");
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [isDesktop]);
+
   function handleDrop(event: DragEvent<HTMLElement>) {
     event.preventDefault();
     setIsDragging(false);
 
+ 
     if (!desktopApi) {
       files.addBrowserFiles(Array.from(event.dataTransfer.files || []));
     }
@@ -51,47 +82,64 @@ export function App() {
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <Topline isDesktop={isDesktop} mode={mode} setMode={setMode} setTheme={setTheme} theme={theme} />
-        <TrustStrip isDesktop={isDesktop} />
-
-        {mode === "text" ? (
-          <TextMode
-            contentRef={contentRef}
+        {currentView !== "app" ? (
+          <LegalPage
+            view={currentView}
+            onBack={() => {
+              window.location.hash = "";
+              setCurrentView("app");
+            }}
+            theme={theme}
+            setTheme={setTheme}
             isDesktop={isDesktop}
-            onClearInput={() => text.setTextInput("")}
-            onConvertText={text.handleConvertText}
-            onCopyText={text.handleCopyText}
-            onSaveText={text.handleSaveText}
-            onTextInputChange={(event) => text.setTextInput(event.target.value)}
-            onTextOutputChange={(event) => text.setTextOutput(event.target.value)}
-            textBusy={text.textBusy}
-            textInput={text.textInput}
-            textOutput={text.textOutput}
           />
         ) : (
-          <FilesMode
-            contentRef={contentRef}
-            fileAccept={fileAccept}
-            fileInputRef={files.fileInputRef}
-            fileItems={files.fileItems}
-            filesBusy={files.filesBusy}
-            isDesktop={isDesktop}
-            onBrowserFileInput={files.handleBrowserFileInput}
-            onChooseFiles={files.handleChooseFiles}
-            onChooseFolders={files.handleChooseFolders}
-            onChooseOutputFolder={files.handleChooseOutputFolder}
-            onClearFiles={files.clearFiles}
-            onConvertFiles={files.handleConvertFiles}
-            onDownloadAll={files.handleDownloadAll}
-            onResetOutputFolder={files.resetOutputFolder}
-            outputFolder={files.outputFolder}
-            summary={files.summary}
-          />
+          <>
+            <Topline isDesktop={isDesktop} mode={mode} setMode={setMode} setTheme={setTheme} theme={theme} />
+            <TrustStrip isDesktop={isDesktop} />
+
+            {mode === "text" ? (
+              <TextMode
+                contentRef={contentRef}
+                isDesktop={isDesktop}
+                onClearInput={() => text.setTextInput("")}
+                onConvertText={text.handleConvertText}
+                onCopyText={text.handleCopyText}
+                onSaveText={text.handleSaveText}
+                onTextInputChange={(event) => text.setTextInput(event.target.value)}
+                onTextOutputChange={(event) => text.setTextOutput(event.target.value)}
+                textBusy={text.textBusy}
+                textInput={text.textInput}
+                textOutput={text.textOutput}
+              />
+            ) : (
+              <FilesMode
+                contentRef={contentRef}
+                fileAccept={fileAccept}
+                fileInputRef={files.fileInputRef}
+                fileItems={files.fileItems}
+                filesBusy={files.filesBusy}
+                isDesktop={isDesktop}
+                onBrowserFileInput={files.handleBrowserFileInput}
+                onChooseFiles={files.handleChooseFiles}
+                onChooseFolders={files.handleChooseFolders}
+                onChooseOutputFolder={files.handleChooseOutputFolder}
+                onClearFiles={files.clearFiles}
+                onConvertFiles={files.handleConvertFiles}
+                onDownloadAll={files.handleDownloadAll}
+                onResetOutputFolder={files.resetOutputFolder}
+                outputFolder={files.outputFolder}
+                summary={files.summary}
+              />
+            )}
+
+            {!isDesktop ? <AppFooter onNavigate={setCurrentView} /> : null}
+          </>
         )}
 
-        {!isDesktop ? <AppFooter /> : null}
         {notice ? <div className="toast">{notice}</div> : null}
       </main>
     </div>
   );
 }
+

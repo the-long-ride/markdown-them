@@ -1,7 +1,13 @@
-import { desktopDownloadUrl, licenseUrl, npmPackageUrl, profileUrl, repoUrl } from "../app-constants";
+import { desktopApi, desktopDownloadUrl, licenseUrl, npmPackageUrl, profileUrl, repoUrl, privacyUrl, termsUrl } from "../app-constants";
 import { ExternalLink } from "./ExternalLink";
 
-export function AppFooter() {
+interface AppFooterProps {
+  onNavigate?: (view: "privacy" | "terms") => void;
+}
+
+export function AppFooter({ onNavigate }: AppFooterProps) {
+  const isDesktop = Boolean(desktopApi);
+
   return (
     <footer className="app-footer">
       <span>
@@ -19,6 +25,39 @@ export function AppFooter() {
       <span>
         <ExternalLink href={licenseUrl}>MIT license</ExternalLink>
       </span>
+      <span>
+        {isDesktop ? (
+          <ExternalLink href={privacyUrl}>Privacy Policy</ExternalLink>
+        ) : (
+          <a
+            href="#/privacy"
+            onClick={(event) => {
+              event.preventDefault();
+              window.location.hash = "#/privacy";
+              onNavigate?.("privacy");
+            }}
+          >
+            Privacy Policy
+          </a>
+        )}
+      </span>
+      <span>
+        {isDesktop ? (
+          <ExternalLink href={termsUrl}>Terms of Service</ExternalLink>
+        ) : (
+          <a
+            href="#/terms"
+            onClick={(event) => {
+              event.preventDefault();
+              window.location.hash = "#/terms";
+              onNavigate?.("terms");
+            }}
+          >
+            Terms of Service
+          </a>
+        )}
+      </span>
     </footer>
   );
 }
+

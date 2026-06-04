@@ -10,8 +10,13 @@ export const desktopDownloadUrl = `${repoUrl}/releases/latest`;
 export const npmPackageUrl = "https://www.npmjs.com/package/@the-long-ride/markdown-them";
 export const licenseUrl = "https://github.com/the-long-ride/vscode-extension-markdown-them/blob/main/LICENSE";
 
+export const webappUrl = "https://markdown-them.com";
+export const privacyUrl = `${webappUrl}/#/privacy`;
+export const termsUrl = `${webappUrl}/#/terms`;
+
 export const themeStorageKey = "markdown-them-theme";
 export const themeMetaColor: Record<ThemeMode, string> = {
   dark: "#171817",
   light: "#f4f7f2",
 };
+
