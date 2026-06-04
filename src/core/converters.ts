@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import * as mammoth from "mammoth";
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from "./markdown-utils";
+import { convertPptxData } from "./pptx";
 import { convertXlsxData } from "./xlsx";
 
 const pdf2md = require("@opendocsg/pdf2md");
@@ -28,7 +29,10 @@ export async function generateMarkdown(filePath: string): Promise<string> {
     }
     case ".xlsx":
       return await convertXlsx(filePath);
-    case ".pptx":
+    case ".pptx": {
+      const data = await fs.readFile(filePath);
+      return await convertPptxData(data);
+    }
     case ".odt":
     case ".odp":
     case ".ods":

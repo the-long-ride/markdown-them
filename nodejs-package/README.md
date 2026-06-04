@@ -38,3 +38,5 @@ console.log(outputPath, defaultOutputPath, markdown.slice(0, 120));
 ## Supported extensions
 
 `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+
+`.pptx` output includes slide text, tables, and main content images as inline Base64 data URIs while filtering common background, logo, and icon noise.

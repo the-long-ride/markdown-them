@@ -1,5 +1,6 @@
 import { parseOffice, terminateOcr } from "officeparser";
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from "../core/markdown-utils";
+import { convertPptxData } from "../core/pptx";
 import { convertXlsxData } from "../core/xlsx";
 import { getFileExtension, markdownOutputName } from "../shared/formats";
 
@@ -9,7 +10,7 @@ export interface BrowserConversionResult {
   outputName: string;
 }
 
-const browserOfficeExtensions = new Set([".docx", ".pdf", ".pptx", ".odt", ".odp", ".ods", ".rtf"]);
+const browserOfficeExtensions = new Set([".docx", ".pdf", ".odt", ".odp", ".ods", ".rtf"]);
 
 export async function convertBrowserFile(file: File): Promise<BrowserConversionResult> {
   const extension = getFileExtension(file.name);
@@ -27,6 +28,9 @@ export async function convertBrowserFile(file: File): Promise<BrowserConversionR
       break;
     case ".xlsx":
       markdown = await convertXlsxData(await file.arrayBuffer());
+      break;
+    case ".pptx":
+      markdown = await convertPptxData(await file.arrayBuffer());
       break;
     case ".rtf":
       markdown = await convertRtfFile(file);
