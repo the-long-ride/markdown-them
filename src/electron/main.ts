@@ -30,6 +30,8 @@ const trustedExternalUrls = new Set([
   "https://github.com/the-long-ride/markdown-them",
   "https://github.com/the-long-ride/markdown-them#markdown-them-variants",
   "https://github.com/the-long-ride/markdown-them/blob/main/LICENSE",
+  "https://the-long-ride.github.io/markdown-them/#/privacy",
+  "https://the-long-ride.github.io/markdown-them/#/terms",
 ]);
 const appId = "com.the-long-ride.markdown-them";
 
