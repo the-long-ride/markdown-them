@@ -1,0 +1,34 @@
+{
+  "appId": "com.thelongride.markdown-them",
+  "productName": "Markdown Them",
+  "directories": {
+    "output": "dist/installers"
+  },
+  "files": [
+    "dist/desktop/**/*"
+  ],
+  "extraMetadata": {
+    "main": "dist/desktop/main.js"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "assets/markdown-them-logo.png",
+    "artifactName": "markdown-them-${version}-windows-portable.${ext}"
+  },
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "assets/markdown-them-logo.png",
+    "artifactName": "markdown-them-${version}-mac.${ext}"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "assets/markdown-them-logo.png",
+    "category": "Utility",
+    "artifactName": "markdown-them-${version}-linux.${ext}"
+  }
+}

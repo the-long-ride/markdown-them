@@ -46,6 +46,58 @@ jobs:
           name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
           path: "*.vsix"
 
+  publish-extension:
+    name: Publish VS Code Extension
+    runs-on: ubuntu-latest
+    needs: build-vsix
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
+          path: ./artifacts
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -n "$VSCE_PAT" ]; then
+            npx @vscode/vsce publish --packagePath ./artifacts/*.vsix -p "$VSCE_PAT"
+          else
+            echo "Skipping VS Code Marketplace publish (VSCE_PAT is not set)"
+          fi
+
+      - name: Publish to Open VSX Registry
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -n "$OVSX_PAT" ]; then
+            npx ovsx publish ./artifacts/*.vsix -p "$OVSX_PAT"
+          else
+            echo "Skipping Open VSX publish (OVSX_PAT is not set)"
+          fi
+
   build-node-package:
     name: Build Node Package
     runs-on: ubuntu-latest
@@ -118,27 +170,91 @@ jobs:
       - name: Publish package tarball
         run: npm publish ./artifacts/*.tgz --access public
 
+  build-desktop:
+    name: Build Desktop App
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Sync package version with tag
+        run: |
+          npm version ${{ steps.get_version.outputs.version }} --no-git-tag-version --allow-same-version
+        shell: bash
+
+      - name: Build and Package Desktop App (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npm run dist:desktop:win
+
+      - name: Build and Package Desktop App (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: npm run dist:desktop:linux
+
+      - name: Build and Package Desktop App (macOS)
+        if: matrix.os == 'macos-latest'
+        run: npm run dist:desktop:mac
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-installers-${{ matrix.os }}
+          path: dist/installers/*
+
   create-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs:
       - build-vsix
       - build-node-package
+      - build-desktop
     permissions:
       contents: write
 
     steps:
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Download VSIX artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: markdown-them-vsix-*
+          name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
           path: ./release-assets
-          merge-multiple: true
 
       - name: Download node package artifact
         uses: actions/download-artifact@v4
         with:
-          pattern: markdown-them-node-package-*
+          name: markdown-them-node-package-${{ steps.get_version.outputs.version }}
+          path: ./release-assets
+
+      - name: Download Desktop installers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-installers-*
           path: ./release-assets
           merge-multiple: true
 
@@ -147,7 +263,29 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
+          body: |
+            ## Markdown Them Release [${{ github.ref_name }}](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
+            
+            Choose the file that matches how you want to install Markdown Them:
+            
+            * [`.vsix`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/the-long-ride.markdown-them-${{ steps.get_version.outputs.version }}.vsix) : VS Code extension package for manual install. In VS Code, run "Extensions: Install from VSIX..." and choose this file.
+            * [`.exe`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them-${{ steps.get_version.outputs.version }}-windows-portable.exe) : Windows portable desktop app. Download and run directly.
+            * [`.AppImage`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them-${{ steps.get_version.outputs.version }}-linux.AppImage) : Linux portable desktop app. Mark it executable, then run it.
+            * [`.deb`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them-${{ steps.get_version.outputs.version }}-linux.deb) : Linux installer for Debian, Ubuntu, and compatible distributions.
+            * [`.dmg`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them-${{ steps.get_version.outputs.version }}-mac.dmg) : macOS desktop installer.
+            * [`.zip`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them-${{ steps.get_version.outputs.version }}-mac.zip) : macOS archive build.
+            
+            ### Other Install Links
+            * **VS Code Marketplace:** https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them
+            * **Open VSX:** https://open-vsx.org/extension/the-long-ride/markdown-them
+            * **Project Website:** https://the-long-ride.github.io/markdown-them/
+            
+            For a list of changes in this release, see the [CHANGELOG.md](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md).
           files: |
             ./release-assets/*.vsix
             ./release-assets/*.tgz
-          generate_release_notes: true
+            ./release-assets/*.exe
+            ./release-assets/*.AppImage
+            ./release-assets/*.deb
+            ./release-assets/*.dmg
+            ./release-assets/*.zip

@@ -1,4 +1,4 @@
-MIT License
+MIT License (with Theme Usage Restriction)
 
 Copyright (c) 2026 the-long-ride
 
@@ -11,6 +11,9 @@ furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
+RESTRICTION ON THEME AND EXTENSION INCLUSION:
+Notwithstanding the above permissions, the UI theme, visual designs, styles, and assets associated with this Software are copyrighted work and may NOT be extracted, included in, bundled with, or redistributed as part of any other software application, website, color/editor theme package, or browser/IDE extension without the prior written consent of the copyright holder.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
