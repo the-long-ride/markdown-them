@@ -4,10 +4,6 @@
     padding: 22px;
   }
 
-  .files-layout {
-    grid-template-columns: 1fr;
-  }
-
   .files-panel,
   .output-list-panel {
     width: 100%;
@@ -21,37 +17,64 @@
     height: auto;
     padding: 18px;
     overflow: visible;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px 12px;
   }
 
-  .topline,
   .tool-grid,
   .files-layout {
     grid-template-columns: 1fr;
   }
 
   .topline {
-    display: grid;
+    display: contents;
   }
 
   .topline-actions {
-    width: 100%;
+    display: contents;
   }
 
-  .topline-actions .segmented {
-    flex: 1 1 auto;
+  .brand-lockup {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .theme-toggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .trust-strip {
+    grid-column: 1 / span 2;
+    grid-row: 2;
     grid-template-columns: 1fr;
+  }
+
+  .segmented {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mode-surface {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+  }
+
+  .app-footer {
+    grid-column: 1 / span 2;
+    grid-row: 5;
+  }
+
+  .legal-container {
+    grid-column: 1 / span 2;
   }
 
   .trust-badge {
     width: 100%;
-  }
-
-  .segmented {
-    width: 100%;
-    min-width: 0;
   }
 
   .split-actions {
@@ -85,10 +108,6 @@
 
   .brand-lockup p {
     font-size: 12px;
-  }
-
-  .topline-actions {
-    gap: 8px;
   }
 
   .segmented {

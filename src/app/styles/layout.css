@@ -8,15 +8,11 @@
   color: var(--text);
 }
 
-.app-shell::before,
-.app-shell::after {
+.app-shell::before {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-}
-
-.app-shell::before {
   background-image:
     linear-gradient(var(--grid-line-a) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line-b) 1px, transparent 1px);
@@ -25,20 +21,13 @@
   opacity: var(--shell-mask-opacity);
 }
 
-.app-shell::after {
-  background: var(--shell-shine);
-  mix-blend-mode: var(--shell-shine-blend);
-  opacity: var(--shell-shine-opacity);
-}
-
 .desktop-shell {
   overflow: hidden;
   height: 100vh;
   min-height: 100vh;
 }
 
-.desktop-shell::before,
-.desktop-shell::after {
+.desktop-shell::before {
   position: absolute;
 }
 
@@ -47,6 +36,7 @@
   z-index: 1;
   display: grid;
   grid-template-rows: auto auto auto auto;
+  align-content: start;
   gap: 18px;
   min-height: 100dvh;
   padding: 28px;
@@ -147,15 +137,13 @@
   min-height: 0;
 }
 
-.tool-grid {
+.tool-grid,
+.files-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
 }
 
 .files-layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 390px) minmax(0, 1fr);
   align-items: start;
-  gap: 18px;
 }

@@ -27,9 +27,9 @@ const documentFilters = [
 ];
 const trustedExternalUrls = new Set([
   "https://github.com/the-long-ride",
-  "https://github.com/the-long-ride/vscode-extension-markdown-them",
-  "https://github.com/the-long-ride/vscode-extension-markdown-them#markdown-them-variants",
-  "https://github.com/the-long-ride/vscode-extension-markdown-them/blob/main/LICENSE",
+  "https://github.com/the-long-ride/markdown-them",
+  "https://github.com/the-long-ride/markdown-them#markdown-them-variants",
+  "https://github.com/the-long-ride/markdown-them/blob/main/LICENSE",
 ]);
 const appId = "com.the-long-ride.markdown-them";
 
@@ -96,7 +96,12 @@ async function createWindow() {
     }
   });
 
-  await mainWindow.loadFile(path.join(__dirname, "web", "index.html"));
+  if (isDevelopment) {
+    const devPort = process.env.PORT || "5173";
+    await mainWindow.loadURL(`http://127.0.0.1:${devPort}`);
+  } else {
+    await mainWindow.loadFile(path.join(__dirname, "web", "index.html"));
+  }
 }
 
 function getAppIconPath(): string {
@@ -110,7 +115,14 @@ function setDockIcon() {
 }
 
 function blockOutboundRequests() {
-  session.defaultSession.webRequest.onBeforeRequest({ urls: ["http://*/*", "https://*/*"] }, (_details, callback) => {
+  session.defaultSession.webRequest.onBeforeRequest({ urls: ["http://*/*", "https://*/*"] }, (details, callback) => {
+    if (isDevelopment) {
+      const url = new URL(details.url);
+      if (url.hostname === "127.0.0.1" || url.hostname === "localhost") {
+        callback({ cancel: false });
+        return;
+      }
+    }
     callback({ cancel: true });
   });
 }

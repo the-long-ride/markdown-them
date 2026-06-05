@@ -1,11 +1,15 @@
 .files-panel {
   align-self: start;
-  grid-template-rows: auto auto auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .output-list-panel {
   align-self: start;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 10px;
 }
 
@@ -23,6 +27,7 @@
   overflow: hidden;
   display: grid;
   place-items: center;
+  flex: 1 1 auto;
   min-height: 180px;
   padding: 24px;
   border: 1px dashed var(--drop-border);
@@ -114,6 +119,7 @@
   gap: 6px;
   min-height: 0;
   overflow: visible;
+  flex: 1 1 auto;
 }
 
 .desktop-shell .file-list {
@@ -138,10 +144,17 @@
 .file-row:hover {
   border-color: color-mix(in srgb, var(--accent) 28%, transparent);
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 60%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--accent) 8%, transparent),
+      transparent 60%
+    ),
     var(--panel-strong);
   box-shadow: var(--button-hover-shadow);
-  transform: translateY(-1px);
+}
+
+.file-row .icon-button:not(:disabled):hover {
+  transform: none;
 }
 
 .status-dot {
@@ -194,10 +207,18 @@
   place-items: center;
   position: relative;
   overflow: hidden;
+  height: 100%;
   min-height: 180px;
   border: 1px dashed var(--empty-border);
   border-radius: 8px;
   color: var(--muted);
   box-shadow: none;
   background: var(--empty-bg);
+}
+
+.pending-status {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  padding-right: 4px;
 }

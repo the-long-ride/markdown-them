@@ -1,4 +1,5 @@
 import { desktopApi, desktopDownloadUrl, licenseUrl, npmPackageUrl, profileUrl, repoUrl, privacyUrl, termsUrl } from "../app-constants";
+import { useLanguage } from "../context/LanguageContext";
 import { ExternalLink } from "./ExternalLink";
 
 interface AppFooterProps {
@@ -7,27 +8,28 @@ interface AppFooterProps {
 
 export function AppFooter({ onNavigate }: AppFooterProps) {
   const isDesktop = Boolean(desktopApi);
+  const { t } = useLanguage();
 
   return (
     <footer className="app-footer">
       <span>
-        made by <ExternalLink href={profileUrl}>the-long-ride</ExternalLink> with &lt;3
+        {t("madeBy")} <ExternalLink href={profileUrl}>the-long-ride</ExternalLink> with ❤️
       </span>
       <span>
-        <ExternalLink href={repoUrl}>GitHub repo</ExternalLink>
+        <ExternalLink href={repoUrl}>{t("githubRepo")}</ExternalLink>
       </span>
       <span>
-        <ExternalLink href={desktopDownloadUrl}>Desktop app</ExternalLink>
+        <ExternalLink href={desktopDownloadUrl}>{t("desktopApp")}</ExternalLink>
       </span>
       <span>
-        <ExternalLink href={npmPackageUrl}>npm package</ExternalLink>
+        <ExternalLink href={npmPackageUrl}>{t("npmPackage")}</ExternalLink>
       </span>
       <span>
-        <ExternalLink href={licenseUrl}>MIT license</ExternalLink>
+        <ExternalLink href={licenseUrl}>{t("mitLicense")}</ExternalLink>
       </span>
       <span>
         {isDesktop ? (
-          <ExternalLink href={privacyUrl}>Privacy Policy</ExternalLink>
+          <ExternalLink href={privacyUrl}>{t("privacyPolicy")}</ExternalLink>
         ) : (
           <a
             href="#/privacy"
@@ -37,13 +39,13 @@ export function AppFooter({ onNavigate }: AppFooterProps) {
               onNavigate?.("privacy");
             }}
           >
-            Privacy Policy
+            {t("privacyPolicy")}
           </a>
         )}
       </span>
       <span>
         {isDesktop ? (
-          <ExternalLink href={termsUrl}>Terms of Service</ExternalLink>
+          <ExternalLink href={termsUrl}>{t("termsOfService")}</ExternalLink>
         ) : (
           <a
             href="#/terms"
@@ -53,11 +55,10 @@ export function AppFooter({ onNavigate }: AppFooterProps) {
               onNavigate?.("terms");
             }}
           >
-            Terms of Service
+            {t("termsOfService")}
           </a>
         )}
       </span>
     </footer>
   );
 }
-

@@ -1,16 +1,19 @@
 import { CloudOff, MonitorCheck, ShieldCheck } from "lucide-react";
+import { useLanguage } from "../context/LanguageContext";
 import { TrustBadge } from "./TrustBadge";
 
 export function TrustStrip({ isDesktop }: { isDesktop: boolean }) {
+  const { t } = useLanguage();
+
   return (
     <section className="trust-strip" aria-label="Privacy and project links">
-      <TrustBadge icon={ShieldCheck} title="Privacy-first" detail="No account, no file tracking" />
+      <TrustBadge icon={ShieldCheck} title={t("privacyFirst")} detail={t("privacyFirstDetail")} />
       <TrustBadge
         icon={MonitorCheck}
-        title={isDesktop ? "100% local processing" : "100% client-side conversion"}
-        detail={isDesktop ? "Runs on this computer" : "Runs inside your browser"}
+        title={isDesktop ? t("localProcessingDesktop") : t("localProcessingBrowser")}
+        detail={isDesktop ? t("localProcessingDesktopDetail") : t("localProcessingBrowserDetail")}
       />
-      <TrustBadge icon={CloudOff} title="No document uploads" detail="Files never leave your device" />
+      <TrustBadge icon={CloudOff} title={t("noUploads")} detail={t("noUploadsDetail")} />
     </section>
   );
 }

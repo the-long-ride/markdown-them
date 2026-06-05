@@ -1,6 +1,8 @@
 import { Clipboard, Files, Moon, Sun } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 import type { Mode, ThemeMode } from "../app-types";
+import { useLanguage } from "../context/LanguageContext";
+import { LanguageSelector } from "./LanguageSelector";
 
 interface ToplineProps {
   isDesktop: boolean;
@@ -10,34 +12,54 @@ interface ToplineProps {
   theme: ThemeMode;
 }
 
-export function Topline({ isDesktop, mode, setMode, setTheme, theme }: ToplineProps) {
+export function Topline({
+  isDesktop,
+  mode,
+  setMode,
+  setTheme,
+  theme,
+}: ToplineProps) {
+  const { t } = useLanguage();
+
   return (
     <section className="topline">
       <div className="brand-lockup">
         <img src="assets/markdown-them-logo.png" alt="" />
         <div>
-          <h1>Markdown Them</h1>
-          <p>{isDesktop ? "Desktop" : "Web"} local converter</p>
+          <h1>{t("appName")}</h1>
+          <p>{t("tagline")}</p>
         </div>
       </div>
 
       <div className="topline-actions">
         <div className="segmented" role="tablist" aria-label="Mode">
-          <button className={mode === "files" ? "active" : ""} onClick={() => setMode("files")} type="button">
+          <div className={`segmented-indicator ${mode}`} />
+          <button
+            className={mode === "files" ? "active" : ""}
+            onClick={() => setMode("files")}
+            type="button"
+          >
             <Files size={16} />
-            <span>Files</span>
+            <span>{t("files")}</span>
           </button>
-          <button className={mode === "text" ? "active" : ""} onClick={() => setMode("text")} type="button">
+          <button
+            className={mode === "text" ? "active" : ""}
+            onClick={() => setMode("text")}
+            type="button"
+          >
             <Clipboard size={16} />
-            <span>Text</span>
+            <span>{t("text")}</span>
           </button>
         </div>
+        <LanguageSelector />
         <button
           className="icon-button theme-toggle"
           type="button"
-          title={theme === "dark" ? "Use light mode" : "Use dark mode"}
-          aria-label={theme === "dark" ? "Use light mode" : "Use dark mode"}
-          onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+          title={theme === "dark" ? t("useLightMode") || "Use light mode" : t("useDarkMode") || "Use dark mode"}
+          aria-label={theme === "dark" ? t("useLightMode") || "Use light mode" : t("useDarkMode") || "Use dark mode"}
+          onClick={() =>
+            setTheme((current) => (current === "dark" ? "light" : "dark"))
+          }
         >
           {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
         </button>

@@ -1,5 +1,6 @@
 import { Copy, Download, LoaderCircle, Play, Save, Trash2 } from "lucide-react";
 import type { ChangeEvent, RefObject } from "react";
+import { useLanguage } from "../context/LanguageContext";
 
 interface TextModeProps {
   contentRef: RefObject<HTMLElement | null>;
@@ -28,12 +29,14 @@ export function TextMode({
   textInput,
   textOutput,
 }: TextModeProps) {
+  const { t } = useLanguage();
+
   return (
     <section ref={contentRef} className="tool-grid mode-surface">
       <div className="glass-panel input-panel motion-card">
         <div className="panel-head">
-          <h2>Input</h2>
-          <button className="icon-button" type="button" title="Clear" aria-label="Clear" onClick={onClearInput}>
+          <h2>{t("input")}</h2>
+          <button className="icon-button" type="button" title={t("clear")} aria-label={t("clear")} onClick={onClearInput}>
             <Trash2 size={16} />
           </button>
         </div>
@@ -41,19 +44,19 @@ export function TextMode({
         <div className="action-row">
           <button className="primary-button" type="button" onClick={onConvertText} disabled={textBusy || !textInput.trim()}>
             {textBusy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}
-            <span>Convert</span>
+            <span>{t("convert")}</span>
           </button>
         </div>
       </div>
 
       <div className="glass-panel output-panel motion-card">
         <div className="panel-head">
-          <h2>Markdown</h2>
+          <h2>{t("markdown")}</h2>
           <div className="compact-actions">
-            <button className="icon-button" type="button" title="Copy" aria-label="Copy" onClick={onCopyText} disabled={!textOutput}>
+            <button className="icon-button" type="button" title={t("copy")} aria-label={t("copy")} onClick={onCopyText} disabled={!textOutput}>
               <Copy size={16} />
             </button>
-            <button className="icon-button" type="button" title={isDesktop ? "Save" : "Download"} aria-label={isDesktop ? "Save" : "Download"} onClick={onSaveText} disabled={!textOutput}>
+            <button className="icon-button" type="button" title={isDesktop ? t("save") : t("download")} aria-label={isDesktop ? t("save") : t("download")} onClick={onSaveText} disabled={!textOutput}>
               {isDesktop ? <Save size={16} /> : <Download size={16} />}
             </button>
           </div>

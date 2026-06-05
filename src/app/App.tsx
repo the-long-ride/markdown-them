@@ -13,8 +13,20 @@ import { useIntroAnimation, useModeAnimation } from "./hooks/useAppAnimations";
 import { useFileConverter } from "./hooks/useFileConverter";
 import { useTextConverter } from "./hooks/useTextConverter";
 import { useTheme } from "./hooks/useTheme";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 
-export function App() {
+function translateNotice(notice: string, t: (key: string) => string): string {
+  if (notice === "Copied") {
+    return t("copiedNotice");
+  }
+  if (notice.startsWith("Saved ")) {
+    const filePath = notice.replace("Saved ", "");
+    return `${t("savedNotice")} ${filePath}`;
+  }
+  return notice;
+}
+
+function AppContent() {
   const [mode, setMode] = useState<Mode>("files");
   const [notice, setNotice] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -25,6 +37,7 @@ export function App() {
   const contentRef = useRef<HTMLElement>(null);
   const modeAnimationReadyRef = useRef(false);
   const isDesktop = Boolean(desktopApi);
+  const { t } = useLanguage();
 
   useIntroAnimation(workspaceRef);
   useModeAnimation(contentRef, workspaceRef, modeAnimationReadyRef, mode);
@@ -62,7 +75,6 @@ export function App() {
     event.preventDefault();
     setIsDragging(false);
 
- 
     if (!desktopApi) {
       files.addBrowserFiles(Array.from(event.dataTransfer.files || []));
     }
@@ -137,9 +149,17 @@ export function App() {
           </>
         )}
 
-        {notice ? <div className="toast">{notice}</div> : null}
+        {notice ? <div className="toast">{translateNotice(notice, t)}</div> : null}
       </main>
     </div>
+  );
+}
+
+export function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
   );
 }
 

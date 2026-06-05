@@ -25,7 +25,7 @@
 .glass-panel {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  min-height: 0;
+  min-height: 440px;
   padding: 16px;
   transition:
     transform 180ms ease,

@@ -5,10 +5,10 @@ export const desktopApi = window.markdownThemDesktop;
 export const fileAccept = [...SUPPORTED_FILE_EXTENSIONS, ".md", ".markdown", ".txt"].join(",");
 
 export const profileUrl = "https://github.com/the-long-ride";
-export const repoUrl = "https://github.com/the-long-ride/vscode-extension-markdown-them";
+export const repoUrl = "https://github.com/the-long-ride/markdown-them";
 export const desktopDownloadUrl = `${repoUrl}/releases/latest`;
 export const npmPackageUrl = "https://www.npmjs.com/package/@the-long-ride/markdown-them";
-export const licenseUrl = "https://github.com/the-long-ride/vscode-extension-markdown-them/blob/main/LICENSE";
+export const licenseUrl = "https://github.com/the-long-ride/markdown-them/blob/main/LICENSE";
 
 export const webappUrl = "https://markdown-them.com";
 export const privacyUrl = `${webappUrl}/#/privacy`;

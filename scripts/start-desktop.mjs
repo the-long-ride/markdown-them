@@ -1,30 +1,50 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { startServer } from "./start-web.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const production = process.argv.includes("--production");
 
+// 1. Build desktop assets (this compiles main.ts and preload.ts to dist/desktop/)
 await run(process.execPath, [path.join(rootDir, "scripts", "build-apps.mjs"), "desktop"], {
   ...process.env,
   NODE_ENV: production ? "production" : "development",
-});
+}, false);
 
+// 2. Start the dev server in development mode
+if (!production) {
+  try {
+    await startServer();
+  } catch (err) {
+    console.error("Failed to start dev server for Electron:", err);
+    process.exit(1);
+  }
+}
+
+// 3. Launch Electron
 const electronBin = process.platform === "win32"
   ? path.join(rootDir, "node_modules", ".bin", "electron.cmd")
   : path.join(rootDir, "node_modules", ".bin", "electron");
 
-await run(electronBin, [path.join(rootDir, "dist", "desktop", "main.js")], {
-  ...process.env,
-  NODE_ENV: production ? "production" : "development",
-});
+try {
+  await run(electronBin, [path.join(rootDir, "dist", "desktop", "main.js")], {
+    ...process.env,
+    NODE_ENV: production ? "production" : "development",
+  }, process.platform === "win32");
+} finally {
+  // Ensure the dev server/watcher process terminates when Electron exits
+  if (!production) {
+    process.exit(0);
+  }
+}
 
-function run(command, args, env) {
+function run(command, args, env, useShell = false) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: rootDir,
       env,
-      shell: process.platform === "win32",
+      shell: useShell,
       stdio: "inherit",
     });
 
