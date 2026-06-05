@@ -2,12 +2,12 @@
   "name": "markdown-them",
   "displayName": "Markdown Them",
   "description": "Convert docx, pdf, html, xlsx, pptx, odt, odp, ods, rtf files to markdown in your VS Code's explorer or editor.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "icon": "assets/markdown-them-logo.png",
   "publisher": "the-long-ride",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/the-long-ride/vscode-extension-markdown-them.git"
+    "url": "git+https://github.com/the-long-ride/markdown-them.git"
   },
   "license": "MIT",
   "engines": {
@@ -73,6 +73,11 @@
     "build:web": "node scripts/build-apps.mjs web",
     "build:desktop": "node scripts/build-apps.mjs desktop",
     "build:apps": "node scripts/build-apps.mjs all",
+    "dist:desktop": "npm run build:desktop && electron-builder",
+    "dist:desktop:win": "npm run build:desktop && electron-builder --win",
+    "dist:desktop:linux": "npm run build:desktop && electron-builder --linux AppImage deb",
+    "dist:desktop:mac": "npm run build:desktop && electron-builder --mac",
+    "dist:desktop:all": "npm run build:desktop && electron-builder --win --linux --mac",
     "start:web": "node scripts/start-web.mjs",
     "start:desktop": "node scripts/start-desktop.mjs",
     "preview:desktop": "node scripts/start-desktop.mjs --production",
@@ -105,6 +110,7 @@
     "@types/vscode": "^1.80.0",
     "@vscode/vsce": "^3.9.1",
     "electron": "^42.3.0",
+    "electron-builder": "^26.8.1",
     "esbuild": "^0.28.0",
     "typescript": "^6.0.3"
   },
@@ -117,7 +123,7 @@
   "author": "",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/the-long-ride/vscode-extension-markdown-them/issues"
+    "url": "https://github.com/the-long-ride/markdown-them/issues"
   },
-  "homepage": "https://github.com/the-long-ride/vscode-extension-markdown-them#readme"
+  "homepage": "https://github.com/the-long-ride/markdown-them#readme"
 }

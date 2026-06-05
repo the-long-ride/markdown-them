@@ -3,7 +3,7 @@
 Node.js package for converting documents to Markdown.
 
 This is one of the four Markdown Them variants. See the main repo's
-[Markdown Them Variants](https://github.com/the-long-ride/vscode-extension-markdown-them#markdown-them-variants)
+[Markdown Them Variants](https://github.com/the-long-ride/markdown-them#markdown-them-variants)
 section for the VS Code extension, web app, desktop app, and Node.js package overview.
 
 ## Install

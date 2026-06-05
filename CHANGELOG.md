@@ -4,6 +4,14 @@ All notable changes to the "markdown-them" extension will be documented in this 
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-06
+- Added a multi-platform desktop packaging pipeline (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.zip`) using `electron-builder`.
+- Configured CI/CD release workflows to build multi-platform desktop installers and publish the extension to Open VSX Registry and VS Code Marketplace.
+- Added localized README documentations in Vietnamese, Chinese, Japanese, Norwegian, Spanish, French, and Korean under `docs/`.
+- Implemented UI enhancements including a conditional pulsating CTA effect on the Convert button and CSS layout alignment fixes for the web app footer and list row download buttons.
+- Updated repository and homepage links to point to the renamed `markdown-them` repository.
+- Added a custom clause to the LICENSE restricting theme, styles, and asset reuse in other apps or extensions.
+
 ## [1.2.0] - 2026-05-29
 - Split shared conversion logic, VS Code integration, and Node.js package entry points into clearer source folders.
 - Added the new Node.js package `@the-long-ride/markdown-them` with npm build and publish automation.

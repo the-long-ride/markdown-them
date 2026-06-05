@@ -1,15 +1,15 @@
 {
   "name": "@the-long-ride/markdown-them",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Convert docx, pdf, html, xlsx, pptx, odt, odp, ods, rtf files to markdown.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/the-long-ride/vscode-extension-markdown-them.git"
+    "url": "https://github.com/the-long-ride/markdown-them.git"
   },
-  "homepage": "https://github.com/the-long-ride/vscode-extension-markdown-them#readme",
+  "homepage": "https://github.com/the-long-ride/markdown-them#readme",
   "bugs": {
-    "url": "https://github.com/the-long-ride/vscode-extension-markdown-them/issues"
+    "url": "https://github.com/the-long-ride/markdown-them/issues"
   },
   "main": "./dist/nodejs-package/index.js",
   "types": "./dist/nodejs-package/index.d.ts",
