@@ -2,14 +2,19 @@
   "appId": "com.thelongride.markdown-them",
   "productName": "Markdown Them",
   "directories": {
+    "app": "dist/desktop",
     "output": "dist/installers"
   },
   "files": [
-    "dist/desktop/**/*"
+    "**/*",
+    "!**/*.map"
   ],
   "extraMetadata": {
-    "main": "dist/desktop/main.js"
+    "main": "main.js"
   },
+  "compression": "maximum",
+  "electronLanguages": ["en-US", "vi", "zh-CN", "ja", "sv", "es", "fr", "ko"],
+  "npmRebuild": false,
   "win": {
     "target": [
       {

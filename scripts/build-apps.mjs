@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild";
-import { copyFile, mkdir, readFile, rm } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -60,6 +60,23 @@ async function buildDesktop() {
     sourcemap: !production,
     target: "node20",
   });
+
+  await writeDesktopPackageJson(desktopDir);
+}
+
+async function writeDesktopPackageJson(desktopDir) {
+  const desktopPackageJson = {
+    name: packageJson.name,
+    productName: packageJson.displayName || packageJson.name,
+    version: appVersion,
+    description: packageJson.description,
+    main: "main.js",
+    author: packageJson.author || "the-long-ride <thelong1406@gmail.com>",
+    license: packageJson.license,
+    dependencies: {},
+  };
+
+  await writeFile(path.join(desktopDir, "package.json"), `${JSON.stringify(desktopPackageJson, null, 2)}\n`);
 }
 
 async function buildWeb(outDir, clean = true) {
