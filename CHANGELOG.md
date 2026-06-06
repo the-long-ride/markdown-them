@@ -2,15 +2,12 @@
 
 All notable changes to the "markdown-them" extension will be documented in this file.
 
-## [Unreleased]
-
 ## [1.3.0] - 2026-06-06
-- Added a multi-platform desktop packaging pipeline (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.zip`) using `electron-builder`.
-- Configured CI/CD release workflows to build multi-platform desktop installers and publish the extension to Open VSX Registry and VS Code Marketplace.
-- Added localized README documentations in Vietnamese, Chinese, Japanese, Norwegian, Spanish, French, and Korean under `docs/`.
-- Implemented UI enhancements including a conditional pulsating CTA effect on the Convert button and CSS layout alignment fixes for the web app footer and list row download buttons.
-- Updated repository and homepage links to point to the renamed `markdown-them` repository.
-- Added a custom clause to the LICENSE restricting theme, styles, and asset reuse in other apps or extensions.
+- Added a multi-platform desktop variants (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.zip`) using `electron-builder`.
+- Improved conversion support for `.pptx`, `.odt`, and `.odp` files by extracting structured text and main content images where available.
+- Improved `.ods` conversion by extracting sheets as Markdown tables.
+- Improved `.rtf` conversion by preserving common text styling, headings, and bullet lists.
+
 
 ## [1.2.0] - 2026-05-29
 - Split shared conversion logic, VS Code integration, and Node.js package entry points into clearer source folders.
