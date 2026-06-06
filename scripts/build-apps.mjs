@@ -1,5 +1,5 @@
 import * as esbuild from "esbuild";
-import { copyFile, mkdir, rm } from "node:fs/promises";
+import { copyFile, mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,6 +8,12 @@ const target = process.argv[2] || "all";
 const production =
   process.argv.includes("--production") ||
   (process.env.NODE_ENV ? process.env.NODE_ENV === "production" : !process.argv.includes("--development"));
+const packageJson = JSON.parse(await readFile(path.join(rootDir, "package.json"), "utf-8"));
+const appVersion = String(packageJson.version || "0.0.0");
+const sharedDefine = {
+  MARKDOWN_THEM_VERSION: JSON.stringify(appVersion),
+  "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
+};
 
 if (!["all", "web", "desktop"].includes(target)) {
   throw new Error(`Unknown build target: ${target}`);
@@ -30,9 +36,7 @@ async function buildDesktop() {
   await esbuild.build({
     entryPoints: [path.join(rootDir, "src", "electron", "main.ts")],
     bundle: true,
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-    },
+    define: sharedDefine,
     external: ["electron"],
     format: "cjs",
     legalComments: "none",
@@ -46,9 +50,7 @@ async function buildDesktop() {
   await esbuild.build({
     entryPoints: [path.join(rootDir, "src", "electron", "preload.ts")],
     bundle: true,
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-    },
+    define: sharedDefine,
     external: ["electron"],
     format: "cjs",
     legalComments: "none",
@@ -77,9 +79,7 @@ async function buildWeb(outDir, clean = true) {
   await esbuild.build({
     bundle: true,
     conditions: ["browser"],
-    define: {
-      "process.env.NODE_ENV": JSON.stringify(production ? "production" : "development"),
-    },
+    define: sharedDefine,
     entryPoints: [path.join(rootDir, "src", "app", "main.tsx")],
     format: "iife",
     jsx: "automatic",

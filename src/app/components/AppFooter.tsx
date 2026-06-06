@@ -1,4 +1,4 @@
-import { desktopApi, desktopDownloadUrl, licenseUrl, npmPackageUrl, profileUrl, repoUrl, privacyUrl, termsUrl } from "../app-constants";
+import { desktopApi, licenseUrl, profileUrl, repoUrl, privacyUrl, termsUrl } from "../app-constants";
 import { useLanguage } from "../context/LanguageContext";
 import { ExternalLink } from "./ExternalLink";
 
@@ -17,12 +17,6 @@ export function AppFooter({ onNavigate }: AppFooterProps) {
       </span>
       <span>
         <ExternalLink href={repoUrl}>{t("githubRepo")}</ExternalLink>
-      </span>
-      <span>
-        <ExternalLink href={desktopDownloadUrl}>{t("desktopApp")}</ExternalLink>
-      </span>
-      <span>
-        <ExternalLink href={npmPackageUrl}>{t("npmPackage")}</ExternalLink>
       </span>
       <span>
         <ExternalLink href={licenseUrl}>{t("mitLicense")}</ExternalLink>

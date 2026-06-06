@@ -10,6 +10,7 @@ const api: MarkdownThemDesktopApi = {
   convertText: (input) => ipcRenderer.invoke("text:convert", input),
   saveMarkdown: (defaultName, markdown) => ipcRenderer.invoke("markdown:save", defaultName, markdown),
   copyText: (text) => ipcRenderer.invoke("clipboard:write", text),
+  checkForUpdate: () => ipcRenderer.invoke("app:check-for-update"),
   openExternal: (url) => ipcRenderer.invoke("shell:open-external", url),
   window: {
     minimize: () => ipcRenderer.send("window:minimize"),

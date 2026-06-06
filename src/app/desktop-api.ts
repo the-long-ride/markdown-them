@@ -17,6 +17,14 @@ export interface DesktopSaveResult {
   filePath?: string;
 }
 
+export interface DesktopUpdateInfo {
+  currentVersion: string;
+  latestVersion?: string;
+  releaseUrl?: string;
+  downloadUrl?: string;
+  updateAvailable: boolean;
+}
+
 export interface MarkdownThemDesktopApi {
   isDesktop: true;
   chooseFiles(): Promise<DesktopFileEntry[]>;
@@ -26,6 +34,7 @@ export interface MarkdownThemDesktopApi {
   convertText(input: string): Promise<string>;
   saveMarkdown(defaultName: string, markdown: string): Promise<DesktopSaveResult>;
   copyText(text: string): Promise<void>;
+  checkForUpdate(): Promise<DesktopUpdateInfo>;
   openExternal(url: string): Promise<void>;
   window: {
     minimize(): void;

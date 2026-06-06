@@ -32,7 +32,9 @@ button:disabled {
 
 button:focus-visible,
 textarea:focus-visible,
-.app-footer a:focus-visible {
+.app-footer a:focus-visible,
+.variants-link:focus-visible,
+.update-link:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }

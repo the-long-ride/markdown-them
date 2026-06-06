@@ -8,8 +8,15 @@ import * as esbuild from "esbuild";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const webDir = path.join(rootDir, "dist", "web");
 const defaultPort = Number(process.env.PORT || 5173);
+const packageJson = JSON.parse(await readFile(path.join(rootDir, "package.json"), "utf-8"));
+const appVersion = String(packageJson.version || "0.0.0");
 
 const clients = [];
+const noopServerHandle = {
+  close: async () => undefined,
+  owned: false,
+  port: defaultPort,
+};
 
 function notifyClients() {
   console.log(`[Reload Server] Notifying ${clients.length} clients to reload...`);
@@ -61,134 +68,176 @@ async function copyAssets() {
   );
 }
 
-export function startServer(port = defaultPort) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      console.log("[Dev Server] Starting build and watcher...");
+export async function startServer(port = defaultPort) {
+  console.log("[Dev Server] Starting build and watcher...");
 
-      // Initial asset copy
-      await copyAssets();
+  if (!(await canListen(port))) {
+    console.log(`Markdown Them web app port ${port} is already in use.`);
+    return { ...noopServerHandle, port };
+  }
 
-      // Set up esbuild watch context
-      const ctx = await esbuild.context({
-        bundle: true,
-        conditions: ["browser"],
-        define: {
-          "process.env.NODE_ENV": JSON.stringify("development"),
-        },
-        entryPoints: [path.join(rootDir, "src", "app", "main.tsx")],
-        format: "iife",
-        jsx: "automatic",
-        legalComments: "none",
-        mainFields: ["browser", "module", "main"],
-        minify: false,
-        outfile: path.join(webDir, "assets", "app.js"),
-        platform: "browser",
-        sourcemap: true,
-        target: ["chrome120", "edge120", "firefox120", "safari17"],
-        plugins: [
-          {
-            name: "rebuild-notify",
-            setup(build) {
-              build.onEnd(async (result) => {
-                if (result.errors.length > 0) {
-                  console.error("[Dev Server] Build failed:", result.errors);
-                  return;
-                }
-                console.log("[Dev Server] Build succeeded. Updating assets and reloading...");
-                try {
-                  await copyAssets();
-                  notifyClients();
-                } catch (err) {
-                  console.error("[Dev Server] Failed to update assets or notify:", err);
-                }
-              });
-            },
-          },
-        ],
-      });
+  await copyAssets();
 
-      await ctx.watch();
-
-      // Manually watch the index.html template file
-      watch(path.join(rootDir, "src", "app", "index.html"), async (eventType) => {
-        if (eventType === "change") {
-          console.log("[Dev Server] index.html template changed. Re-copying and reloading...");
-          try {
-            await copyAssets();
-            notifyClients();
-          } catch (err) {
-            console.error("[Dev Server] Failed to copy index.html:", err);
-          }
-        }
-      });
-
-      const server = createServer(async (request, response) => {
-        try {
-          const requestUrl = new URL(request.url || "/", `http://127.0.0.1:${port}`);
-          const requestedPath = decodeURIComponent(requestUrl.pathname);
-
-          // Server-Sent Events endpoint for reloading
-          if (requestedPath === "/reload") {
-            response.writeHead(200, {
-              "Content-Type": "text/event-stream",
-              "Cache-Control": "no-cache",
-              "Connection": "keep-alive",
-            });
-            response.write("\n");
-            clients.push(response);
-
-            request.on("close", () => {
-              const index = clients.indexOf(response);
-              if (index !== -1) {
-                clients.splice(index, 1);
-              }
-            });
-            return;
-          }
-
-          const filePath = path.resolve(webDir, requestedPath === "/" ? "index.html" : `.${requestedPath}`);
-
-          if (!filePath.startsWith(webDir)) {
-            response.writeHead(403);
-            response.end("Forbidden");
-            return;
-          }
-
-          const fileStat = await stat(filePath);
-          if (!fileStat.isFile()) {
-            response.writeHead(404);
-            response.end("Not found");
-            return;
-          }
-
-          response.writeHead(200, {
-            "Cache-Control": "no-store",
-            "Content-Type": contentType(filePath),
+  const ctx = await esbuild.context({
+    bundle: true,
+    conditions: ["browser"],
+    define: {
+      MARKDOWN_THEM_VERSION: JSON.stringify(appVersion),
+      "process.env.NODE_ENV": JSON.stringify("development"),
+    },
+    entryPoints: [path.join(rootDir, "src", "app", "main.tsx")],
+    format: "iife",
+    jsx: "automatic",
+    legalComments: "none",
+    mainFields: ["browser", "module", "main"],
+    minify: false,
+    outfile: path.join(webDir, "assets", "app.js"),
+    platform: "browser",
+    sourcemap: true,
+    target: ["chrome120", "edge120", "firefox120", "safari17"],
+    plugins: [
+      {
+        name: "rebuild-notify",
+        setup(build) {
+          build.onEnd(async (result) => {
+            if (result.errors.length > 0) {
+              console.error("[Dev Server] Build failed:", result.errors);
+              return;
+            }
+            console.log("[Dev Server] Build succeeded. Updating assets and reloading...");
+            try {
+              await copyAssets();
+              notifyClients();
+            } catch (err) {
+              console.error("[Dev Server] Failed to update assets or notify:", err);
+            }
           });
-          response.end(await readFile(filePath));
-        } catch {
-          response.writeHead(404);
-          response.end("Not found");
-        }
-      });
+        },
+      },
+    ],
+  });
 
-      server.on("error", (error) => {
-        if (error && error.code === "EADDRINUSE") {
-          console.log(`Markdown Them web app port ${port} is already in use.`);
-          resolve(server);
-        } else {
-          reject(error);
-        }
-      });
+  await ctx.watch();
 
-      server.listen(port, "127.0.0.1", () => {
-        console.log(`Markdown Them web app: http://127.0.0.1:${port}`);
-        resolve(server);
-      });
-    } catch (err) {
-      reject(err);
+  const templateWatcher = watch(path.join(rootDir, "src", "app", "index.html"), async (eventType) => {
+    if (eventType === "change") {
+      console.log("[Dev Server] index.html template changed. Re-copying and reloading...");
+      try {
+        await copyAssets();
+        notifyClients();
+      } catch (err) {
+        console.error("[Dev Server] Failed to copy index.html:", err);
+      }
     }
+  });
+
+  const server = createServer(async (request, response) => {
+    try {
+      const requestUrl = new URL(request.url || "/", `http://127.0.0.1:${port}`);
+      const requestedPath = decodeURIComponent(requestUrl.pathname);
+
+      // Server-Sent Events endpoint for reloading
+      if (requestedPath === "/reload") {
+        response.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        });
+        response.write("\n");
+        clients.push(response);
+
+        request.on("close", () => {
+          const index = clients.indexOf(response);
+          if (index !== -1) {
+            clients.splice(index, 1);
+          }
+        });
+        return;
+      }
+
+      const filePath = path.resolve(webDir, requestedPath === "/" ? "index.html" : `.${requestedPath}`);
+
+      if (!filePath.startsWith(webDir)) {
+        response.writeHead(403);
+        response.end("Forbidden");
+        return;
+      }
+
+      const fileStat = await stat(filePath);
+      if (!fileStat.isFile()) {
+        response.writeHead(404);
+        response.end("Not found");
+        return;
+      }
+
+      response.writeHead(200, {
+        "Cache-Control": "no-store",
+        "Content-Type": contentType(filePath),
+      });
+      response.end(await readFile(filePath));
+    } catch {
+      response.writeHead(404);
+      response.end("Not found");
+    }
+  });
+
+  try {
+    await listen(server, port);
+  } catch (err) {
+    templateWatcher.close();
+    await ctx.dispose();
+    throw err;
+  }
+
+  console.log(`Markdown Them web app: http://127.0.0.1:${port}`);
+
+  return {
+    close: async () => {
+      for (const client of clients.splice(0)) {
+        client.end();
+      }
+      templateWatcher.close();
+      await ctx.dispose();
+      await closeServer(server);
+    },
+    owned: true,
+    port,
+  };
+}
+
+function canListen(port) {
+  const probe = createServer();
+
+  return new Promise((resolve) => {
+    probe.once("error", () => resolve(false));
+    probe.once("listening", () => {
+      probe.close(() => resolve(true));
+    });
+    probe.listen(port, "127.0.0.1");
+  });
+}
+
+function listen(server, port) {
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", resolve);
+  });
+}
+
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    if (!server.listening) {
+      resolve();
+      return;
+    }
+
+    server.close((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
   });
 }
 

@@ -128,7 +128,10 @@
 
 .icon-button {
   width: 38px;
+  height: 38px;
   min-width: 38px;
+  min-height: 38px;
+  aspect-ratio: 1;
   padding: 0;
 }
 
@@ -255,4 +258,74 @@
   background: var(--active-bg);
   color: var(--active-text);
   box-shadow: inset 0 1px 0 var(--line-soft);
+}
+
+.variants-menu {
+  position: relative;
+  z-index: 120;
+}
+
+.variants-trigger {
+  min-width: 112px;
+  padding-inline: 12px;
+  color: var(--text-soft);
+}
+
+.variants-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 286px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--control-bg-soft);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  animation: dropdown-fade-in 140ms ease-out;
+}
+
+.variants-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.variants-link-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.variants-link-copy span,
+.variants-link-copy small {
+  overflow-wrap: anywhere;
+}
+
+.variants-link-copy small {
+  color: var(--muted-soft);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.variants-link:hover {
+  background: var(--control-hover-bg);
+  color: var(--text);
+}
+
+.variants-link:hover small {
+  color: var(--muted);
 }

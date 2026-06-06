@@ -26,6 +26,39 @@
   letter-spacing: 0;
 }
 
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.app-version {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.update-link {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.update-link:hover {
+  text-decoration: underline;
+}
+
 .brand-lockup p {
   margin-top: 4px;
   color: var(--muted);

@@ -5,6 +5,7 @@ import { startServer } from "./start-web.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const production = process.argv.includes("--production");
+let webServer;
 
 // 1. Build desktop assets (this compiles main.ts and preload.ts to dist/desktop/)
 await run(process.execPath, [path.join(rootDir, "scripts", "build-apps.mjs"), "desktop"], {
@@ -15,7 +16,7 @@ await run(process.execPath, [path.join(rootDir, "scripts", "build-apps.mjs"), "d
 // 2. Start the dev server in development mode
 if (!production) {
   try {
-    await startServer();
+    webServer = await startServer();
   } catch (err) {
     console.error("Failed to start dev server for Electron:", err);
     process.exit(1);
@@ -33,7 +34,10 @@ try {
     NODE_ENV: production ? "production" : "development",
   }, process.platform === "win32");
 } finally {
-  // Ensure the dev server/watcher process terminates when Electron exits
+  if (webServer?.owned) {
+    await webServer.close();
+  }
+
   if (!production) {
     process.exit(0);
   }

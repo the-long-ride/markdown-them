@@ -18,24 +18,51 @@ interface DesktopConversionResult {
   error?: string;
 }
 
+interface DesktopUpdateInfo {
+  currentVersion: string;
+  latestVersion?: string;
+  releaseUrl?: string;
+  downloadUrl?: string;
+  updateAvailable: boolean;
+}
+
+interface GitHubReleaseAsset {
+  browser_download_url?: string;
+  name?: string;
+}
+
+interface GitHubRelease {
+  assets?: GitHubReleaseAsset[];
+  html_url?: string;
+  tag_name?: string;
+}
+
 const isDevelopment = !app.isPackaged && process.env.NODE_ENV !== "production";
+const repoUrl = "https://github.com/the-long-ride/markdown-them";
+const latestReleaseApiUrl = "https://api.github.com/repos/the-long-ride/markdown-them/releases/latest";
+const latestReleaseUrl = `${repoUrl}/releases/latest`;
 const documentFilters = [
   {
     name: "Documents",
     extensions: SUPPORTED_FILE_EXTENSIONS.map((extension) => extension.replace(".", "")),
   },
 ];
-const trustedExternalUrls = new Set([
+const trustedExactExternalUrls = new Set([
   "https://github.com/the-long-ride",
-  "https://github.com/the-long-ride/markdown-them",
-  "https://github.com/the-long-ride/markdown-them#markdown-them-variants",
+  repoUrl,
   "https://github.com/the-long-ride/markdown-them/blob/main/LICENSE",
+  latestReleaseUrl,
+  "https://open-vsx.org/extension/the-long-ride/markdown-them",
+  "https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them",
+  "https://www.npmjs.com/package/@the-long-ride/markdown-them",
+  "https://the-long-ride.github.io/markdown-them",
   "https://the-long-ride.github.io/markdown-them/#/privacy",
   "https://the-long-ride.github.io/markdown-them/#/terms",
 ]);
 const appId = "com.the-long-ride.markdown-them";
 
 let mainWindow: BrowserWindow | undefined;
+let isExiting = false;
 
 Menu.setApplicationMenu(null);
 app.setAppUserModelId(appId);
@@ -54,9 +81,7 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  exitApp();
 });
 
 async function createWindow() {
@@ -83,6 +108,9 @@ async function createWindow() {
     mainWindow?.show();
   });
 
+  mainWindow.on("closed", () => {
+    mainWindow = undefined;
+  });
   mainWindow.on("maximize", () => notifyMaximizedChange(true));
   mainWindow.on("unmaximize", () => notifyMaximizedChange(false));
 
@@ -215,8 +243,10 @@ function registerIpcHandlers() {
     clipboard.writeText(typeof text === "string" ? text : "");
   });
 
+  ipcMain.handle("app:check-for-update", () => checkForUpdate());
+
   ipcMain.handle("shell:open-external", async (_event, url: unknown) => {
-    if (typeof url !== "string" || !trustedExternalUrls.has(url)) {
+    if (typeof url !== "string" || !isTrustedExternalUrl(url)) {
       return;
     }
 
@@ -236,7 +266,7 @@ function registerIpcHandlers() {
       mainWindow.maximize();
     }
   });
-  ipcMain.on("window:close", () => mainWindow?.close());
+  ipcMain.on("window:close", () => exitApp());
 }
 
 async function entriesFromPaths(filePaths: string[]): Promise<DesktopFileEntry[]> {
@@ -342,6 +372,114 @@ async function runLimited<T>(items: T[], limit: number, worker: (item: T) => Pro
 
 function notifyMaximizedChange(isMaximized: boolean) {
   mainWindow?.webContents.send("window:maximized-change", isMaximized);
+}
+
+function exitApp() {
+  if (isExiting) {
+    return;
+  }
+
+  isExiting = true;
+  app.exit(0);
+  setTimeout(() => process.exit(0), 250).unref();
+}
+
+async function checkForUpdate(): Promise<DesktopUpdateInfo> {
+  const currentVersion = app.getVersion();
+
+  try {
+    const response = await fetch(latestReleaseApiUrl, {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "markdown-them-desktop",
+      },
+    });
+
+    if (!response.ok) {
+      return { currentVersion, updateAvailable: false };
+    }
+
+    const release = (await response.json()) as GitHubRelease;
+    const latestVersion = normalizeVersion(release.tag_name);
+    const updateAvailable = Boolean(latestVersion && isNewerVersion(latestVersion, currentVersion));
+    const downloadUrl = updateAvailable ? findDownloadUrl(release, latestVersion) : undefined;
+
+    return {
+      currentVersion,
+      latestVersion,
+      releaseUrl: release.html_url || latestReleaseUrl,
+      downloadUrl,
+      updateAvailable,
+    };
+  } catch {
+    return { currentVersion, updateAvailable: false };
+  }
+}
+
+function findDownloadUrl(release: GitHubRelease, version: string | undefined): string | undefined {
+  if (!version) {
+    return latestReleaseUrl;
+  }
+
+  const expectedAssetName = desktopAssetName(version);
+  const asset = release.assets?.find((item) => item.name === expectedAssetName);
+  return asset?.browser_download_url || release.html_url || latestReleaseUrl;
+}
+
+function desktopAssetName(version: string): string {
+  if (process.platform === "win32") {
+    return `markdown-them-${version}-windows-portable.exe`;
+  }
+
+  if (process.platform === "darwin") {
+    return `markdown-them-${version}-mac.dmg`;
+  }
+
+  return `markdown-them-${version}-linux.AppImage`;
+}
+
+function normalizeVersion(version: string | undefined): string | undefined {
+  return version?.trim().replace(/^v/i, "");
+}
+
+function isNewerVersion(latestVersion: string, currentVersion: string): boolean {
+  const latest = versionParts(latestVersion);
+  const current = versionParts(currentVersion);
+  const length = Math.max(latest.length, current.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const latestPart = latest[index] || 0;
+    const currentPart = current[index] || 0;
+    if (latestPart > currentPart) {
+      return true;
+    }
+    if (latestPart < currentPart) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+function versionParts(version: string): number[] {
+  return version
+    .replace(/^v/i, "")
+    .split(".")
+    .map((part) => Number.parseInt(part, 10))
+    .map((part) => (Number.isFinite(part) ? part : 0));
+}
+
+function isTrustedExternalUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    const normalized = url.toString();
+    return (
+      trustedExactExternalUrls.has(normalized) ||
+      normalized.startsWith(`${repoUrl}/releases/`)
+    );
+  } catch {
+    return false;
+  }
 }
 
 function toggleDevTools(window: BrowserWindow | undefined) {
