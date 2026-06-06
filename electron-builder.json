@@ -28,6 +28,7 @@
   "linux": {
     "target": ["AppImage", "deb"],
     "icon": "assets/markdown-them-logo.png",
+    "maintainer": "the-long-ride <thelong1406@gmail.com>",
     "category": "Utility",
     "artifactName": "markdown-them-${version}-linux.${ext}"
   }
