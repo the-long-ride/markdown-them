@@ -166,11 +166,24 @@ jobs:
           path: ./artifacts
 
       - name: Publish to VS Code Marketplace
+        shell: bash
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
           if [ -n "$VSCE_PAT" ]; then
-            npx @vscode/vsce publish --packagePath ./artifacts/*.vsix -p "$VSCE_PAT"
+            VSCE_LOG="$(mktemp)"
+            set +e
+            npx @vscode/vsce publish --packagePath ./artifacts/*.vsix -p "$VSCE_PAT" 2>&1 | tee "$VSCE_LOG"
+            VSCE_STATUS=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$VSCE_STATUS" -ne 0 ]; then
+              if grep -Eiq '(^|[[:space:]])PUT([[:space:]]|$)' "$VSCE_LOG" && grep -Eiq 'same or lower|lower than|not greater|greater than|already (exists|published)|version.*published|version.*marketplace' "$VSCE_LOG"; then
+                echo "::warning::Skipping VS Code Marketplace publish because this extension version is already published or not greater than the Marketplace version."
+              else
+                exit "$VSCE_STATUS"
+              fi
+            fi
           else
             echo "Skipping VS Code Marketplace publish (VSCE_PAT is not set)"
           fi
