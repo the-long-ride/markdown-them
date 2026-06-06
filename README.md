@@ -20,8 +20,8 @@ Markdown Them comes in four variants so you can use the same converter wherever 
 
 | Variant | Best for | Local/privacy model | Where to start |
 |---|---|---|---|
-| **Web app** | Browser-based conversion with no install | Client-side only; no document uploads or outbound conversion requests. Deployed on GitHub Pages. | `npm run start:web` |
-| **Desktop app** | Local file, folder, and text conversion with an app shell | Electron app running on your computer; optional output folder selection. Installers built for Windows, Linux, and macOS. | `npm run start:desktop` |
+| **Web app** | Browser-based conversion with no install | Client-side only; no document uploads or outbound conversion requests. Deployed on GitHub Pages. | [Open web app](https://the-long-ride.github.io/markdown-them/) |
+| **Desktop app** | Local file, folder, and text conversion with an app shell | Electron app running on your computer; optional output folder selection. Installers built for Windows, Linux, and macOS. | [Open latest release](https://github.com/the-long-ride/markdown-them/releases/latest) |
 | **VS Code extension** | Explorer context menu, active editor previews, developer workflows | Runs inside VS Code on your machine | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) or [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
 | **Node.js package** | Scripts, CLIs, automation, and server-side tooling you control | Runs in your Node.js process | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them) |
 
