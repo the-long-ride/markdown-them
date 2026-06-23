@@ -2,6 +2,11 @@
 
 All notable changes to the "markdown-them" extension will be documented in this file.
 
+## [1.3.1] - 2026-06-23
+- Enabled zooming (`Ctrl + =` / `Ctrl + -`) and pinch/scroll-to-zoom (`Ctrl + mousewheel`) in the desktop application.
+- Added container scrolling for the desktop app on heavy window resizing.
+- Modernized scrollbars globally to be thinner and minimalist.
+
 ## [1.3.0] - 2026-06-06
 - Added a multi-platform desktop variants (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.zip`) using `electron-builder`.
 - Improved conversion support for `.pptx`, `.odt`, and `.odp` files by extracting structured text and main content images where available.
