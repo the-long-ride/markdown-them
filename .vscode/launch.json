@@ -17,7 +17,7 @@
       "env": {
         "NODE_ENV": "development"
       },
-      "preLaunchTask": "app: build desktop",
+      "preLaunchTask": "app: build desktop and start web",
       "outFiles": [
         "${workspaceFolder}/dist/desktop/**/*.js"
       ],

@@ -1,5 +1,6 @@
 import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, session, shell } from "electron";
 import * as fs from "fs/promises";
+import * as http from "http";
 import * as path from "path";
 import { convertFileToMarkdown, convertTextToMarkdown } from "../core";
 import { isSupportedFileName, markdownOutputName, SUPPORTED_FILE_EXTENSIONS } from "../shared/formats";
@@ -116,19 +117,38 @@ async function createWindow() {
 
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   mainWindow.webContents.on("will-navigate", (event) => event.preventDefault());
-  mainWindow.webContents.on("before-input-event", (event, input) => {
-    if ((input.control || input.meta) && input.shift && input.key.toLowerCase() === "i") {
-      event.preventDefault();
-
-      if (isDevelopment) {
-        toggleDevTools(mainWindow);
-      }
-    }
-  });
+  mainWindow.webContents.on("before-input-event", (event, input) =>
+    handleBeforeInputEvent(mainWindow, event, input)
+  );
 
   if (isDevelopment) {
-    const devPort = process.env.PORT || "5173";
-    await mainWindow.loadURL(`http://127.0.0.1:${devPort}`);
+    const devUrl = await resolveDevServerUrl();
+    try {
+      await mainWindow.loadURL(devUrl);
+    } catch {
+      await mainWindow.loadURL(
+        `data:text/html;charset=utf-8,${encodeURIComponent(`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Dev Server Unreachable</title>
+<style>
+  body { margin: 0; background: #171717; color: #e0e0e0; font-family: system-ui, sans-serif;
+         display: flex; align-items: center; justify-content: center; height: 100vh; }
+  .card { background: #232323; border: 1px solid #333; border-radius: 10px; padding: 32px 40px; text-align: center; max-width: 480px; }
+  h1 { margin: 0 0 12px; font-size: 18px; color: #ff6b6b; }
+  p  { margin: 0 0 8px; font-size: 14px; color: #999; }
+  code { background: #111; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #ccc; }
+  button { margin-top: 20px; padding: 8px 20px; background: #3b82f6; border: none; border-radius: 6px;
+           color: #fff; font-size: 14px; cursor: pointer; }
+  button:hover { background: #2563eb; }
+</style></head>
+<body><div class="card">
+  <h1>Dev server not reachable</h1>
+  <p>Could not connect to <code>${devUrl}</code></p>
+  <p>Make sure <code>npm run start:web</code> is running.</p>
+  <button onclick="location.reload()">Retry</button>
+</div></body></html>`)}`
+      );
+    }
   } else {
     await mainWindow.loadFile(path.join(__dirname, "web", "index.html"));
   }
@@ -138,9 +158,120 @@ function getAppIconPath(): string {
   return path.join(__dirname, "web", "assets", "markdown-them-logo.png");
 }
 
+async function resolveDevServerUrl(): Promise<string> {
+  const portFilePath = path.join(__dirname, "..", ".devport");
+  const scanStart = 5173;
+  const scanCount = 20;
+
+  // 1. Try the port file written by start-web.mjs (most reliable).
+  try {
+    const raw = await fs.readFile(portFilePath, "utf-8");
+    const filePort = Number(raw.trim());
+    if (Number.isInteger(filePort) && filePort > 0) {
+      const url = `http://127.0.0.1:${filePort}`;
+      const alive = await isServerReachable(url);
+      if (alive) {
+        console.log(`[Electron] Dev server found via port file on port ${filePort}.`);
+        return url;
+      }
+    }
+  } catch {
+    // Port file missing — fall through to scan.
+  }
+
+  // 2. Port env var fallback.
+  const envPort = Number(process.env.PORT);
+  if (envPort > 0) {
+    const url = `http://127.0.0.1:${envPort}`;
+    const alive = await isServerReachable(url);
+    if (alive) {
+      console.log(`[Electron] Dev server found via PORT env var on port ${envPort}.`);
+      return url;
+    }
+  }
+
+  // 3. Port scan: try 5173..5192 and return the first that responds.
+  console.log(`[Electron] Scanning ports ${scanStart}–${scanStart + scanCount - 1} for dev server...`);
+  for (let i = 0; i < scanCount; i++) {
+    const port = scanStart + i;
+    const url = `http://127.0.0.1:${port}`;
+    const alive = await isServerReachable(url);
+    if (alive) {
+      console.log(`[Electron] Dev server found on port ${port}.`);
+      return url;
+    }
+  }
+
+  // 4. Nothing found — fall back to default and let Electron show its own error.
+  const fallback = `http://127.0.0.1:${scanStart}`;
+  console.warn(`[Electron] No dev server found after scanning. Falling back to ${fallback}.`);
+  return fallback;
+}
+
+async function isServerReachable(url: string, timeoutMs = 800): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => resolve(false), timeoutMs);
+    const req = http.get(url, () => {
+      clearTimeout(timer);
+      resolve(true);
+    });
+    req.on("error", () => {
+      clearTimeout(timer);
+      resolve(false);
+    });
+    req.setTimeout(timeoutMs, () => {
+      req.destroy();
+      clearTimeout(timer);
+      resolve(false);
+    });
+  });
+}
+
 function setDockIcon() {
   if (process.platform === "darwin" && app.dock) {
     app.dock.setIcon(getAppIconPath());
+  }
+}
+
+function handleBeforeInputEvent(
+  win: BrowserWindow | undefined,
+  event: { preventDefault(): void },
+  input: Electron.Input
+): void {
+  const ctrl = input.control || input.meta;
+
+  // DevTools toggle (Ctrl+Shift+I)
+  if (ctrl && input.shift && input.key.toLowerCase() === "i") {
+    event.preventDefault();
+    if (isDevelopment) toggleDevTools(win);
+    return;
+  }
+
+  // Zoom reset (Ctrl+0)
+  if (ctrl && (input.key === "0" || input.code === "Digit0")) {
+    event.preventDefault();
+    win?.webContents.setZoomLevel(0);
+    return;
+  }
+
+  // Zoom in (Ctrl+= or Ctrl++)
+  if (ctrl && (input.key === "=" || input.key === "+" || input.code === "Equal")) {
+    event.preventDefault();
+    if (win) {
+      const next = Math.min(5, win.webContents.getZoomLevel() + 0.5);
+      win.webContents.setZoomLevel(next);
+    }
+    return;
+  }
+
+  // Zoom out (Ctrl+-)
+  if (ctrl && (input.key === "-" || input.code === "Minus")) {
+    event.preventDefault();
+    if (win) {
+      const next = Math.max(-5, win.webContents.getZoomLevel() - 0.5);
+      win.webContents.setZoomLevel(next);
+    }
+    return;
   }
 }
 
@@ -267,6 +398,13 @@ function registerIpcHandlers() {
     }
   });
   ipcMain.on("window:close", () => exitApp());
+
+  ipcMain.on("window:zoom-delta", (_event, delta: unknown) => {
+    if (!mainWindow || typeof delta !== "number") return;
+    const current = mainWindow.webContents.getZoomLevel();
+    const next = Math.max(-5, Math.min(5, current + delta));
+    mainWindow.webContents.setZoomLevel(next);
+  });
 }
 
 async function entriesFromPaths(filePaths: string[]): Promise<DesktopFileEntry[]> {

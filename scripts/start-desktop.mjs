@@ -32,6 +32,7 @@ try {
   await run(electronBin, [path.join(rootDir, "dist", "desktop", "main.js")], {
     ...process.env,
     NODE_ENV: production ? "production" : "development",
+    PORT: webServer ? String(webServer.port) : "5173",
   }, process.platform === "win32");
 } finally {
   if (webServer?.owned) {

@@ -34,13 +34,22 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": ".*start:web.*",
-          "endsPattern": "Markdown Them web app: http://127\\.0\\.0\\.1:5173"
+          "endsPattern": "Markdown Them web app: http://127\\.0\\.0\\.1:\\d+"
         }
       },
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
       }
+    },
+    {
+      "label": "app: build desktop and start web",
+      "dependsOn": [
+        "app: start web",
+        "app: build desktop"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
     },
     {
       "type": "npm",

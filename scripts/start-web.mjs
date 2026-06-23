@@ -71,9 +71,10 @@ async function copyAssets() {
 export async function startServer(port = defaultPort) {
   console.log("[Dev Server] Starting build and watcher...");
 
-  if (!(await canListen(port))) {
-    console.log(`Markdown Them web app port ${port} is already in use.`);
-    return { ...noopServerHandle, port };
+  let activePort = port;
+  while (!(await canListen(activePort))) {
+    console.log(`[Dev Server] Port ${activePort} is already in use. Trying next port...`);
+    activePort++;
   }
 
   await copyAssets();
@@ -117,6 +118,15 @@ export async function startServer(port = defaultPort) {
     ],
   });
 
+  // Perform the first build synchronously so assets exist before Electron loads the URL.
+  const initialBuild = await ctx.rebuild();
+  if (initialBuild.errors.length > 0) {
+    console.error("[Dev Server] Initial build failed:", initialBuild.errors);
+    await ctx.dispose();
+    throw new Error("Initial build failed");
+  }
+  console.log("[Dev Server] Initial build succeeded.");
+
   await ctx.watch();
 
   const templateWatcher = watch(path.join(rootDir, "src", "app", "index.html"), async (eventType) => {
@@ -133,7 +143,7 @@ export async function startServer(port = defaultPort) {
 
   const server = createServer(async (request, response) => {
     try {
-      const requestUrl = new URL(request.url || "/", `http://127.0.0.1:${port}`);
+      const requestUrl = new URL(request.url || "/", `http://127.0.0.1:${activePort}`);
       const requestedPath = decodeURIComponent(requestUrl.pathname);
 
       // Server-Sent Events endpoint for reloading
@@ -182,14 +192,19 @@ export async function startServer(port = defaultPort) {
   });
 
   try {
-    await listen(server, port);
+    await listen(server, activePort);
   } catch (err) {
     templateWatcher.close();
     await ctx.dispose();
     throw err;
   }
 
-  console.log(`Markdown Them web app: http://127.0.0.1:${port}`);
+  console.log(`Markdown Them web app: http://127.0.0.1:${activePort}`);
+
+  // Write the actual port to a file so Electron can read it reliably
+  // (env vars can be unreliable across shell-spawned processes on Windows).
+  const portFile = path.join(rootDir, "dist", ".devport");
+  await writeFile(portFile, String(activePort), "utf-8").catch(() => {});
 
   return {
     close: async () => {
@@ -199,9 +214,12 @@ export async function startServer(port = defaultPort) {
       templateWatcher.close();
       await ctx.dispose();
       await closeServer(server);
+      // Clean up port file
+      const { rm } = await import("node:fs/promises");
+      await rm(portFile, { force: true }).catch(() => {});
     },
     owned: true,
-    port,
+    port: activePort,
   };
 }
 
