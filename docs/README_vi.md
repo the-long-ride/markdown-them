@@ -11,7 +11,7 @@ Chuyển đổi các tệp tài liệu khác nhau sang định dạng Markdown (
 - **VS Code Extension:** Tích hợp menu ngữ cảnh chuột phải trong explorer và xem trước Markdown song song dành cho quy trình làm việc của lập trình viên.
 - **Node.js Package:** Sử dụng trực tiếp bộ chuyển đổi dùng chung này trong các kịch bản lệnh, CLI hoặc tự động hóa của bạn.
 
-- **Định dạng hỗ trợ:** `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+- **Định dạng hỗ trợ:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Lưu ý: Các định dạng cũ `.doc`, `.xls`, `.xlm` sử dụng giả lập đổi tên và đôi khi hoạt động không chính xác).
 - **Xử lý hàng loạt đồng thời:** Chuyển đổi hàng chục tệp cùng lúc với hiệu suất tối ưu.
 
 ## Các Biến Thể Markdown Them
@@ -33,6 +33,10 @@ Kho lưu trữ này bao gồm giao diện React dùng chung cho ứng dụng web
 
 - **Web app:** Chuyển đổi tài liệu chỉ ở phía client. Chấp nhận nhiều tệp hoặc văn bản đầu vào và không tải tệp lên máy chủ. Được triển khai trên GitHub Pages.
 - **Desktop app:** Giao diện Electron với tùy chọn tùy chỉnh cửa sổ. Chấp nhận văn bản, tệp hoặc thư mục đầu vào. Tài liệu được chuyển đổi sẽ tự động lưu kế bên tệp gốc.
+
+![Ứng dụng Web](../media/demo-pics/Markdown-them-Online-web-app.png)
+![Ứng dụng Máy tính](../media/demo-pics/Markdown-them-Desktop-app.png)
+
 
 ### Lệnh chạy ứng dụng cục bộ:
 

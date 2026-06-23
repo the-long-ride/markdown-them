@@ -11,7 +11,7 @@ Convierte varios archivos de documentos a Markdown (.md) desde una aplicación w
 - **Extensión de VS Code:** Menús contextuales con clic derecho en el explorador de archivos y vistas previas de Markdown de doble panel para flujos de trabajo de desarrollo.
 - **Paquete de Node.js:** Integra el mismo motor de conversión en tus scripts, CLIs y automatizaciones personalizadas.
 
-- **Formatos compatibles:** `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+- **Formatos compatibles:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Nota: Los formatos heredados `.doc`, `.xls`, `.xlm` usan emulación de cambio de nombre y a veces no se convertirán correctamente).
 - **Procesamiento concurrente por lotes:** Convierte docenas de archivos a la vez con un rendimiento optimizado.
 
 ## Variantes de Markdown Them
@@ -33,6 +33,10 @@ Este repositorio también incluye un código de interfaz React compartido para l
 
 - **Aplicación web:** Conversión del lado del cliente únicamente. Acepta múltiples archivos o texto, y nunca envía archivos a un servidor. Desplegado en GitHub Pages.
 - **Aplicación de escritorio:** Contenedor de Electron con controles de ventana personalizados. Acepta texto, uno o múltiples archivos, y carpetas. Los archivos convertidos se guardan al lado de los originales.
+
+![Aplicación Web](../media/demo-pics/Markdown-them-Online-web-app.png)
+![Aplicación de Escritorio](../media/demo-pics/Markdown-them-Desktop-app.png)
+
 
 ### Comandos de ejecución local:
 

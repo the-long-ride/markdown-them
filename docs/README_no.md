@@ -11,7 +11,7 @@ Konverter ulike dokumentfiler til Markdown (.md) fra en web-applikasjon, en Elec
 - **VS Code-utvidelse:** Høyreklikkmenyer i filutforskeren og side-by-side Markdown-forhåndsvisninger integrert i utviklerens arbeidsflyt.
 - **Node.js-pakke:** Integrer den samme konverteringsmotoren i egne skript, CLI-verktøy og automatiseringer.
 
-- **Støttede formater:** `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+- **Støttede formater:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Merk: Eldre formater `.doc`, `.xls`, `.xlm` bruker emulert filnavnendring, og konverteringen vil av og til ikke fungere korrekt).
 - **Samtidig batch-prosessering:** Konverter dusinvis av filer samtidig med optimalisert ytelse.
 
 ## Markdown Them-varianter
@@ -33,6 +33,10 @@ Dette repositoriet inkluderer et delt React-grensesnitt for en lokal web-app og 
 
 - **Web-app:** Kun konvertering på klientsiden. Godtar flere filer eller tekstinndata, og sender aldri filer til en ekstern server. Distribuert til GitHub Pages.
 - **Skrivebordsapp:** Electron-skall med tilpassede vinduskontroller. Godtar tekst, enkeltfiler, flere filer eller hele mapper. Konverterte filer lagres ved siden av originalfilene.
+
+![Nettapp](../media/demo-pics/Markdown-them-Online-web-app.png)
+![Skrivebordsapp](../media/demo-pics/Markdown-them-Desktop-app.png)
+
 
 ### Lokale oppstartskommandoer:
 

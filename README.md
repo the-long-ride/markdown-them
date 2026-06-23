@@ -11,7 +11,7 @@ Convert various document files into Markdown (.md) from a web application, an El
 - **VS Code Extension:** Right-click context menus in the file explorer and side-by-side Markdown previews for developer workflows.
 - **Node.js Package:** Integrate the same converter engine in your custom scripts, CLIs, and automations.
 
-- **Supported formats:** `.docx`, `.pdf`, `.html`, `.xlsx`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+- **Supported formats:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Note: Legacy formats `.doc`, `.xls`, `.xlm` use renaming emulation and sometimes will not work correctly).
 - **Concurrent batch processing:** Convert dozens of files at once with optimized performance.
 
 ## Markdown Them Variants
@@ -33,6 +33,9 @@ This repo includes a shared React UI for a local-only web app and an Electron de
 
 - **Web app:** Client-side conversion only. It accepts multiple files or text input and does not send files to a server. Deployed to GitHub Pages.
 - **Desktop app:** Electron shell with custom window controls. It accepts text input, one or many files, and multiple folders. File conversions write sibling `.md` files next to the originals.
+
+![Online Web App](media/demo-pics/Markdown-them-Online-web-app.png)
+![Desktop App](media/demo-pics/Markdown-them-Desktop-app.png)
 
 ### Local app commands:
 
