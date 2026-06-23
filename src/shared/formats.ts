@@ -1,9 +1,12 @@
 export const SUPPORTED_FILE_EXTENSIONS = [
   ".docx",
+  ".doc",
   ".pdf",
   ".html",
   ".htm",
   ".xlsx",
+  ".xls",
+  ".xlm",
   ".pptx",
   ".odt",
   ".odp",
@@ -11,9 +14,9 @@ export const SUPPORTED_FILE_EXTENSIONS = [
   ".rtf",
 ] as const;
 
-export const WEB_DIRECT_FILE_EXTENSIONS = [".html", ".htm", ".md", ".markdown", ".txt", ".xlsx"] as const;
+export const WEB_DIRECT_FILE_EXTENSIONS = [".html", ".htm", ".md", ".markdown", ".txt", ".xlsx", ".xls", ".xlm"] as const;
 
-export const WEB_OFFICE_FILE_EXTENSIONS = [".docx", ".pdf", ".pptx", ".odt", ".odp", ".ods", ".rtf"] as const;
+export const WEB_OFFICE_FILE_EXTENSIONS = [".docx", ".doc", ".pdf", ".pptx", ".odt", ".odp", ".ods", ".rtf"] as const;
 
 export function getFileExtension(fileName: string): string {
   const dotIndex = fileName.lastIndexOf(".");

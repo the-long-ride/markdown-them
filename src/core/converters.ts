@@ -1,6 +1,7 @@
 import { restoreWorker } from "./polyfill";
 import * as path from "path";
 import * as fs from "fs/promises";
+import * as os from "os";
 import * as mammoth from "mammoth";
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from "./markdown-utils";
 import { convertOdfData } from "./odf";
@@ -17,6 +18,11 @@ export async function generateMarkdown(filePath: string): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
 
   switch (ext) {
+    case ".doc":
+      return await runWithRenamedExtension(filePath, ".docx");
+    case ".xls":
+    case ".xlm":
+      return await runWithRenamedExtension(filePath, ".xlsx");
     case ".docx": {
       const result = await mammoth.convertToHtml({ path: filePath });
       return htmlToMarkdown(result.value);
@@ -104,4 +110,16 @@ async function convertRtf(filePath: string): Promise<string> {
 async function convertOfficeFallback(filePath: string): Promise<string> {
   const officeResult: unknown = await officeParser.parseOffice(filePath);
   return officeAstToMarkdown(officeResult as any);
+}
+
+async function runWithRenamedExtension(filePath: string, newExt: string): Promise<string> {
+  const tempDir = os.tmpdir();
+  const randomId = Math.random().toString(36).substring(2, 15);
+  const tempFilePath = path.join(tempDir, `temp_${randomId}${newExt}`);
+  try {
+    await fs.copyFile(filePath, tempFilePath);
+    return await generateMarkdown(tempFilePath);
+  } finally {
+    await fs.rm(tempFilePath, { force: true }).catch(() => {});
+  }
 }

@@ -12,7 +12,7 @@ export interface BrowserConversionResult {
   outputName: string;
 }
 
-const browserOfficeExtensions = new Set([".docx", ".pdf"]);
+const browserOfficeExtensions = new Set([".docx", ".doc", ".pdf"]);
 
 export async function convertBrowserFile(file: File): Promise<BrowserConversionResult> {
   const extension = getFileExtension(file.name);
@@ -29,6 +29,8 @@ export async function convertBrowserFile(file: File): Promise<BrowserConversionR
       markdown = convertTextToMarkdown(await file.text());
       break;
     case ".xlsx":
+    case ".xls":
+    case ".xlm":
       markdown = await convertXlsxData(await file.arrayBuffer());
       break;
     case ".pptx":

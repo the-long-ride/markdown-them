@@ -22,7 +22,7 @@ export const languages: Language[] = [
 const translations: Record<LanguageCode, Record<string, string>> = {
   en: {
     appName: "Markdown Them",
-    tagline: "Convert from DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text files to readable markdown",
+    tagline: "Convert from DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF, and text files to readable markdown. Note: Legacy formats (.doc, .xls, .xlm) use renaming emulation and sometimes will not work correctly.",
     files: "Files",
     text: "Text",
     privacyFirst: "Privacy-first",
@@ -112,7 +112,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   vi: {
     appName: "Markdown Them",
-    tagline: "Chuyển đổi các tệp DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF và văn bản sang định dạng markdown dễ đọc",
+    tagline: "Chuyển đổi các tệp DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF và văn bản sang định dạng markdown dễ đọc. Lưu ý: Các định dạng cũ (.doc, .xls, .xlm) sử dụng giả lập đổi tên và đôi khi hoạt động không chính xác.",
     files: "Tệp tin",
     text: "Văn bản",
     privacyFirst: "Quyền riêng tư hàng đầu",
@@ -202,7 +202,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   zh: {
     appName: "Markdown Them",
-    tagline: "将 DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF 和文本文件转换为易读的 markdown 格式",
+    tagline: "将 DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 和文本文件转换为易读的 markdown 格式。注意：旧版格式（.doc, .xls, .xlm）使用重命名模拟，有时可能无法正确转换。",
     files: "文件",
     text: "文本",
     privacyFirst: "隐私第一",
@@ -292,7 +292,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   ja: {
     appName: "Markdown Them",
-    tagline: "DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF、およびテキストファイルを読みやすい markdown に変換します",
+    tagline: "DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF、およびテキストファイルを読みやすい markdown に変換します。注意：レガシーフォーマット（.doc, .xls, .xlm）は名前変更エミュレーションを使用するため、正しく変換されない場合があります。",
     files: "ファイル",
     text: "テキスト",
     privacyFirst: "プライバシー第一",
@@ -382,7 +382,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   no: {
     appName: "Markdown Them",
-    tagline: "Konverter fra DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF og tekstfiler til lesbar markdown",
+    tagline: "Konverter fra DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF og tekstfiler til lesbar markdown. Merk: Eldre formater (.doc, .xls, .xlm) bruker emulert filnavnendring, og konverteringen vil av og til ikke fungere korrekt.",
     files: "Filer",
     text: "Tekst",
     privacyFirst: "Personvern først",
@@ -472,7 +472,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   es: {
     appName: "Markdown Them",
-    tagline: "Convierta archivos DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF y de texto a un formato markdown legible",
+    tagline: "Convierta archivos DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF y de texto a un formato markdown legible. Nota: Los formatos heredados (.doc, .xls, .xlm) usan emulación de cambio de nombre y a veces no se convertirán correctamente.",
     files: "Archivos",
     text: "Texto",
     privacyFirst: "Privacidad primero",
@@ -562,7 +562,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   fr: {
     appName: "Markdown Them",
-    tagline: "Convertissez les fichiers DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF et texte en markdown lisible",
+    tagline: "Convertissez les fichiers DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF et texte en markdown lisible. Note : Les formats hérités (.doc, .xls, .xlm) utilisent une émulation de renommage et peuvent parfois ne pas se convertir correctement.",
     files: "Fichiers",
     text: "Texte",
     privacyFirst: "Confidentialité d'abord",
@@ -652,7 +652,7 @@ const translations: Record<LanguageCode, Record<string, string>> = {
   },
   ko: {
     appName: "Markdown Them",
-    tagline: "DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF 및 텍스트 파일을 읽기 쉬운 markdown으로 변환합니다",
+    tagline: "DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 및 텍스트 파일을 읽기 쉬운 markdown으로 변환합니다. 참고: 레거시 형식(.doc, .xls, .xlm)은 이름 변경 에뮬레이션을 사용하므로 가끔 올바르게 변환되지 않을 수 있습니다.",
     files: "파일",
     text: "텍스트",
     privacyFirst: "개인정보 보호 우선",
