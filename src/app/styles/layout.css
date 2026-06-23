@@ -22,7 +22,8 @@
 }
 
 .desktop-shell {
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: 100vh;
   min-height: 100vh;
 }
@@ -45,9 +46,9 @@
 
 .desktop-shell .workspace {
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  height: calc(100vh - 38px);
-  min-height: 0;
-  overflow: hidden;
+  height: auto;
+  min-height: calc(100vh - 38px);
+  overflow: visible;
 }
 
 .workspace.is-dragging::after {

@@ -26,3 +26,25 @@ const api: MarkdownThemDesktopApi = {
 };
 
 contextBridge.exposeInMainWorld("markdownThemDesktop", api);
+
+// Ctrl+Wheel → zoom in/out via main process.
+// Throttled to avoid flooding IPC with fast scroll events.
+let zoomThrottleTimer: ReturnType<typeof setTimeout> | null = null;
+
+window.addEventListener(
+  "wheel",
+  (event: WheelEvent) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+
+    if (zoomThrottleTimer !== null) return;
+    zoomThrottleTimer = setTimeout(() => {
+      zoomThrottleTimer = null;
+    }, 50);
+
+    // Positive deltaY = scroll down = zoom out; negative = zoom in.
+    const delta = event.deltaY > 0 ? -0.5 : 0.5;
+    ipcRenderer.send("window:zoom-delta", delta);
+  },
+  { passive: false }
+);
