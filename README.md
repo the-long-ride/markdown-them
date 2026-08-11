@@ -37,44 +37,6 @@ This repo includes a shared React UI for a local-only web app and an Electron de
 ![Online Web App](media/demo-pics/Markdown-them-Online-web-app.png)
 ![Desktop App](media/demo-pics/Markdown-them-Desktop-app.png)
 
-### Local app commands:
-
-```bash
-npm run start:web
-npm run start:desktop
-npm run preview:desktop
-```
-
-### Build-only commands:
-
-```bash
-npm run build:web
-npm run build:desktop
-npm run build:apps
-```
-
-### Desktop Packaging Pipeline:
-
-Build production-ready installers and binaries (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`) via `electron-builder`:
-
-```bash
-# Build for Windows (Portable exe)
-npm run dist:desktop:win
-
-# Build for Linux (AppImage & deb)
-npm run dist:desktop:linux
-
-# Build for macOS (dmg)
-npm run dist:desktop:mac
-
-# Build for all platforms
-npm run dist:desktop:all
-```
-
-The resulting binaries will be placed in the `dist/installers` directory.
-
----
-
 ## VS Code Extension
 
 ### Usage
@@ -136,34 +98,6 @@ import { convertFileToMarkdown, generateMarkdown } from "@the-long-ride/markdown
 const outputPath = await convertFileToMarkdown("./docs/report.docx");
 const markdown = await generateMarkdown("./docs/report.docx");
 ```
-
-### Local build commands:
-
-```bash
-npm run pack:vsix
-npm run pack:node-package
-```
-
-Tag releases publish the Node.js package to npm after the package artifact is built. Configure this GitHub repository secret before pushing a `v*` tag:
-
-```text
-NPM_TOKEN
-```
-
----
-
-## Source Layout
-
-- `src/core`: Shared document-to-Markdown conversion logic.
-- `src/app`: Shared React UI and browser-only conversion adapter.
-- `src/electron`: Electron main/preload process for the desktop app.
-- `src/shared`: Shared format metadata and filename helpers.
-- `src/vscode`: VS Code command registrations and editor integration.
-- `src/nodejs-package`: Node.js package entry point.
-- `scripts`: App build and local startup scripts.
-- `nodejs-package`: Publishable npm package metadata, README, license, and generated `dist`.
-
----
 
 ## Safely Powered By
 
