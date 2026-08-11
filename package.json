@@ -2,7 +2,7 @@
   "name": "markdown-them",
   "displayName": "Markdown Them",
   "description": "Convert docx, doc, pdf, html, xlsx, xls, xlm, pptx, odt, odp, ods, rtf files to markdown in your VS Code's explorer or editor.",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "icon": "assets/markdown-them-logo.png",
   "publisher": "the-long-ride",
   "repository": {

@@ -2,6 +2,11 @@
 
 All notable changes to the "markdown-them" extension will be documented in this file.
 
+## [1.3.2] - 2026-08-11
+- Resolved `pdfjs-dist` vulnerability (CVE-2026-16633): upgraded `officeparser` to 7.5.1 and forced `pdfjs-dist` to 6.2.108 via npm overrides in both `package.json` manifests.
+- Resolved `electron` vulnerability (GHSA-r4w5-6pfg-jxp5) by updating Electron to a patched version.
+- Added Dependabot configuration that groups dependency updates (including security updates) into a single pull request per update cycle.
+
 ## [1.3.1] - 2026-06-23
 - Enabled zooming (`Ctrl + =` / `Ctrl + -`) and pinch/scroll-to-zoom (`Ctrl + mousewheel`) in the desktop application.
 - Added container scrolling for the desktop app on heavy window resizing.
