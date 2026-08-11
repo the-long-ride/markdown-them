@@ -63,7 +63,7 @@ async function copyAssets() {
 
   // Copy worker
   await copyFile(
-    path.join(rootDir, "node_modules", "officeparser", "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
+    path.join(rootDir, "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
     path.join(webDir, "assets", "pdf.worker.min.mjs")
   );
 }

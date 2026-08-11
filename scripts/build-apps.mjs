@@ -89,7 +89,7 @@ async function buildWeb(outDir, clean = true) {
   await copyFile(path.join(rootDir, "src", "app", "index.html"), path.join(outDir, "index.html"));
   await copyFile(path.join(rootDir, "assets", "markdown-them-logo.png"), path.join(assetsDir, "markdown-them-logo.png"));
   await copyFile(
-    path.join(rootDir, "node_modules", "officeparser", "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
+    path.join(rootDir, "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
     path.join(assetsDir, "pdf.worker.min.mjs"),
   );
 

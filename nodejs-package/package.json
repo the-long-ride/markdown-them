@@ -56,7 +56,10 @@
     "fast-xml-parser": "^5.8.0",
     "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
-    "officeparser": "^6.1.0",
+    "officeparser": "^7.5.1",
     "turndown": "^7.2.4"
+  },
+  "overrides": {
+    "pdfjs-dist": "6.2.108"
   }
 }
