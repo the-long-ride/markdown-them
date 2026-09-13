@@ -52,7 +52,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@opendocsg/pdf2md": "^0.2.6",
+    "@opendocsg/pdf2md": "^0.3.0",
     "fast-xml-parser": "^5.8.0",
     "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
