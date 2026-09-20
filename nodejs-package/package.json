@@ -52,11 +52,11 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@opendocsg/pdf2md": "^0.2.6",
+    "@opendocsg/pdf2md": "^0.3.2",
     "fast-xml-parser": "^5.8.0",
     "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
-    "officeparser": "^7.5.1",
+    "officeparser": "^8.0.0",
     "turndown": "^7.2.4"
   },
   "overrides": {
