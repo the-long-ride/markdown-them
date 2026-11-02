@@ -1,1 +1,1 @@
-export { restoreWorker } from "./core/polyfill";
+export { restoreWorker } from './core/polyfill';

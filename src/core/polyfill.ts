@@ -1,18 +1,18 @@
-if (typeof (globalThis as any).DOMMatrix === "undefined") {
+if (typeof (globalThis as any).DOMMatrix === 'undefined') {
   (globalThis as any).DOMMatrix = class DOMMatrix {
     constructor() {}
   };
 }
 
 if (
-  typeof (globalThis as any).navigator === "undefined" ||
+  typeof (globalThis as any).navigator === 'undefined' ||
   !(globalThis as any).navigator.platform ||
   !(globalThis as any).navigator.userAgent
 ) {
-  Object.defineProperty(globalThis, "navigator", {
+  Object.defineProperty(globalThis, 'navigator', {
     value: {
-      platform: (globalThis as any).navigator?.platform || "Node.js",
-      userAgent: (globalThis as any).navigator?.userAgent || "Node.js",
+      platform: (globalThis as any).navigator?.platform || 'Node.js',
+      userAgent: (globalThis as any).navigator?.userAgent || 'Node.js',
     },
     writable: true,
     configurable: true,

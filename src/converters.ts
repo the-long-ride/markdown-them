@@ -1,1 +1,1 @@
-export { convertFileToMarkdown, convertTextToMarkdown, generateMarkdown } from "./core/converters";
+export { convertFileToMarkdown, convertTextToMarkdown, generateMarkdown } from './core/converters';
