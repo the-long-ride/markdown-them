@@ -248,22 +248,13 @@ jobs:
     if: needs.detect-changes.outputs.node == 'true'
     permissions:
       contents: read
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      id-token: write
 
     steps:
       - name: Setup Node.js for npm publish
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Check npm token
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "Missing repository secret: NPM_TOKEN"
-            exit 1
-          fi
 
       - name: Download node package artifact
         uses: actions/download-artifact@v6
@@ -273,7 +264,7 @@ jobs:
           merge-multiple: true
 
       - name: Publish package tarball
-        run: npm publish ./artifacts/*.tgz --access public
+        run: npm publish ./artifacts/*.tgz --access public --provenance
 
   deploy-web:
     name: Deploy Web App to GitHub Pages

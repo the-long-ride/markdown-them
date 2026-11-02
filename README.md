@@ -45,7 +45,6 @@ npm run build:desktop
 ```
 
 ![Online Web App](media/demo-pics/Markdown-them-Online-web-app.png)
-![Desktop App](media/demo-pics/Markdown-them-Desktop-app.png)
 
 ## VS Code Extension
 
