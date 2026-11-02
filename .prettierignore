@@ -1,4 +1,5 @@
 dist
+nodejs-package/dist
 node_modules
 coverage
 out

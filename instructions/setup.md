@@ -2,7 +2,7 @@
 
 ## Environment
 
-- **Node.js**: Recommended latest LTS (>= 20.x).
+- **Node.js**: Recommended latest LTS (>= 24.x).
 - **Rust Toolchain**: Stable `rustc` and `cargo` (installed via [rustup](https://rustup.rs)). Required for building and debugging the Tauri desktop app.
 - **Platform-Specific Build Tools (for Desktop)**:
   - **Windows**: Microsoft C++ Build Tools or Visual Studio with C++ desktop development.

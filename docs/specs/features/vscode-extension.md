@@ -13,7 +13,7 @@ last_verified_at: "2026-11-02T13:30:00Z"
 last_verified_code_commit: "5a23917"
 last_source_change_commit: "5a23917"
 last_source_change_at: "2026-11-02T06:10:22Z"
-source_fingerprint: "sha256:4055952d977d4a0ddffac6509637a4de1353c237abd571a12fa368e852bc83e6"
+source_fingerprint: "sha256:6e7298dbfd45100ec32329d6d5be0fa7930a339e9ccf970d3ced7dabf8d9af7e"
 ---
 
 # VS Code extension integration

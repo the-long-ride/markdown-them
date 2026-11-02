@@ -97,6 +97,7 @@ async function main() {
     runStep('LOC Limit Lint Check', process.execPath, ['scripts/loc-lint.mjs']),
     runStep('TypeScript Core & Apps Typecheck', 'npm', ['run', 'typecheck:apps']),
     runStep('TypeScript Root Compilation', 'npm', ['run', 'compile']),
+    runStep('TypeScript Node Package Compilation', 'npm', ['run', 'build:node-package']),
   ];
 
   await Promise.all(stage1Steps);

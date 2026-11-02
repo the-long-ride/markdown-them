@@ -13,7 +13,7 @@ last_verified_at: "2026-11-02T13:30:00Z"
 last_verified_code_commit: "5a23917"
 last_source_change_commit: "5a23917"
 last_source_change_at: "2026-11-02T06:10:22Z"
-source_fingerprint: "sha256:19c5aa23a2f1d655460ac351bc1593a4ab00672023fd87684f9002d3ed58399c"
+source_fingerprint: "sha256:1882b7943871c2a61608fccf29bd72c31abd9059d0ff147b16cf707392f0d79e"
 ---
 
 # System architecture overview

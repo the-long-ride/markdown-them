@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -98,14 +98,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -125,7 +125,7 @@ jobs:
         run: npm run pack:vsix
 
       - name: Upload VSIX artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
           path: '*.vsix'
@@ -142,12 +142,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -160,7 +160,7 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download VSIX artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v6
         with:
           name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
           path: ./artifacts
@@ -208,12 +208,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -234,7 +234,7 @@ jobs:
         run: npm run pack:node-package
 
       - name: Upload node package artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: markdown-them-node-package-${{ steps.get_version.outputs.version }}
           path: ./artifacts/*.tgz
@@ -253,9 +253,9 @@ jobs:
 
     steps:
       - name: Setup Node.js for npm publish
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Check npm token
@@ -266,7 +266,7 @@ jobs:
           fi
 
       - name: Download node package artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v6
         with:
           pattern: markdown-them-node-package-*
           path: ./artifacts
@@ -293,12 +293,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
@@ -327,7 +327,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
 
   build-desktop:
     name: Build Desktop App
@@ -342,12 +342,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install system dependencies (Linux)
@@ -403,7 +403,7 @@ jobs:
         run: npm run dist:desktop:mac
 
       - name: Upload installers
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v6
         with:
           name: desktop-installers-${{ matrix.os }}
           path: dist/installers/*
@@ -434,21 +434,21 @@ jobs:
 
       - name: Download VSIX artifact
         if: needs.detect-changes.outputs.vsix == 'true'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v6
         with:
           name: markdown-them-vsix-${{ steps.get_version.outputs.version }}
           path: ./release-assets
 
       - name: Download node package artifact
         if: needs.detect-changes.outputs.node == 'true'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v6
         with:
           name: markdown-them-node-package-${{ steps.get_version.outputs.version }}
           path: ./release-assets
 
       - name: Download Desktop installers
         if: needs.detect-changes.outputs.desktop == 'true'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v6
         with:
           pattern: desktop-installers-*
           path: ./release-assets

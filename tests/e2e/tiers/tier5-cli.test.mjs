@@ -9,8 +9,9 @@
  * Uses child_process.execFile with process.execPath for deterministic cross-platform execution.
  */
 
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -35,6 +36,21 @@ const repoRoot = path.resolve(__dirname, '../../..');
 const cliScriptPath = path.resolve(repoRoot, 'nodejs-package/dist/nodejs-package/cli.js');
 const packageJsonPath = path.resolve(repoRoot, 'nodejs-package/package.json');
 const require = createRequire(import.meta.url);
+
+if (!fsSync.existsSync(cliScriptPath)) {
+  const isCmd = process.platform === 'win32';
+  const npmCmd = isCmd ? 'npm.cmd' : 'npm';
+  try {
+    execFileSync(npmCmd, ['run', 'build:node-package'], {
+      cwd: repoRoot,
+      stdio: 'pipe',
+      shell: isCmd,
+      env: { ...process.env },
+    });
+  } catch (err) {
+    console.error('Failed to build nodejs-package before running Tier 5 CLI tests:', err);
+  }
+}
 
 /**
  * Execute the built CLI using child_process.execFile with process.execPath.

@@ -2,13 +2,16 @@ use std::path::{Path, PathBuf};
 
 /// Computes the base stem for the markdown output file and indicates whether source was markdown.
 pub fn compute_base_stem(source: &Path) -> (String, bool) {
-    let file_stem = source
+    let normalized = source.to_string_lossy().replace('\\', "/");
+    let norm_path = Path::new(&normalized);
+
+    let file_stem = norm_path
         .file_stem()
         .map(|s| s.to_string_lossy().to_string())
         .filter(|s| !s.is_empty())
         .unwrap_or_else(|| "converted".to_string());
 
-    let is_source_markdown = source
+    let is_source_markdown = norm_path
         .extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| {

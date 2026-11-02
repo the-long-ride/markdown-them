@@ -13,7 +13,7 @@ last_verified_at: "2026-11-02T13:30:00Z"
 last_verified_code_commit: "5a23917"
 last_source_change_commit: "5a23917"
 last_source_change_at: "2026-11-02T06:10:22Z"
-source_fingerprint: "sha256:2be7f5f7932a5194cd9f6b8b5bd5202bca65350dc6ac9451f516af77a1e2f526"
+source_fingerprint: "sha256:fd82568a341be02f8ad7039456d86d0b59bccdb7034940b9ca8c48b84c547e45"
 ---
 
 # Test orchestration and LOC lint policy

@@ -7,12 +7,14 @@
  */
 
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
+const require = createRequire(import.meta.url);
 
 const c8Args = [
   '--include',
@@ -37,16 +39,17 @@ const c8Args = [
   'text',
   '--reporter',
   'json-summary',
-  'node',
+  process.execPath,
   'tests/e2e/run-e2e.mjs',
 ];
 
 console.log('\x1b[1m\x1b[36mRunning full test suite with code coverage...\x1b[0m\n');
 
-const result = spawnSync('npx', ['c8', ...c8Args], {
+const c8Bin = require.resolve('c8/bin/c8.js');
+const result = spawnSync(process.execPath, [c8Bin, ...c8Args], {
   cwd: root,
   stdio: 'inherit',
-  shell: true,
+  shell: false,
   env: { ...process.env },
 });
 
