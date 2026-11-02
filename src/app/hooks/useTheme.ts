@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { themeMetaColor, themeStorageKey } from "../app-constants";
-import type { ThemeMode } from "../app-types";
+import { useEffect, useState } from 'react';
+import { themeMetaColor, themeStorageKey } from '../app-constants';
+import type { ThemeMode } from '../app-types';
 
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
@@ -9,7 +9,9 @@ export function useTheme() {
     const root = document.documentElement;
     root.dataset.theme = theme;
     root.style.colorScheme = theme;
-    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute("content", themeMetaColor[theme]);
+    document
+      .querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+      ?.setAttribute('content', themeMetaColor[theme]);
 
     try {
       window.localStorage.setItem(themeStorageKey, theme);
@@ -22,18 +24,18 @@ export function useTheme() {
 }
 
 function getInitialTheme(): ThemeMode {
-  if (typeof window === "undefined") {
-    return "dark";
+  if (typeof window === 'undefined') {
+    return 'light';
   }
 
   try {
     const savedTheme = window.localStorage.getItem(themeStorageKey);
-    if (savedTheme === "dark" || savedTheme === "light") {
+    if (savedTheme === 'dark' || savedTheme === 'light') {
       return savedTheme;
     }
   } catch {
     // Fall through to the system preference when localStorage is unavailable.
   }
 
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }

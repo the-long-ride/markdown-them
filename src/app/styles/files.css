@@ -1,25 +1,30 @@
+@import './files-table.css';
+@import './files-selection.css';
+
 .files-panel {
-  align-self: start;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-height: 220px;
+  height: 100%;
 }
 
-.output-list-panel {
-  align-self: start;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 10px;
+.files-layout.has-output .files-panel {
+  height: auto;
+  min-height: 0;
 }
 
-.output-list-head {
-  margin-bottom: 8px;
+.files-layout.has-output .files-panel .drop-zone {
+  flex: 0 0 auto;
+  min-height: 76px;
+  padding: 10px 14px;
 }
 
 .hidden-input {
   display: none;
 }
+
+/* ─── Drop Zone: Paper Inset with Cartesian Registration ─────────────────── */
 
 .drop-zone {
   position: relative;
@@ -28,24 +33,35 @@
   display: grid;
   place-items: center;
   flex: 1 1 auto;
-  min-height: 180px;
-  padding: 24px;
-  border: 1px dashed var(--drop-border);
-  border-radius: 8px;
-  background: var(--drop-bg);
+  min-height: 120px;
+  padding: 14px 16px;
+  border: 1px dashed var(--rule-strong, rgba(23, 23, 22, 0.32));
+  border-radius: 2px;
+  background: var(--drop-bg, #ded9cf);
   text-align: center;
+  cursor: pointer;
+  outline: none;
   transition:
     border-color 180ms ease,
     background 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
+    box-shadow 180ms ease;
+}
+
+.drop-zone:focus-visible {
+  outline: 2px solid var(--accent, #a96f28);
+  outline-offset: 3px;
+  border-color: var(--accent, #a96f28);
+}
+
+.drop-zone.has-files {
+  min-height: 70px;
+  padding: 8px 12px;
 }
 
 .drop-zone::before {
-  content: "";
+  content: '';
   position: absolute;
-  inset: 12px;
-  border-radius: 8px;
+  inset: 0;
   background: var(--drop-scan-bg);
   transform: translateX(-120%);
   opacity: 0;
@@ -59,9 +75,8 @@
 
 .drop-zone:hover,
 .workspace.is-dragging .drop-zone {
-  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
-  background: var(--drop-hover-bg);
-  box-shadow: inset 0 0 28px color-mix(in srgb, var(--accent) 8%, transparent);
+  border-color: var(--accent, #a96f28);
+  background: var(--drop-hover-bg, #d7d2c7);
 }
 
 .workspace.is-dragging .drop-zone::before {
@@ -69,22 +84,146 @@
   opacity: 1;
 }
 
+.drop-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.drop-icon-wrapper {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  background: var(--paper-pressed, rgba(23, 23, 22, 0.05));
+  border: 1px solid var(--rule-structural);
+  color: var(--accent, #a96f28);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease;
+}
+
+.drop-zone:hover .drop-icon-wrapper {
+  transform: translateY(-1px);
+  border-color: var(--accent, #a96f28);
+}
+
 .drop-copy {
   display: grid;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 3px;
 }
 
 .drop-copy strong {
-  font-size: 20px;
+  font-family: var(--font-display, monospace);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-strong);
 }
 
 .drop-copy span,
-.file-main span,
+.drop-subtitle,
 .output-copy span {
+  font-family: var(--font-mono, monospace);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
+
+.drop-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  max-width: 580px;
+  margin-top: 6px;
+}
+
+.format-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 2px;
+  border: 1px solid var(--rule-soft);
+  background: var(--paper-pressed, rgba(23, 23, 22, 0.06));
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.3;
+}
+
+.drop-active-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.drop-active-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
+.drop-status-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Status chips: mono label with small dot (DESIGN.md Section 6) */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  border-radius: 2px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  border: 1px solid var(--rule-soft);
+}
+
+.status-chip.chip-done {
+  background: var(--amber-wash, rgba(169, 111, 40, 0.1));
+  color: var(--accent, #a96f28);
+  border-color: var(--accent, #a96f28);
+}
+
+.status-chip.chip-failed {
+  background: rgba(158, 50, 35, 0.1);
+  color: var(--danger, #9e3223);
+  border-color: var(--danger, #9e3223);
+}
+
+.status-chip.chip-pending {
+  background: var(--paper-pressed, rgba(23, 23, 22, 0.06));
+  color: var(--muted);
+  border-color: var(--rule-structural);
+}
+
+.drop-add-hint {
+  color: var(--muted-soft);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+}
+
+/* ─── Output Folder Selector (Desktop App) ───────────────────────────────── */
 
 .output-picker {
   position: relative;
@@ -93,132 +232,57 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  margin-top: 12px;
-  padding: 10px;
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  background: var(--output-bg);
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--rule-structural);
+  border-radius: 2px;
+  background: var(--paper-pressed, #ded9cf);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.output-picker:hover {
+  border-color: var(--accent, #a96f28);
+}
+
+.output-picker:focus-visible {
+  outline: 2px solid var(--accent, #a96f28);
+  outline-offset: 2px;
 }
 
 .output-copy {
   display: grid;
   min-width: 0;
-  gap: 4px;
-}
-
-.output-copy strong,
-.output-copy span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.file-list {
-  display: grid;
-  align-content: start;
-  gap: 6px;
-  min-height: 0;
-  overflow: visible;
-  flex: 1 1 auto;
-}
-
-.desktop-shell .file-list {
-  overflow: auto;
-}
-
-.file-row {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
-  align-items: center;
-  min-height: 46px;
-  padding: 7px 9px;
-  gap: 9px;
-  box-shadow: none;
-  transition:
-    transform 150ms ease,
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
-}
-
-.file-row:hover {
-  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--accent) 8%, transparent),
-      transparent 60%
-    ),
-    var(--panel-strong);
-  box-shadow: var(--button-hover-shadow);
-}
-
-.file-row .icon-button:not(:disabled):hover {
-  transform: none;
-}
-
-.status-dot {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  background: var(--status-bg);
-  color: var(--muted);
-}
-
-.status-dot.done {
-  color: var(--accent);
-}
-
-.status-dot.error {
-  color: var(--danger);
-}
-
-.status-dot.running {
-  color: var(--accent-strong);
-}
-
-.file-main {
-  display: grid;
-  min-width: 0;
   gap: 2px;
 }
 
-.file-main strong {
-  font-size: 13px;
-  line-height: 1.2;
+.output-picker-label {
+  color: var(--muted-soft);
+  font-family: var(--font-display, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.file-main strong,
-.file-main span {
+.output-picker-path {
+  color: var(--text-strong);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 550;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.file-main span {
-  font-size: 12px;
-  line-height: 1.25;
+.file-name-clickable {
+  cursor: pointer;
+  transition: color 150ms ease;
 }
 
-.empty-state {
-  display: grid;
-  place-items: center;
-  position: relative;
-  overflow: hidden;
-  height: 100%;
-  min-height: 180px;
-  border: 1px dashed var(--empty-border);
-  border-radius: 8px;
-  color: var(--muted);
-  box-shadow: none;
-  background: var(--empty-bg);
-}
-
-.pending-status {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 500;
-  padding-right: 4px;
+.file-name-clickable:hover {
+  color: var(--accent, #a96f28);
+  text-decoration: underline;
 }

@@ -1,55 +1,72 @@
-import { desktopApi, licenseUrl, profileUrl, repoUrl, privacyUrl, termsUrl } from "../app-constants";
-import { useLanguage } from "../context/LanguageContext";
-import { ExternalLink } from "./ExternalLink";
+import {
+  authorWebsiteUrl,
+  desktopApi,
+  licenseUrl,
+  profileUrl,
+  repoUrl,
+  privacyUrl,
+  termsUrl,
+  resolveDesktopApi,
+} from '../app-constants';
+import { useLanguage } from '../context/LanguageContext';
+import { ExternalLink } from './ExternalLink';
 
 interface AppFooterProps {
-  onNavigate?: (view: "privacy" | "terms") => void;
+  onNavigate?: (view: 'privacy' | 'terms') => void;
 }
 
 export function AppFooter({ onNavigate }: AppFooterProps) {
-  const isDesktop = Boolean(desktopApi);
+  const isDesktop = Boolean(
+    desktopApi ||
+    resolveDesktopApi() ||
+    (typeof window !== 'undefined' &&
+      Boolean(window.markdownThemDesktop || window.__TAURI_INTERNALS__)),
+  );
   const { t } = useLanguage();
 
   return (
     <footer className="app-footer">
       <span>
-        {t("madeBy")} <ExternalLink href={profileUrl}>the-long-ride</ExternalLink> with ❤️
+        {t('madeBy')} <ExternalLink href={authorWebsiteUrl}>the-long-ride</ExternalLink> with ❤️
       </span>
       <span>
-        <ExternalLink href={repoUrl}>{t("githubRepo")}</ExternalLink>
+        <ExternalLink href={repoUrl}>{t('githubRepo')}</ExternalLink>
       </span>
       <span>
-        <ExternalLink href={licenseUrl}>{t("mitLicense")}</ExternalLink>
+        <ExternalLink href={profileUrl}>{t('donate')}</ExternalLink>
+      </span>
+      <span>
+        <ExternalLink href={licenseUrl}>{t('mitLicense')}</ExternalLink>
       </span>
       <span>
         {isDesktop ? (
-          <ExternalLink href={privacyUrl}>{t("privacyPolicy")}</ExternalLink>
+          <ExternalLink href={privacyUrl}>{t('privacyPolicy')}</ExternalLink>
         ) : (
           <a
             href="#/privacy"
             onClick={(event) => {
               event.preventDefault();
-              window.location.hash = "#/privacy";
-              onNavigate?.("privacy");
+              window.location.hash = '#/privacy';
+              onNavigate?.('privacy');
             }}
           >
-            {t("privacyPolicy")}
+            {t('privacyPolicy')}
           </a>
         )}
       </span>
       <span>
         {isDesktop ? (
-          <ExternalLink href={termsUrl}>{t("termsOfService")}</ExternalLink>
+          <ExternalLink href={termsUrl}>{t('termsOfService')}</ExternalLink>
         ) : (
           <a
             href="#/terms"
             onClick={(event) => {
               event.preventDefault();
-              window.location.hash = "#/terms";
-              onNavigate?.("terms");
+              window.location.hash = '#/terms';
+              onNavigate?.('terms');
             }}
           >
-            {t("termsOfService")}
+            {t('termsOfService')}
           </a>
         )}
       </span>

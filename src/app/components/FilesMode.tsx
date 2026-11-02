@@ -1,9 +1,11 @@
-import { AlertCircle, CheckCircle2, Download, Files, FolderOpen, LoaderCircle, Play, Trash2, Upload, X } from "lucide-react";
-import type { ChangeEvent, RefObject } from "react";
-import { markdownOutputName } from "../../shared/formats";
-import { downloadMarkdown, formatSize } from "../app-utils";
-import type { FileItem, FileSummary } from "../app-types";
-import { useLanguage } from "../context/LanguageContext";
+import { Files, FolderOpen, LoaderCircle, Play, Trash2, X } from 'lucide-react';
+import type { ChangeEvent, RefObject } from 'react';
+import type { FileItem, FileSummary } from '../app-types';
+import { useLanguage } from '../context/LanguageContext';
+import { FilesDropZone } from './FilesDropZone';
+import { FilesOutputPanel } from './FilesOutputPanel';
+import { FilesSelectionPreview } from './FilesSelectionPreview';
+import { Tooltip } from './Tooltip';
 
 interface FilesModeProps {
   contentRef: RefObject<HTMLElement | null>;
@@ -17,6 +19,7 @@ interface FilesModeProps {
   onChooseFolders: () => void;
   onChooseOutputFolder: () => void;
   onClearFiles: () => void;
+  onRemoveFile?: (id: string) => void;
   onConvertFiles: () => void;
   onDownloadAll: () => void;
   onResetOutputFolder: () => void;
@@ -36,6 +39,7 @@ export function FilesMode({
   onChooseFolders,
   onChooseOutputFolder,
   onClearFiles,
+  onRemoveFile,
   onConvertFiles,
   onDownloadAll,
   onResetOutputFolder,
@@ -43,106 +47,146 @@ export function FilesMode({
   summary,
 }: FilesModeProps) {
   const { t } = useLanguage();
+  const hasConverted = Boolean(summary.done > 0 || summary.failed > 0 || filesBusy);
+  const pendingCount = Math.max(0, summary.total - summary.done - summary.failed);
 
   return (
-    <section ref={contentRef} className="files-layout mode-surface">
+    <section
+      ref={contentRef}
+      className={`files-layout mode-surface ${hasConverted ? 'has-output' : ''}`}
+    >
       <div className="glass-panel files-panel motion-card">
         <div className="panel-head">
-          <h2>{t("selection")}</h2>
-          <button className="icon-button" type="button" title={t("clear")} aria-label={t("clear")} onClick={onClearFiles} disabled={filesBusy || fileItems.length === 0}>
-            <Trash2 size={16} />
-          </button>
-        </div>
-
-        <input ref={fileInputRef} className="hidden-input" type="file" multiple accept={fileAccept} onChange={onBrowserFileInput} />
-
-        <div className="drop-zone">
-          <Upload size={28} />
-          <div className="drop-copy">
-            <strong>{summary.total} {t("selected")}</strong>
-            <span>
-              {summary.done} {t("done")}, {summary.failed} {t("failed")}
-            </span>
+          <div className="panel-title-group">
+            <h2>01 // {t('selection')}</h2>
+            {summary.total > 0 && <span className="panel-count-badge">{summary.total}</span>}
           </div>
+          <Tooltip content={t('clear')}>
+            <button
+              aria-label={t('clear')}
+              className="icon-button"
+              disabled={filesBusy || fileItems.length === 0}
+              onClick={onClearFiles}
+              type="button"
+            >
+              <Trash2 size={16} />
+            </button>
+          </Tooltip>
         </div>
+
+        <input
+          accept={fileAccept}
+          className="hidden-input"
+          multiple
+          onChange={onBrowserFileInput}
+          ref={fileInputRef}
+          type="file"
+        />
+
+        <FilesDropZone
+          fileItems={fileItems}
+          onChooseFiles={onChooseFiles}
+          pendingCount={pendingCount}
+          summary={summary}
+        />
+
+        {fileItems.length > 0 && !hasConverted ? (
+          <FilesSelectionPreview fileItems={fileItems} onRemoveFile={onRemoveFile} />
+        ) : null}
 
         {isDesktop ? (
-          <div className="output-picker">
+          <div
+            className="output-picker"
+            onClick={onChooseOutputFolder}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onChooseOutputFolder();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
             <div className="output-copy">
-              <strong>{t("outputFolder")}</strong>
-              <span title={outputFolder || undefined}>{outputFolder || t("sameFolder")}</span>
+              <span className="output-picker-label">{t('outputFolder')}</span>
+              <strong className="output-picker-path">{outputFolder || t('sameFolder')}</strong>
             </div>
-            <div className="compact-actions">
-              <button className="icon-button" type="button" title={t("chooseOutput")} aria-label={t("chooseOutput")} onClick={onChooseOutputFolder} disabled={filesBusy}>
-                <FolderOpen size={16} />
-              </button>
-              <button className="icon-button" type="button" title={t("useSourceFolders")} aria-label={t("useSourceFolders")} onClick={onResetOutputFolder} disabled={filesBusy || !outputFolder}>
-                <X size={16} />
-              </button>
+            <div className="compact-actions" onClick={(e) => e.stopPropagation()}>
+              <Tooltip content={t('chooseOutput')}>
+                <button
+                  aria-label={t('chooseOutput')}
+                  className="icon-button"
+                  disabled={filesBusy}
+                  onClick={onChooseOutputFolder}
+                  type="button"
+                >
+                  <FolderOpen size={16} />
+                </button>
+              </Tooltip>
+              {outputFolder ? (
+                <Tooltip content={t('useSourceFolders')}>
+                  <button
+                    aria-label={t('useSourceFolders')}
+                    className="icon-button"
+                    disabled={filesBusy}
+                    onClick={onResetOutputFolder}
+                    type="button"
+                  >
+                    <X size={16} />
+                  </button>
+                </Tooltip>
+              ) : null}
             </div>
           </div>
         ) : null}
 
         <div className="action-row split-actions">
-          <button className="secondary-button" type="button" onClick={onChooseFiles} disabled={filesBusy}>
+          <button
+            className="secondary-button"
+            disabled={filesBusy}
+            onClick={onChooseFiles}
+            type="button"
+          >
             <Files size={16} />
-            <span>{t("files")}</span>
+            <span>{t('files')}</span>
           </button>
           {isDesktop ? (
-            <button className="secondary-button" type="button" onClick={onChooseFolders} disabled={filesBusy}>
+            <button
+              className="secondary-button"
+              disabled={filesBusy}
+              onClick={onChooseFolders}
+              type="button"
+            >
               <FolderOpen size={16} />
-              <span>{t("folders")}</span>
+              <span>{t('folders')}</span>
             </button>
           ) : null}
-          <button className={`primary-button ${fileItems.length > 0 && !filesBusy ? "pulse-cta" : ""}`} type="button" onClick={onConvertFiles} disabled={filesBusy || fileItems.length === 0}>
-            {filesBusy ? <LoaderCircle size={16} className="spin" /> : <Play size={16} />}
-            <span>{t("convert")}</span>
+          <button
+            className={`primary-button ${fileItems.length > 0 && !filesBusy ? 'pulse-cta' : ''}`}
+            disabled={filesBusy || fileItems.length === 0}
+            onClick={onConvertFiles}
+            type="button"
+          >
+            {filesBusy ? <LoaderCircle className="spin" size={16} /> : <Play size={16} />}
+            <span>
+              {t('convert')}
+              {summary.total > 0 ? ` (${summary.total})` : ''}
+            </span>
           </button>
         </div>
       </div>
 
-      <div className="glass-panel output-list-panel motion-card">
-        <div className="panel-head output-list-head">
-          <h2>{t("output")}</h2>
-          {!isDesktop && summary.done > 1 ? (
-            <button className="secondary-button compact-download" type="button" onClick={onDownloadAll} disabled={filesBusy}>
-              <Download size={16} />
-              <span>{t("downloadAll")}</span>
-            </button>
-          ) : null}
-        </div>
-        <div className="file-list">
-          {fileItems.length === 0 ? (
-            <div className="empty-state">{t("noFilesSelected")}</div>
-          ) : (
-            fileItems.map((item) => <FileRow item={item} isDesktop={isDesktop} key={item.id} />)
-          )}
-        </div>
-      </div>
+      {hasConverted ? (
+        <FilesOutputPanel
+          filesBusy={filesBusy}
+          fileItems={fileItems}
+          isDesktop={isDesktop}
+          onClearFiles={onClearFiles}
+          onDownloadAll={onDownloadAll}
+          onRemoveFile={onRemoveFile}
+          summary={summary}
+        />
+      ) : null}
     </section>
-  );
-}
-
-function FileRow({ isDesktop, item }: { isDesktop: boolean; item: FileItem }) {
-  const { t } = useLanguage();
-
-  return (
-    <article className="file-row">
-      <div className={`status-dot ${item.status}`}>
-        {item.status === "done" ? <CheckCircle2 size={18} /> : item.status === "error" ? <AlertCircle size={18} /> : item.status === "running" ? <LoaderCircle size={18} className="spin" /> : <Files size={18} />}
-      </div>
-      <div className="file-main">
-        <strong title={item.sourcePath || item.name}>{item.name}</strong>
-        <span>{item.error || item.outputPath || item.outputName || formatSize(item.size)}</span>
-      </div>
-      {!isDesktop && item.status === "done" && item.markdown ? (
-        <button className="icon-button" type="button" title={t("download")} aria-label={`${t("download")} ${item.name}`} onClick={() => downloadMarkdown(item.outputName || markdownOutputName(item.name), item.markdown || "")}>
-          <Download size={16} />
-        </button>
-      ) : null}
-      {item.status === "queued" ? (
-        <span className="pending-status">{t("pending")}</span>
-      ) : null}
-    </article>
   );
 }

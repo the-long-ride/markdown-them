@@ -1,51 +1,178 @@
 .toast {
-  position: absolute;
+  position: fixed;
   left: 50%;
-  bottom: 28px;
+  bottom: 24px;
+  z-index: 9999;
   max-width: min(640px, calc(100vw - 48px));
-  padding: 11px 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
   background: var(--toast-bg);
   color: var(--toast-text);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   transform: translateX(-50%);
-  backdrop-filter: blur(18px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* ─── Footer: Two-Sided Editorial Close (DESIGN.md Section 6) ───────────── */
+
 .app-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
-  justify-self: start;
-  gap: 8px 16px;
+  justify-content: space-between;
+  gap: 12px 24px;
   color: var(--footer-text);
-  font-size: 12px;
-  margin-top: 24px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  margin-top: auto;
+  padding-top: 12px;
+  padding-bottom: 6px;
+  margin-bottom: 0;
+  border-top: 1px solid var(--rule-strong);
+  width: 100%;
 }
 
-.titlebar .app-footer {
-  flex-wrap: nowrap;
-  min-width: 0;
-  overflow: hidden;
-  -webkit-app-region: no-drag;
-  margin-top: 0;
-}
-
-.titlebar .app-footer span {
-  white-space: nowrap;
+.app-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .app-footer a {
-  color: var(--accent-strong);
+  color: var(--muted);
   text-decoration: none;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+  border-bottom: 1px solid transparent;
 }
 
 .app-footer a:hover {
-  color: var(--accent);
-  text-decoration: underline;
+  color: var(--accent, #a96f28);
+  border-bottom-color: var(--accent, #a96f28);
+  text-decoration: none;
+}
+
+/* ─── Custom Floating Tooltip ───────────────────────────────────────────── */
+
+.app-tooltip {
+  position: fixed;
+  z-index: 100000;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: min(520px, calc(100vw - 24px));
+  padding: 4px 8px;
+  border: 1px solid var(--rule-strong, rgba(23, 23, 22, 0.32));
+  border-radius: 2px;
+  background: var(--toast-bg, #242321);
+  color: var(--toast-text, #e9e5dd);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  transition: opacity 90ms ease;
+  will-change: opacity, transform;
+}
+
+.app-tooltip--top {
+  animation: tooltipFadeInTop 110ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-tooltip--bottom {
+  animation: tooltipFadeInBottom 110ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-tooltip--left {
+  animation: tooltipFadeInLeft 110ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-tooltip--right {
+  animation: tooltipFadeInRight 110ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-tooltip--multiline {
+  white-space: normal;
+  width: auto;
+}
+
+.app-tooltip--multiline .tooltip-label {
+  white-space: normal;
+  word-break: break-all;
+}
+
+@keyframes tooltipFadeInTop {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipFadeInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipFadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tooltipFadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tooltip-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.tooltip-kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 4px;
+  border-radius: 2px;
+  border: 1px solid var(--rule-structural);
+  background: var(--paper-pressed, rgba(23, 23, 22, 0.2));
+  color: var(--amber-signal, #a96f28);
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }

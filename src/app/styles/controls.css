@@ -1,17 +1,16 @@
+/* ─── Segmented Mode Controls ───────────────────────────────────────────── */
+
 .segmented {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-width: 212px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  min-width: 196px;
+  padding: 3px;
+  border: 1px solid var(--rule-structural);
+  border-radius: 2px;
   background: var(--control-bg-soft);
-  box-shadow: inset 0 1px 0 var(--line-soft);
-  backdrop-filter: blur(18px);
 }
 
-.segmented button,
 .primary-button,
 .secondary-button,
 .icon-button {
@@ -20,42 +19,67 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 38px;
-  border-radius: 8px;
+  min-height: 36px;
+  border-radius: 2px;
   cursor: pointer;
   transition:
     transform 140ms ease,
-    background 140ms ease,
-    border-color 140ms ease,
-    box-shadow 140ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
     opacity 140ms ease;
 }
 
 .segmented button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  border-radius: 2px;
+  cursor: pointer;
   position: relative;
   z-index: 1;
   padding: 0 12px;
   background: transparent;
   color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
   transition: color 140ms ease;
+}
+
+.segmented button svg {
+  display: block;
+  flex-shrink: 0;
+  margin-top: -1px;
+}
+
+.segmented button span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  margin-top: -1px;
 }
 
 .segmented button.active {
   background: transparent;
   color: var(--active-text);
-  box-shadow: none;
 }
 
 .segmented-indicator {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc(50% - 4px);
-  border-radius: 6px;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 2px;
   background: var(--active-bg);
-  box-shadow: inset 0 1px 0 var(--line-soft);
-  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 0;
   pointer-events: none;
 }
@@ -64,34 +88,35 @@
   transform: translateX(100%);
 }
 
+/* ─── Buttons: Industrial Terminal Paper Hierarchy ───────────────────────── */
+
 .primary-button,
 .secondary-button {
   padding: 0 16px;
-  font-weight: 650;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
+/* Primary CTA: Square Graphite Plate with Amber Hover (DESIGN.md Section 6) */
 .primary-button {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-  color: var(--primary-text);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 13%, transparent);
+  background: var(--plate-graphite, #242321);
+  color: var(--primary-text, #e9e5dd);
+  border: 1px solid var(--plate-graphite, #242321);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+}
+
+:root[data-theme='dark'] .primary-button {
+  background: var(--paper-archive, #e9e5dd);
+  color: var(--ink-carbon, #171716);
+  border-color: var(--paper-archive, #e9e5dd);
 }
 
 .primary-button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.34) 48%,
-    transparent 56%
-  );
-  transform: translateX(-110%);
-  transition: transform 340ms ease;
+  display: none;
 }
 
 .primary-button > * {
@@ -99,48 +124,49 @@
   z-index: 1;
 }
 
-.primary-button:not(:disabled):hover::before {
-  transform: translateX(110%);
+.primary-button:not(:disabled):hover {
+  background: var(--amber-deep, #7b4b16);
+  border-color: var(--amber-deep, #7b4b16);
+  color: #faf8f5;
 }
 
+:root[data-theme='dark'] .primary-button:not(:disabled):hover {
+  background: var(--amber-signal, #d98a32);
+  border-color: var(--amber-signal, #d98a32);
+  color: #141413;
+}
+
+/* Secondary Button: Outlined Inset */
 .secondary-button,
 .icon-button {
-  border: 1px solid var(--line);
+  border: 1px solid var(--rule-structural);
   background: var(--control-bg);
+  color: var(--text);
 }
 
 .segmented button:not(.active):hover {
-  color: var(--text);
+  color: var(--text-strong);
 }
 
 .secondary-button:not(:disabled):hover,
 .icon-button:not(:disabled):hover {
-  border-color: color-mix(in srgb, var(--accent) 36%, transparent);
-  background: var(--control-hover-bg);
-  box-shadow: var(--button-hover-shadow);
-}
-
-.primary-button:not(:disabled):hover {
-  box-shadow:
-    0 16px 32px color-mix(in srgb, var(--accent) 18%, transparent),
-    0 0 0 1px var(--line-soft) inset;
+  border-color: var(--accent, #a96f28);
+  color: var(--accent-strong, #7b4b16);
+  background: var(--amber-wash, rgba(169, 111, 40, 0.08));
 }
 
 .icon-button {
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   aspect-ratio: 1;
   padding: 0;
+  border-radius: 2px;
 }
 
 .theme-toggle {
-  color: var(--accent-strong);
-}
-
-:root[data-theme="light"] .theme-toggle {
-  color: var(--accent-cool);
+  color: var(--accent);
 }
 
 .compact-actions,
@@ -168,26 +194,15 @@
 }
 
 .compact-download {
-  min-height: 34px;
+  min-height: 32px;
   padding-inline: 12px;
 }
 
 .pulse-cta {
-  animation: pulse-cta-glow 2s infinite ease-in-out;
+  border-color: var(--accent, #a96f28);
 }
 
-@keyframes pulse-cta-glow {
-  0%, 100% {
-    box-shadow: 
-      0 12px 28px color-mix(in srgb, var(--accent) 13%, transparent),
-      0 0 0 0 color-mix(in srgb, var(--accent) 30%, transparent);
-  }
-  50% {
-    box-shadow: 
-      0 12px 32px color-mix(in srgb, var(--accent) 22%, transparent),
-      0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent);
-  }
-}
+/* ─── Dropdowns & Modals ─────────────────────────────────────────────────── */
 
 .language-selector-container {
   position: relative;
@@ -195,25 +210,27 @@
 }
 
 .language-toggle {
-  color: var(--accent-strong);
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
 }
 
-:root[data-theme="light"] .language-toggle {
-  color: var(--accent-cool);
+.language-toggle:hover {
+  color: var(--text);
 }
 
 .language-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
   z-index: 100;
   min-width: 140px;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--control-bg-soft);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--panel);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -235,29 +252,31 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: none;
   background: transparent;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 550;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 500;
   text-align: left;
-  border-radius: 6px;
+  border-radius: 2px;
   cursor: pointer;
-  transition: background 120ms ease, color 120ms ease;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
   justify-content: flex-start;
   min-height: auto;
 }
 
 .language-dropdown button:hover {
-  background: var(--control-hover-bg);
-  color: var(--text);
+  background: var(--amber-wash, rgba(169, 111, 40, 0.1));
+  color: var(--text-strong);
 }
 
 .language-dropdown button.active {
   background: var(--active-bg);
   color: var(--active-text);
-  box-shadow: inset 0 1px 0 var(--line-soft);
 }
 
 .variants-menu {
@@ -273,19 +292,18 @@
 
 .variants-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   right: 0;
   z-index: 120;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  min-width: 286px;
+  min-width: 280px;
   padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--control-bg-soft);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(20px);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--panel);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   animation: dropdown-fade-in 140ms ease-out;
 }
 
@@ -294,18 +312,19 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
   gap: 12px;
-  min-height: 48px;
+  min-height: 44px;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 2px;
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 650;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
   text-decoration: none;
 }
 
 .variants-link-copy {
   display: grid;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -316,14 +335,14 @@
 
 .variants-link-copy small {
   color: var(--muted-soft);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 400;
   line-height: 1.35;
 }
 
 .variants-link:hover {
-  background: var(--control-hover-bg);
-  color: var(--text);
+  background: var(--amber-wash, rgba(169, 111, 40, 0.1));
+  color: var(--text-strong);
 }
 
 .variants-link:hover small {

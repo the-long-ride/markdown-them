@@ -1,0 +1,278 @@
+/* ─── Titlebar (Desktop Native Window Bar) ───────────────────────────────── */
+
+.titlebar {
+  flex: 0 0 38px;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  min-height: 38px;
+  max-height: 38px;
+  width: 100%;
+  border-bottom: 1px solid var(--titlebar-line, var(--rule-structural));
+  background: var(--titlebar-bg);
+  backdrop-filter: blur(14px);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  cursor: default;
+  -webkit-app-region: drag;
+}
+
+.titlebar-logo {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1px solid var(--rule-soft);
+  pointer-events: none;
+}
+
+.titlebar-title {
+  color: var(--text-strong);
+  font-family: var(--font-display, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.titlebar-version-link {
+  color: var(--stone-faded, #858178);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  background: transparent;
+  border: none;
+  padding: 0 2px;
+  transition: color 0.15s ease;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-version-link:hover {
+  color: var(--text-strong, #171716);
+  text-decoration: underline;
+}
+
+.titlebar-update-link {
+  color: var(--accent, #a96f28);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 7px;
+  border-radius: 2px;
+  background: var(--amber-wash, rgba(169, 111, 40, 0.12));
+  border: 1px solid var(--accent, #a96f28);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-update-link:hover {
+  color: var(--accent-strong, #7b4b16);
+  background: rgba(169, 111, 40, 0.2);
+  text-decoration: none;
+}
+
+.titlebar-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  min-height: 28px !important;
+  max-height: 28px;
+  padding: 0 10px;
+  border-radius: 2px;
+  border: 1px solid var(--accent, #a96f28);
+  background: var(--amber-wash, rgba(169, 111, 40, 0.12));
+  color: var(--accent, #a96f28);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 160ms ease;
+  box-sizing: border-box;
+  -webkit-app-region: no-drag;
+  white-space: nowrap;
+}
+
+.titlebar-download-btn:hover {
+  background: var(--accent, #a96f28);
+  color: #ffffff;
+  border-color: var(--accent, #a96f28);
+  text-decoration: none;
+}
+
+.titlebar-spacer {
+  flex: 1 1 auto;
+  height: 100%;
+  -webkit-app-region: drag;
+}
+
+.titlebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 14px;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-actions .segmented {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  min-width: 154px;
+  height: 28px;
+  min-height: 28px;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.titlebar-actions .segmented-indicator {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  border-radius: 2px;
+  background: var(--active-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.14);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.titlebar-actions .segmented-indicator.text {
+  transform: translateX(100%);
+}
+
+.titlebar-actions .segmented button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 24px;
+  min-height: 24px !important;
+  max-height: 24px;
+  padding: 0 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 140ms ease;
+  box-sizing: border-box;
+}
+
+.titlebar-actions .segmented button svg {
+  display: block;
+  flex-shrink: 0;
+  margin-top: -1px;
+}
+
+.titlebar-actions .segmented button span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  margin-top: -1px;
+}
+
+.titlebar-actions .segmented button.active {
+  color: var(--active-text);
+  background: transparent;
+}
+
+.titlebar-actions .language-selector-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.titlebar-actions .language-selector-container .icon-button,
+.titlebar-actions .titlebar-icon-btn {
+  width: 28px;
+  height: 28px;
+  min-height: 28px !important;
+  max-height: 28px;
+  padding: 0;
+  border-radius: 2px;
+  border: 1px solid var(--rule-structural);
+  background: var(--control-bg);
+  color: var(--text);
+  display: inline-grid;
+  place-items: center;
+  transition: all 160ms ease;
+  cursor: pointer;
+}
+
+.titlebar-actions .language-selector-container .icon-button:hover,
+.titlebar-actions .titlebar-icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--amber-wash, rgba(169, 111, 40, 0.1));
+}
+
+.titlebar-actions .language-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 200;
+}
+
+.window-controls {
+  display: grid;
+  grid-auto-flow: column;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+
+.window-controls button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 38px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--rule-soft);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.window-controls button:hover {
+  background: var(--control-hover-bg);
+  color: var(--text-strong);
+}
+
+.window-controls .close-control:hover {
+  background: var(--danger, #9e3223);
+  color: #ffffff;
+}

@@ -1,20 +1,28 @@
-import { useState } from "react";
-import { convertTextToMarkdown } from "../browser-converter";
-import { desktopApi } from "../app-constants";
-import { copyToClipboard, downloadMarkdown, getErrorMessage } from "../app-utils";
+import { useState } from 'react';
+import { convertTextToMarkdown } from '../browser-converter';
+import { desktopApi } from '../app-constants';
+import { copyToClipboard, downloadMarkdown, getErrorMessage } from '../app-utils';
 
-export function useTextConverter(setNotice: (notice: string) => void) {
-  const [textInput, setTextInput] = useState("");
-  const [textOutput, setTextOutput] = useState("");
+export function useTextConverter(
+  setNotice: (notice: string) => void,
+  onConversionSuccess?: () => void,
+) {
+  const [textInput, setTextInput] = useState('');
+  const [textOutput, setTextOutput] = useState('');
   const [textBusy, setTextBusy] = useState(false);
 
   async function handleConvertText() {
     setTextBusy(true);
-    setNotice("");
+    setNotice('');
 
     try {
-      const markdown = desktopApi ? await desktopApi.convertText(textInput) : convertTextToMarkdown(textInput);
+      const markdown = desktopApi
+        ? await desktopApi.convertText(textInput)
+        : convertTextToMarkdown(textInput);
       setTextOutput(markdown);
+      if (markdown) {
+        onConversionSuccess?.();
+      }
     } catch (error) {
       setNotice(getErrorMessage(error));
     } finally {
@@ -28,7 +36,7 @@ export function useTextConverter(setNotice: (notice: string) => void) {
     }
 
     await copyToClipboard(textOutput);
-    setNotice("Copied");
+    setNotice('Copied');
   }
 
   async function handleSaveText() {
@@ -37,14 +45,14 @@ export function useTextConverter(setNotice: (notice: string) => void) {
     }
 
     if (desktopApi) {
-      const result = await desktopApi.saveMarkdown("input.md", textOutput);
+      const result = await desktopApi.saveMarkdown('input.md', textOutput);
       if (!result.canceled && result.filePath) {
         setNotice(`Saved ${result.filePath}`);
       }
       return;
     }
 
-    downloadMarkdown("input.md", textOutput);
+    downloadMarkdown('input.md', textOutput);
   }
 
   return {

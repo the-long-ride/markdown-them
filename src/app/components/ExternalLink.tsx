@@ -1,10 +1,10 @@
-import type { AnchorHTMLAttributes, ReactNode } from "react";
-import { desktopApi } from "../app-constants";
+import type { AnchorHTMLAttributes, ReactNode } from 'react';
+import { desktopApi, resolveDesktopApi } from '../app-constants';
 
 type ExternalLinkProps = {
   children: ReactNode;
   href: string;
-} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children" | "href">;
+} & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'children' | 'href'>;
 
 export function ExternalLink({ children, href, ...props }: ExternalLinkProps) {
   return (
@@ -19,12 +19,13 @@ export function ExternalLink({ children, href, ...props }: ExternalLinkProps) {
           return;
         }
 
-        if (!desktopApi) {
-          return;
+        const api = desktopApi || resolveDesktopApi();
+        if (api) {
+          event.preventDefault();
+          api.openExternal(href).catch((err) => {
+            console.warn('Failed to open external URL:', err);
+          });
         }
-
-        event.preventDefault();
-        desktopApi.openExternal(href).catch(() => undefined);
       }}
     >
       {children}

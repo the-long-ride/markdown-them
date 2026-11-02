@@ -1,6 +1,6 @@
-export type Mode = "text" | "files";
-export type ThemeMode = "dark" | "light";
-export type FileStatus = "queued" | "running" | "done" | "error";
+export type Mode = 'text' | 'files';
+export type ThemeMode = 'dark' | 'light';
+export type FileStatus = 'queued' | 'running' | 'done' | 'error';
 
 export interface FileItem {
   id: string;

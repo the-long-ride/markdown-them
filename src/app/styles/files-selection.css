@@ -1,0 +1,80 @@
+/* ─── Selection Preview List ─────────────────────────────────────────────── */
+
+.selection-file-preview {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.selection-file-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.preview-label {
+  color: var(--muted);
+  font-family: var(--font-display, monospace);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.selection-file-list {
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.selection-file-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 5px 8px;
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+  background: var(--paper-pressed, rgba(23, 23, 22, 0.04));
+  transition:
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.selection-file-item:hover {
+  background: var(--amber-wash, rgba(169, 111, 40, 0.06));
+  border-color: var(--rule-structural);
+}
+
+.selection-file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.selection-file-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selection-file-size {
+  color: var(--stone-faded, #858178);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  margin-left: auto;
+}
