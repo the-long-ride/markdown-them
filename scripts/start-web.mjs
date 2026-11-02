@@ -1,15 +1,18 @@
-import { createServer } from "node:http";
-import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
-import { watch } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import * as esbuild from "esbuild";
+import { createServer } from 'node:http';
+import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { watch } from 'node:fs';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import * as esbuild from 'esbuild';
 
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const webDir = path.join(rootDir, "dist", "web");
+const require = createRequire(import.meta.url);
+
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const webDir = path.join(rootDir, 'dist', 'web');
 const defaultPort = Number(process.env.PORT || 5173);
-const packageJson = JSON.parse(await readFile(path.join(rootDir, "package.json"), "utf-8"));
-const appVersion = String(packageJson.version || "0.0.0");
+const packageJson = JSON.parse(await readFile(path.join(rootDir, 'package.json'), 'utf-8'));
+const appVersion = String(packageJson.version || '0.0.0');
 
 const clients = [];
 const noopServerHandle = {
@@ -21,55 +24,118 @@ const noopServerHandle = {
 function notifyClients() {
   console.log(`[Reload Server] Notifying ${clients.length} clients to reload...`);
   for (const client of clients) {
-    client.write("data: reload\n\n");
+    client.write('data: reload\n\n');
   }
 }
 
 async function copyAssets() {
-  await mkdir(path.join(webDir, "assets"), { recursive: true });
+  await mkdir(path.join(webDir, 'assets'), { recursive: true });
 
-  let html = await readFile(path.join(rootDir, "src", "app", "index.html"), "utf-8");
+  let html = await readFile(path.join(rootDir, 'src', 'app', 'index.html'), 'utf-8');
 
-  // Adjust CSP connect-src 'none' to connect-src 'self' to allow EventSource
-  html = html.replace("connect-src 'none'", "connect-src 'self'");
+  // Adjust CSP to allow EventSource, localhost connections, and Tauri IPC
+  html = html.replace(
+    "connect-src 'none'",
+    "connect-src 'self' http://localhost:* http://127.0.0.1:* ipc: http://ipc.localhost",
+  );
 
-  // Inject reload script before </body>
-  const reloadScript = `
-    <!-- Dev reload script -->
-    <script>
-      (function() {
-        const esc = new EventSource('/reload');
-        esc.onmessage = function(event) {
-          if (event.data === 'reload') {
-            console.log('[Dev Reload] File change detected, reloading...');
-            window.location.reload();
-          }
-        };
-        esc.onerror = function() {
-          console.warn('[Dev Reload] Reload connection lost. Reconnecting...');
-        };
-      })();
-    </script>
-  `;
-  html = html.replace("</body>", `${reloadScript}</body>`);
+  // Write external dev-reload.js so it complies with script-src 'self' without inline CSP violations
+  const devReloadJs = `(function() {
+  try {
+    const esc = new EventSource('/reload');
+    esc.onmessage = function(event) {
+      if (event.data === 'reload') {
+        console.log('[Dev Reload] File change detected, reloading...');
+        window.location.reload();
+      }
+    };
+    esc.onerror = function() {
+      console.warn('[Dev Reload] Reload stream disconnected. Retrying...');
+    };
+  } catch (err) {
+    console.warn('[Dev Reload] EventSource unavailable:', err);
+  }
 
-  await writeFile(path.join(webDir, "index.html"), html, "utf-8");
+  window.addEventListener('keydown', function(event) {
+    if (event.key === 'F5' || ((event.ctrlKey || event.metaKey) && (event.key === 'r' || event.key === 'R'))) {
+      event.preventDefault();
+      window.location.reload();
+    }
+  });
+})();
+`;
+  await writeFile(path.join(webDir, 'assets', 'dev-reload.js'), devReloadJs, 'utf-8');
+
+  // Inject script tag before </body>
+  html = html.replace('</body>', '  <script src="./assets/dev-reload.js"></script>\n  </body>');
+
+  await writeFile(path.join(webDir, 'index.html'), html, 'utf-8');
 
   // Copy logo
   await copyFile(
-    path.join(rootDir, "assets", "markdown-them-logo.png"),
-    path.join(webDir, "assets", "markdown-them-logo.png")
+    path.join(rootDir, 'assets', 'markdown-them-logo.png'),
+    path.join(webDir, 'assets', 'markdown-them-logo.png'),
   );
 
+  // Copy static SEO and manifest assets if present
+  for (const staticFile of ['robots.txt', 'sitemap.xml', 'site.webmanifest']) {
+    try {
+      await copyFile(path.join(rootDir, 'src', 'app', staticFile), path.join(webDir, staticFile));
+    } catch {
+      // optional file
+    }
+  }
+
   // Copy worker
-  await copyFile(
-    path.join(rootDir, "node_modules", "pdfjs-dist", "build", "pdf.worker.min.mjs"),
-    path.join(webDir, "assets", "pdf.worker.min.mjs")
-  );
+  let resolvedWorkerPath = null;
+  try {
+    const officeParserPath = require.resolve('officeparser');
+    const officeReq = createRequire(officeParserPath);
+    resolvedWorkerPath = officeReq.resolve('pdfjs-dist/build/pdf.worker.min.mjs');
+  } catch {
+    // try fallback direct resolve
+  }
+
+  if (!resolvedWorkerPath) {
+    try {
+      resolvedWorkerPath = require.resolve('pdfjs-dist/build/pdf.worker.min.mjs');
+    } catch {
+      // try fallback paths
+    }
+  }
+
+  if (!resolvedWorkerPath) {
+    const workerCandidates = [
+      path.join(
+        rootDir,
+        'node_modules',
+        'officeparser',
+        'node_modules',
+        'pdfjs-dist',
+        'build',
+        'pdf.worker.min.mjs',
+      ),
+      path.join(rootDir, 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs'),
+    ];
+    for (const candidate of workerCandidates) {
+      try {
+        await readFile(candidate);
+        resolvedWorkerPath = candidate;
+        break;
+      } catch {
+        // try next candidate
+      }
+    }
+  }
+
+  if (!resolvedWorkerPath) {
+    throw new Error('Could not locate pdf.worker.min.mjs in node_modules');
+  }
+  await copyFile(resolvedWorkerPath, path.join(webDir, 'assets', 'pdf.worker.min.mjs'));
 }
 
 export async function startServer(port = defaultPort) {
-  console.log("[Dev Server] Starting build and watcher...");
+  console.log('[Dev Server] Starting build and watcher...');
 
   let activePort = port;
   while (!(await canListen(activePort))) {
@@ -81,36 +147,36 @@ export async function startServer(port = defaultPort) {
 
   const ctx = await esbuild.context({
     bundle: true,
-    conditions: ["browser"],
+    conditions: ['browser'],
     define: {
       MARKDOWN_THEM_VERSION: JSON.stringify(appVersion),
-      "process.env.NODE_ENV": JSON.stringify("development"),
+      'process.env.NODE_ENV': JSON.stringify('development'),
     },
-    entryPoints: [path.join(rootDir, "src", "app", "main.tsx")],
-    format: "iife",
-    jsx: "automatic",
-    legalComments: "none",
-    mainFields: ["browser", "module", "main"],
+    entryPoints: [path.join(rootDir, 'src', 'app', 'main.tsx')],
+    format: 'iife',
+    jsx: 'automatic',
+    legalComments: 'none',
+    mainFields: ['browser', 'module', 'main'],
     minify: false,
-    outfile: path.join(webDir, "assets", "app.js"),
-    platform: "browser",
+    outfile: path.join(webDir, 'assets', 'app.js'),
+    platform: 'browser',
     sourcemap: true,
-    target: ["chrome120", "edge120", "firefox120", "safari17"],
+    target: ['chrome120', 'edge120', 'firefox120', 'safari17'],
     plugins: [
       {
-        name: "rebuild-notify",
+        name: 'rebuild-notify',
         setup(build) {
           build.onEnd(async (result) => {
             if (result.errors.length > 0) {
-              console.error("[Dev Server] Build failed:", result.errors);
+              console.error('[Dev Server] Build failed:', result.errors);
               return;
             }
-            console.log("[Dev Server] Build succeeded. Updating assets and reloading...");
+            console.log('[Dev Server] Build succeeded. Updating assets and reloading...');
             try {
               await copyAssets();
               notifyClients();
             } catch (err) {
-              console.error("[Dev Server] Failed to update assets or notify:", err);
+              console.error('[Dev Server] Failed to update assets or notify:', err);
             }
           });
         },
@@ -118,45 +184,48 @@ export async function startServer(port = defaultPort) {
     ],
   });
 
-  // Perform the first build synchronously so assets exist before Electron loads the URL.
+  // Perform the first build synchronously so assets exist before the desktop window loads the URL.
   const initialBuild = await ctx.rebuild();
   if (initialBuild.errors.length > 0) {
-    console.error("[Dev Server] Initial build failed:", initialBuild.errors);
+    console.error('[Dev Server] Initial build failed:', initialBuild.errors);
     await ctx.dispose();
-    throw new Error("Initial build failed");
+    throw new Error('Initial build failed');
   }
-  console.log("[Dev Server] Initial build succeeded.");
+  console.log('[Dev Server] Initial build succeeded.');
 
   await ctx.watch();
 
-  const templateWatcher = watch(path.join(rootDir, "src", "app", "index.html"), async (eventType) => {
-    if (eventType === "change") {
-      console.log("[Dev Server] index.html template changed. Re-copying and reloading...");
-      try {
-        await copyAssets();
-        notifyClients();
-      } catch (err) {
-        console.error("[Dev Server] Failed to copy index.html:", err);
+  const templateWatcher = watch(
+    path.join(rootDir, 'src', 'app', 'index.html'),
+    async (eventType) => {
+      if (eventType === 'change') {
+        console.log('[Dev Server] index.html template changed. Re-copying and reloading...');
+        try {
+          await copyAssets();
+          notifyClients();
+        } catch (err) {
+          console.error('[Dev Server] Failed to copy index.html:', err);
+        }
       }
-    }
-  });
+    },
+  );
 
   const server = createServer(async (request, response) => {
     try {
-      const requestUrl = new URL(request.url || "/", `http://127.0.0.1:${activePort}`);
+      const requestUrl = new URL(request.url || '/', `http://127.0.0.1:${activePort}`);
       const requestedPath = decodeURIComponent(requestUrl.pathname);
 
       // Server-Sent Events endpoint for reloading
-      if (requestedPath === "/reload") {
+      if (requestedPath === '/reload') {
         response.writeHead(200, {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          Connection: 'keep-alive',
         });
-        response.write("\n");
+        response.write('\n');
         clients.push(response);
 
-        request.on("close", () => {
+        request.on('close', () => {
           const index = clients.indexOf(response);
           if (index !== -1) {
             clients.splice(index, 1);
@@ -165,29 +234,32 @@ export async function startServer(port = defaultPort) {
         return;
       }
 
-      const filePath = path.resolve(webDir, requestedPath === "/" ? "index.html" : `.${requestedPath}`);
+      const filePath = path.resolve(
+        webDir,
+        requestedPath === '/' ? 'index.html' : `.${requestedPath}`,
+      );
 
       if (!filePath.startsWith(webDir)) {
         response.writeHead(403);
-        response.end("Forbidden");
+        response.end('Forbidden');
         return;
       }
 
       const fileStat = await stat(filePath);
       if (!fileStat.isFile()) {
         response.writeHead(404);
-        response.end("Not found");
+        response.end('Not found');
         return;
       }
 
       response.writeHead(200, {
-        "Cache-Control": "no-store",
-        "Content-Type": contentType(filePath),
+        'Cache-Control': 'no-store',
+        'Content-Type': contentType(filePath),
       });
       response.end(await readFile(filePath));
     } catch {
       response.writeHead(404);
-      response.end("Not found");
+      response.end('Not found');
     }
   });
 
@@ -201,10 +273,10 @@ export async function startServer(port = defaultPort) {
 
   console.log(`Markdown Them web app: http://127.0.0.1:${activePort}`);
 
-  // Write the actual port to a file so Electron can read it reliably
+  // Write the actual port to a file so desktop clients can read it reliably
   // (env vars can be unreliable across shell-spawned processes on Windows).
-  const portFile = path.join(rootDir, "dist", ".devport");
-  await writeFile(portFile, String(activePort), "utf-8").catch(() => {});
+  const portFile = path.join(rootDir, 'dist', '.devport');
+  await writeFile(portFile, String(activePort), 'utf-8').catch(() => {});
 
   return {
     close: async () => {
@@ -215,7 +287,7 @@ export async function startServer(port = defaultPort) {
       await ctx.dispose();
       await closeServer(server);
       // Clean up port file
-      const { rm } = await import("node:fs/promises");
+      const { rm } = await import('node:fs/promises');
       await rm(portFile, { force: true }).catch(() => {});
     },
     owned: true,
@@ -227,18 +299,18 @@ function canListen(port) {
   const probe = createServer();
 
   return new Promise((resolve) => {
-    probe.once("error", () => resolve(false));
-    probe.once("listening", () => {
+    probe.once('error', () => resolve(false));
+    probe.once('listening', () => {
       probe.close(() => resolve(true));
     });
-    probe.listen(port, "127.0.0.1");
+    probe.listen(port, '127.0.0.1');
   });
 }
 
 function listen(server, port) {
   return new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(port, "127.0.0.1", resolve);
+    server.once('error', reject);
+    server.listen(port, '127.0.0.1', resolve);
   });
 }
 
@@ -262,33 +334,33 @@ function closeServer(server) {
 function contentType(filePath) {
   const extension = path.extname(filePath).toLowerCase();
   switch (extension) {
-    case ".css":
-      return "text/css;charset=utf-8";
-    case ".js":
-      return "text/javascript;charset=utf-8";
-    case ".mjs":
-      return "text/javascript;charset=utf-8";
-    case ".png":
-      return "image/png";
-    case ".html":
-      return "text/html;charset=utf-8";
+    case '.css':
+      return 'text/css;charset=utf-8';
+    case '.js':
+      return 'text/javascript;charset=utf-8';
+    case '.mjs':
+      return 'text/javascript;charset=utf-8';
+    case '.png':
+      return 'image/png';
+    case '.html':
+      return 'text/html;charset=utf-8';
     default:
-      return "application/octet-stream";
+      return 'application/octet-stream';
   }
 }
 
 // If run directly
 const scriptPath = fileURLToPath(import.meta.url);
-const isDirectRun = process.argv[1] && (
-  path.resolve(process.argv[1]) === path.resolve(scriptPath) ||
-  path.basename(process.argv[1]) === "start-web.mjs"
-);
+const isDirectRun =
+  process.argv[1] &&
+  (path.resolve(process.argv[1]) === path.resolve(scriptPath) ||
+    path.basename(process.argv[1]) === 'start-web.mjs');
 
 if (isDirectRun) {
   try {
     await startServer();
   } catch (err) {
-    console.error("Failed to start development server:", err);
+    console.error('Failed to start development server:', err);
     process.exit(1);
   }
 }
