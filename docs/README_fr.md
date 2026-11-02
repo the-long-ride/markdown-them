@@ -4,10 +4,10 @@
 
 # Markdown Them
 
-Convertissez divers fichiers de documents en Markdown (.md) depuis une application web, une application de bureau Electron, une extension VS Code ou un package Node.js.
+Convertissez divers fichiers de documents en Markdown (.md) depuis une application web, une application de bureau Tauri v2 (Rust + React), une extension VS Code ou un package Node.js.
 
 - **Application Web :** Convertisseur de documents uniquement côté client qui s'exécute entièrement dans votre navigateur. Hébergé et déployé directement sur GitHub Pages.
-- **Application de Bureau :** Une application Electron premium pour convertir vos fichiers, dossiers et textes locaux avec des options de répertoire de sortie personnalisées. Disponible pour Windows (Portable), Linux (.AppImage, .deb) et macOS (.dmg).
+- **Application de Bureau :** Une application de bureau Tauri v2 moderne et légère (propulsée par Rust et React) pour convertir vos fichiers, dossiers et textes locaux avec des options de répertoire de sortie personnalisées. Disponible pour Windows (.exe / .msi), Linux (.AppImage, .deb) et macOS (.dmg).
 - **Extension VS Code :** Intégration du menu contextuel par clic droit dans l'explorateur et d'un double volet d'aperçu Markdown pour les workflows de développement.
 - **Package Node.js :** Intégrez le même moteur de conversion dans vos scripts, CLIs et automatisations personnalisés.
 
@@ -18,21 +18,21 @@ Convertissez divers fichiers de documents en Markdown (.md) depuis une applicati
 
 Markdown Them est disponible en quatre variantes afin que vous puissiez utiliser le même convertisseur là où il s'intègre le mieux à votre flux de travail :
 
-| Variante | Idéal pour | Modèle local/confidentialité | Par où commencer |
-|---|---|---|---|
-| **Application Web** | Conversion dans le navigateur sans installation | Client-side uniquement ; aucun chargement de document sur un serveur, pas de requêtes externes. Déployé sur GitHub Pages. | `npm run start:web` |
-| **Application de bureau** | Conversion de fichiers, dossiers et textes locaux dans une interface dédiée | Application Electron exécutée sur votre ordinateur ; support du choix de dossier de sortie. Installeurs compilés pour Windows, Linux et macOS. | `npm run start:desktop` |
-| **Extension VS Code** | Menu contextuel de l'Explorateur, aperçus de l'éditeur actif, workflows de développement | S'exécute localement dans VS Code sur votre machine | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) ou [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
-| **Package Node.js** | Scripts, CLIs, automatisation et outils côté serveur sous votre contrôle | S'exécute directement dans votre processus Node.js | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them) |
+| Variante                  | Idéal pour                                                                               | Modèle local/confidentialité                                                                                                                                                                                                          | Par où commencer                                                                                                                                                                 |
+| ------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Application Web**       | Conversion dans le navigateur sans installation                                          | Client-side uniquement ; aucun chargement de document sur un serveur, pas de requêtes externes. Déployé sur GitHub Pages.                                                                                                             | `npm run start:web`                                                                                                                                                              |
+| **Application de bureau** | Conversion locale de documents avec intégration native OS                                | Application Tauri v2 (Rust + React) exécutée sur votre ordinateur ; conversion de documents en mémoire en TypeScript avec entrées/sorties et gestion des fenêtres natives en Rust. Installeurs compilés pour Windows, Linux et macOS. | `npm run dev:desktop`                                                                                                                                                            |
+| **Extension VS Code**     | Menu contextuel de l'Explorateur, aperçus de l'éditeur actif, workflows de développement | S'exécute localement dans VS Code sur votre machine                                                                                                                                                                                   | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) ou [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
+| **Package Node.js**       | Scripts, CLIs, automatisation et outils côté serveur sous votre contrôle                 | S'exécute directement dans votre processus Node.js                                                                                                                                                                                    | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them)                                                                                     |
 
 ---
 
 ## Applications de Bureau et Web
 
-Ce dépôt comprend également le code d'interface React partagé pour l'application web locale et l'application de bureau Electron.
+Ce dépôt comprend également le code d'interface React 19 partagé pour l'application web locale et l'application de bureau native Tauri v2.
 
 - **Application web :** Conversion côté client uniquement. Accepte plusieurs fichiers ou du texte, et n'envoie jamais de fichiers à un serveur externe. Déployé sur GitHub Pages.
-- **Application de bureau :** Interface Electron avec contrôles de fenêtre personnalisés. Accepte du texte, un ou plusieurs fichiers, et des dossiers complets. Les fichiers convertis sont sauvegardés à côté des originaux.
+- **Application de bureau :** Application Tauri v2 avec contrôles de fenêtre personnalisés et intégration native avec le système d'exploitation. Modèle d'exécution hybride : conversion documentaire en mémoire dans l'environnement TypeScript (`src/app/browser-converter.ts`), tandis que les boîtes de dialogue, le parcours récursif, les E/S binaires et la sauvegarde sont gérées par un backend Rust multi-threadé (`src-tauri/`) avec traitement parallèle préservé.
 
 ![Application Web](../media/demo-pics/Markdown-them-Online-web-app.png)
 ![Application de Bureau](../media/demo-pics/Markdown-them-Desktop-app.png)
@@ -41,8 +41,7 @@ Ce dépôt comprend également le code d'interface React partagé pour l'applica
 
 ```bash
 npm run start:web
-npm run start:desktop
-npm run preview:desktop
+npm run dev:desktop
 ```
 
 ### Commandes de build :
@@ -55,23 +54,13 @@ npm run build:apps
 
 ### Build d'exécutables (Packaging) :
 
-Générez des exécutables et installeurs prêts pour la production (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`) via `electron-builder` :
+Générez des exécutables et installeurs natifs prêts pour la production (Windows `.exe`/`.msi`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.app`) via les outils Tauri v2 :
 
 ```bash
-# Compiler pour Windows (Portable exe)
-npm run dist:desktop:win
-
-# Compiler pour Linux (AppImage & deb)
-npm run dist:desktop:linux
-
-# Compiler pour macOS (dmg)
-npm run dist:desktop:mac
-
-# Compiler pour toutes les plateformes
-npm run dist:desktop:all
+npm run build:desktop
 ```
 
-Les exécutables générés seront placés dans le dossier `dist/installers`.
+Les exécutables générés seront placés dans le dossier `src-tauri/target/release/bundle/`.
 
 ---
 
@@ -80,15 +69,18 @@ Les exécutables générés seront placés dans le dossier `dist/installers`.
 ### Utilisation
 
 #### 1. Convertir plusieurs fichiers (Lot)
+
 1. Dans la barre latérale **Explorer** de VS Code, sélectionnez un ou plusieurs fichiers.
 2. Faites un clic droit et choisissez **Convert to Markdown**.
 3. Les fichiers seront convertis **simultanément** (jusqu'à la limite configurée). Vous verrez des notifications au fur et à mesure que chaque fichier est traité.
 
 #### 2. Convertir le fichier actif
+
 - Tout en visualisant un document, appuyez sur `Ctrl+M Ctrl+D` (ou `Cmd+M Ctrl+D` sur Mac).
 - Un aperçu Markdown s'ouvrira dans un nouveau panneau à côté de votre éditeur actuel.
 
 #### 3. Modifier la limite de traitement simultané
+
 - Ouvrez la palette de commandes (`Ctrl+Shift+P`) et recherchez **Markdown Them: Set Max Concurrent Conversions**.
 - Ou allez dans **Fichier > Préférences > Paramètres** et recherchez `Markdown Them`.
 
@@ -96,13 +88,14 @@ Les exécutables générés seront placés dans le dossier `dist/installers`.
 > La conversion des fichiers `.pptx`, `.odt` et `.odp` extrait le texte structuré et les images du contenu principal sous forme de données Base64 Data URI intégrées lorsqu'elles sont disponibles. Les arrière-plans, les logos répétitifs et les petites icônes décoratives sont filtrés pour maintenir le Markdown lisible. Les fichiers `.ods` extraient les feuilles sous forme de tableaux Markdown, et le format `.rtf` préserve le style de texte standard, les titres et les puces.
 
 #### 4. Dépannage
+
 Si un fichier ne parvient pas à se convertir, vous pouvez afficher les journaux d'erreurs détaillés en ouvrant la commande **Developer: Toggle Developer Tools** (depuis la palette de commandes) et en consultant l'onglet **Console**.
 
 ### Configuration
 
-| Paramètre | Type | Par défaut | Plage | Description |
-|---|---|---|---|---|
-| `markdown-them.maxConcurrentConversions` | `integer` | `6` | `1` – `16` | Nombre maximal de fichiers convertis simultanément lors d'une opération de traitement par lots "Convert to Markdown". |
+| Paramètre                                | Type      | Par défaut | Plage      | Description                                                                                                           |
+| ---------------------------------------- | --------- | ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------- |
+| `markdown-them.maxConcurrentConversions` | `integer` | `6`        | `1` – `16` | Nombre maximal de fichiers convertis simultanément lors d'une opération de traitement par lots "Convert to Markdown". |
 
 Vous pouvez modifier ce paramètre de trois façons :
 
@@ -115,7 +108,7 @@ Vous pouvez modifier ce paramètre de trois façons :
 ```jsonc
 {
   // Convertit jusqu'à 4 fichiers en même temps
-  "markdown-them.maxConcurrentConversions": 4
+  "markdown-them.maxConcurrentConversions": 4,
 }
 ```
 
@@ -131,10 +124,10 @@ pnpm add @the-long-ride/markdown-them
 ```
 
 ```ts
-import { convertFileToMarkdown, generateMarkdown } from "@the-long-ride/markdown-them";
+import { convertFileToMarkdown, generateMarkdown } from '@the-long-ride/markdown-them';
 
-const outputPath = await convertFileToMarkdown("./docs/report.docx");
-const markdown = await generateMarkdown("./docs/report.docx");
+const outputPath = await convertFileToMarkdown('./docs/report.docx');
+const markdown = await generateMarkdown('./docs/report.docx');
 ```
 
 ### Commandes de package local :
@@ -155,8 +148,8 @@ NPM_TOKEN
 ## Structure des Fichiers
 
 - `src/core` : Logique de conversion partagée de documents en Markdown.
-- `src/app` : Giao diện React partagée et adaptateur de conversion du navigateur.
-- `src/electron` : Processus principal et pré-chargement Electron de l'application de bureau.
+- `src/app` : Interface React 19 partagée, moteur de conversion documentaire TypeScript en mémoire et file d'attente de traitement parallèle.
+- `src-tauri` : Backend natif de bureau en Rust et Tauri v2 (boîtes de dialogue natives, parcours de répertoires, E/S binaires et contrôles de fenêtre).
 - `src/shared` : Métadonnées de formats et fonctions utilitaires pour les fichiers.
 - `src/vscode` : Enregistrement des commandes VS Code et intégrations d'éditeur.
 - `src/nodejs-package` : Point d'entrée de publication pour le module Node.js.
@@ -171,7 +164,6 @@ Nous portons une attention particulière à la sécurité et à la conformité d
 Nous remercions chaleureusement les auteurs et contributeurs de ces incroyables projets :
 
 - [`react`](https://github.com/facebook/react) / [`react-dom`](https://github.com/facebook/react) (Licence MIT) : Structure de l'interface interactive.
-- [`gsap`](https://github.com/greensock/GSAP) / [`@gsap/react`](https://github.com/greensock/react) (Licence Standard GreenSock) : Animations de transition de page premium.
 - [`lucide-react`](https://github.com/lucide-icons/lucide) (Licence ISC) : Icônes élégantes pour l'interface.
 - [`mammoth`](https://github.com/mwilliamson/mammoth.js) (Licence BSD-2-Clause) : Conversion robuste des documents `.docx`.
 - [`@opendocsg/pdf2md`](https://github.com/opendocsg/pdf2md) (Licence MIT) : Extraction de texte fiable des fichiers `.pdf`.
@@ -183,11 +175,13 @@ Nous remercions chaleureusement les auteurs et contributeurs de ces incroyables 
 ---
 
 ## Crédits & Liens
-[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) 
-| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) 
-| [Dépôt sur GitHub](https://github.com/the-long-ride/markdown-them) 
-| [Journal des modifications](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md) 
+
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them)
+| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them)
+| [Dépôt sur GitHub](https://github.com/the-long-ride/markdown-them)
+| [Journal des modifications](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
 | [Guide de contribution](https://github.com/the-long-ride/markdown-them/blob/main/GUIDELINE.md)
 
 ## Licence
+
 [Licence MIT (avec restrictions d'utilisation du thème)](https://github.com/the-long-ride/markdown-them/blob/main/LICENSE)
