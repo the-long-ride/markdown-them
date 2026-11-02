@@ -178,7 +178,7 @@ jobs:
             set -e
 
             if [ "$VSCE_STATUS" -ne 0 ]; then
-              if grep -Eiq '(^|[[:space:]])PUT([[:space:]]|$)' "$VSCE_LOG" && grep -Eiq 'same or lower|lower than|not greater|greater than|already (exists|published)|version.*published|version.*marketplace' "$VSCE_LOG"; then
+              if grep -Eiq 'already (exists|published)|same or lower|lower than|not greater|greater than|version.*published|version.*marketplace' "$VSCE_LOG"; then
                 echo "::warning::Skipping VS Code Marketplace publish because this extension version is already published or not greater than the Marketplace version."
               else
                 exit "$VSCE_STATUS"
@@ -189,11 +189,24 @@ jobs:
           fi
 
       - name: Publish to Open VSX Registry
+        shell: bash
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
         run: |
           if [ -n "$OVSX_PAT" ]; then
-            npx ovsx publish ./artifacts/*.vsix -p "$OVSX_PAT"
+            OVSX_LOG="$(mktemp)"
+            set +e
+            npx ovsx publish ./artifacts/*.vsix -p "$OVSX_PAT" 2>&1 | tee "$OVSX_LOG"
+            OVSX_STATUS=${PIPESTATUS[0]}
+            set -e
+
+            if [ "$OVSX_STATUS" -ne 0 ]; then
+              if grep -Eiq 'already (exists|published)|version.*already exists|same or lower|lower than|not greater' "$OVSX_LOG"; then
+                echo "::warning::Skipping Open VSX publish because this extension version is already published."
+              else
+                exit "$OVSX_STATUS"
+              fi
+            fi
           else
             echo "Skipping Open VSX publish (OVSX_PAT is not set)"
           fi
@@ -264,7 +277,21 @@ jobs:
           merge-multiple: true
 
       - name: Publish package tarball
-        run: npm publish ./artifacts/*.tgz --access public --provenance
+        shell: bash
+        run: |
+          NPM_LOG="$(mktemp)"
+          set +e
+          npm publish ./artifacts/*.tgz --access public --provenance 2>&1 | tee "$NPM_LOG"
+          NPM_STATUS=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$NPM_STATUS" -ne 0 ]; then
+            if grep -Eiq 'cannot publish over the previously published versions|previously published|already exists|code EPUBLISHCONFLICT' "$NPM_LOG"; then
+              echo "::warning::Skipping npm publish because package version is already published."
+            else
+              exit "$NPM_STATUS"
+            fi
+          fi
 
   deploy-web:
     name: Deploy Web App to GitHub Pages
@@ -417,11 +444,22 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
       - name: Get version from tag
         id: get_version
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate Release Notes
+        run: node scripts/generate-release-notes.mjs "${{ github.ref_name }}" release-notes.md
 
       - name: Download VSIX artifact
         if: needs.detect-changes.outputs.vsix == 'true'
@@ -450,24 +488,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: |
-            ## Markdown Them Release [${{ github.ref_name }}](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
-
-            Choose the file that matches how you want to use Markdown Them:
-
-            * [`.vsix`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/the-long-ride.markdown-them-${{ steps.get_version.outputs.version }}.vsix) : VS Code extension package for manual install. In VS Code, run "Extensions: Install from VSIX..." and choose this file.
-            * [`.zip` (Windows Portable)](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them_${{ steps.get_version.outputs.version }}_windows_x64_portable.zip) : Portable Windows desktop app (extract and run `markdown-them.exe` without installation).
-            * [`.exe` (Windows Portable)](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them_${{ steps.get_version.outputs.version }}_windows_x64_portable.exe) : Standalone portable Windows executable.
-            * [`.deb`](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them_${{ steps.get_version.outputs.version }}_amd64.deb) : Linux installer for Debian, Ubuntu, and compatible distributions.
-            * [`.tar.gz` (macOS Portable)](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them_${{ steps.get_version.outputs.version }}_macos_portable.tar.gz) : Portable macOS app bundle (extract and move `markdown-them.app` anywhere).
-            * [`.zip` (macOS Portable)](https://github.com/the-long-ride/markdown-them/releases/download/${{ github.ref_name }}/markdown-them_${{ steps.get_version.outputs.version }}_macos_portable.zip) : Portable macOS zip archive.
-
-            ### Other Install Links
-            * **VS Code Marketplace:** https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them
-            * **Open VSX:** https://open-vsx.org/extension/the-long-ride/markdown-them
-            * **Project Website:** https://the-long-ride.github.io/markdown-them/
-
-            For a list of changes in this release, see the [CHANGELOG.md](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md).
+          body_path: release-notes.md
           files: |
             ./release-assets/*.vsix
             ./release-assets/*.tgz
