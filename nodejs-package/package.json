@@ -1,11 +1,13 @@
 {
   "name": "@the-long-ride/markdown-them",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "Convert docx, doc, pdf, html, xlsx, xls, xlm, pptx, odt, odp, ods, rtf files to markdown.",
   "keywords": [
     "markdown",
     "markdown-converter",
     "document-converter",
+    "cli",
+    "mdthem",
     "docx",
     "doc",
     "pdf",
@@ -33,6 +35,9 @@
   },
   "main": "./dist/nodejs-package/index.js",
   "types": "./dist/nodejs-package/index.d.ts",
+  "bin": {
+    "mdthem": "./dist/nodejs-package/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/nodejs-package/index.d.ts",

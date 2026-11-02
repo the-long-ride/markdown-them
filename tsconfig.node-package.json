@@ -7,13 +7,6 @@
     "declarationMap": false,
     "sourceMap": false
   },
-  "include": [
-    "src/core/**/*.ts",
-    "src/nodejs-package/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    ".vscode-test",
-    "src/vscode/**/*"
-  ]
+  "include": ["src/core/**/*.ts", "src/nodejs-package/**/*.ts"],
+  "exclude": ["node_modules", ".vscode-test", "src/vscode/**/*"]
 }
