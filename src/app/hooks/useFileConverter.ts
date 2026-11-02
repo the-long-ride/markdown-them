@@ -1,37 +1,43 @@
-import { useMemo, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
-import type { BrowserConversionResult } from "../browser-converter";
-import { convertBrowserFile } from "../browser-converter";
-import type { DesktopFileEntry } from "../desktop-api";
-import { markdownOutputName } from "../../shared/formats";
-import { desktopApi } from "../app-constants";
-import type { FileItem } from "../app-types";
-import {
-  createBrowserItem,
-  createDesktopItem,
-  downloadBlob,
-  getErrorMessage,
-  mergeFileItems,
-  runLimited,
-} from "../app-utils";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { desktopApi } from '../app-constants';
+import type { FileItem } from '../app-types';
+import { createBrowserItem, createDesktopItem, mergeFileItems } from '../app-utils';
+import type { DesktopFileEntry } from '../desktop-api';
+import { convertFilesParallel } from '../parallel-queue';
+import { buildBrowserTasks, buildDesktopTasks, downloadFilesZip } from './file-converter-helpers';
 
-export function useFileConverter(setNotice: (notice: string) => void) {
+export function useFileConverter(
+  setNotice: (notice: string) => void,
+  onConversionSuccess?: () => void,
+) {
   const [fileItems, setFileItems] = useState<FileItem[]>([]);
-  const [outputFolder, setOutputFolder] = useState("");
+  const [outputFolder, setOutputFolder] = useState('');
   const [filesBusy, setFilesBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const summary = useMemo(() => {
-    const done = fileItems.filter((item) => item.status === "done").length;
-    const failed = fileItems.filter((item) => item.status === "error").length;
+    const done = fileItems.filter((item) => item.status === 'done').length;
+    const failed = fileItems.filter((item) => item.status === 'error').length;
     return { done, failed, total: fileItems.length };
   }, [fileItems]);
 
-  async function handleChooseFiles() {
-    setNotice("");
+  const getActiveDesktopApi = () =>
+    desktopApi || (typeof window !== 'undefined' ? window.markdownThemDesktop : undefined);
 
-    if (desktopApi) {
-      const entries = await desktopApi.chooseFiles();
+  async function handleChooseFiles() {
+    setNotice('');
+
+    const api = getActiveDesktopApi();
+    if (api) {
+      const entries = await api.chooseFiles();
       addDesktopEntries(entries);
       return;
     }
@@ -40,21 +46,23 @@ export function useFileConverter(setNotice: (notice: string) => void) {
   }
 
   async function handleChooseFolders() {
-    if (!desktopApi) {
+    const api = getActiveDesktopApi();
+    if (!api) {
       return;
     }
 
-    setNotice("");
-    const entries = await desktopApi.chooseFolders();
+    setNotice('');
+    const entries = await api.chooseFolders();
     addDesktopEntries(entries);
   }
 
   async function handleChooseOutputFolder() {
-    if (!desktopApi) {
+    const api = getActiveDesktopApi();
+    if (!api) {
       return;
     }
 
-    const folderPath = await desktopApi.chooseOutputFolder();
+    const folderPath = await api.chooseOutputFolder();
     if (folderPath) {
       setOutputFolder(folderPath);
     }
@@ -62,45 +70,41 @@ export function useFileConverter(setNotice: (notice: string) => void) {
 
   function handleBrowserFileInput(event: ChangeEvent<HTMLInputElement>) {
     addBrowserFiles(Array.from(event.target.files || []));
-    event.target.value = "";
+    event.target.value = '';
   }
 
   async function handleConvertFiles() {
-    const queued = fileItems.filter((item) => item.status !== "running");
+    const queued = fileItems.filter((item) => item.status !== 'running');
     if (queued.length === 0) {
       return;
     }
 
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setFilesBusy(true);
-    setNotice("");
-    setFileItems((items) => items.map((item) => ({ ...item, status: "queued", error: undefined })));
+    setNotice('');
+    setFileItems((items) => items.map((item) => ({ ...item, status: 'queued', error: undefined })));
 
     try {
-      if (desktopApi) {
-        await convertDesktopFiles();
+      const api = getActiveDesktopApi();
+      if (api) {
+        await convertDesktopFiles(controller.signal);
       } else {
-        await convertBrowserFiles();
+        await convertBrowserFiles(controller.signal);
       }
     } finally {
+      abortControllerRef.current = null;
       setFilesBusy(false);
     }
   }
 
+  function cancelConversion() {
+    abortControllerRef.current?.abort();
+  }
+
   async function handleDownloadAll() {
-    const completeItems = fileItems.filter((item) => item.status === "done" && item.markdown);
-    if (completeItems.length === 0) {
-      return;
-    }
-
-    const JSZip = (await import("jszip")).default;
-    const zip = new JSZip();
-
-    for (const item of completeItems) {
-      zip.file(item.outputName || markdownOutputName(item.name), item.markdown || "");
-    }
-
-    const blob = await zip.generateAsync({ type: "blob" });
-    downloadBlob("markdown-them.zip", blob);
+    await downloadFilesZip(fileItems);
   }
 
   function addDesktopEntries(entries: DesktopFileEntry[]) {
@@ -119,74 +123,91 @@ export function useFileConverter(setNotice: (notice: string) => void) {
     setFileItems((items) => mergeFileItems(items, files.map(createBrowserItem)));
   }
 
-  function applyBrowserResult(id: string, result: BrowserConversionResult) {
-    updateFileItem(id, {
-      status: "done",
-      markdown: result.markdown,
-      outputName: result.outputName,
-      error: undefined,
-    });
-  }
-
   function clearFiles() {
     setFileItems([]);
   }
 
+  function removeFileItem(id: string) {
+    setFileItems((items) => items.filter((item) => item.id !== id));
+  }
+
   function resetOutputFolder() {
-    setOutputFolder("");
+    setOutputFolder('');
   }
 
   function updateFileItem(id: string, patch: Partial<FileItem>) {
     setFileItems((items) => items.map((item) => (item.id === id ? { ...item, ...patch } : item)));
   }
 
-  async function convertDesktopFiles() {
-    if (!desktopApi) {
+  async function convertDesktopFiles(signal?: AbortSignal) {
+    const api = getActiveDesktopApi();
+    if (!api) {
       return;
     }
 
-    setFileItems((items) => items.map((item) => ({ ...item, status: "running" })));
-    const results = await desktopApi.convertFiles(
-      fileItems.map((item) => item.sourcePath).filter(Boolean) as string[],
-      outputFolder || undefined,
+    const desktopItems = fileItems.filter(
+      (item) => (item.sourcePath || item.file) && item.status !== 'done',
+    );
+    if (desktopItems.length === 0) {
+      return;
+    }
+
+    const tasks = buildDesktopTasks(desktopItems, api, outputFolder, signal);
+
+    const results = await convertFilesParallel(
+      tasks,
+      4,
+      (updatedTask) => {
+        updateFileItem(updatedTask.id, {
+          status: updatedTask.status,
+          markdown: updatedTask.markdown,
+          outputPath: updatedTask.outputPath,
+          outputName: updatedTask.outputName,
+          error: updatedTask.error,
+        });
+      },
+      signal,
     );
 
-    setFileItems((items) =>
-      items.map((item) => {
-        const result = results.find((entry) => entry.sourcePath === item.sourcePath);
-        if (!result) {
-          return item;
-        }
-
-        return {
-          ...item,
-          status: result.status,
-          outputPath: result.outputPath,
-          outputName: result.outputPath ? result.outputPath.split(/[\\/]/).pop() : markdownOutputName(item.name),
-          error: result.error,
-        };
-      }),
-    );
+    const hasSuccess = results.some((entry) => entry.status === 'done');
+    if (hasSuccess && !signal?.aborted) {
+      onConversionSuccess?.();
+    }
   }
 
-  async function convertBrowserFiles() {
-    await runLimited(
-      fileItems.filter((item) => item.file),
-      3,
-      async (item) => {
-        updateFileItem(item.id, { status: "running", error: undefined });
-        try {
-          const result = await convertBrowserFile(item.file as File);
-          applyBrowserResult(item.id, result);
-        } catch (error) {
-          updateFileItem(item.id, { status: "error", error: getErrorMessage(error) });
-        }
+  async function convertBrowserFiles(signal?: AbortSignal) {
+    const browserItems = fileItems.filter((item) => item.file);
+    if (browserItems.length === 0) {
+      return;
+    }
+
+    const tasks = buildBrowserTasks(browserItems);
+
+    const results = await convertFilesParallel(
+      tasks,
+      4,
+      (updatedTask) => {
+        updateFileItem(updatedTask.id, {
+          status: updatedTask.status,
+          markdown: updatedTask.markdown,
+          outputName: updatedTask.outputName,
+          outputPath: updatedTask.outputPath,
+          error: updatedTask.error,
+        });
       },
+      signal,
     );
+
+    const hasSuccess = results.some((entry) => entry.status === 'done');
+    if (hasSuccess && !signal?.aborted) {
+      onConversionSuccess?.();
+    }
   }
 
   return {
     addBrowserFiles,
+    addDesktopEntries,
+    cancelConversion,
     clearFiles,
     fileInputRef,
     fileItems,
@@ -198,6 +219,7 @@ export function useFileConverter(setNotice: (notice: string) => void) {
     handleConvertFiles,
     handleDownloadAll,
     outputFolder,
+    removeFileItem,
     resetOutputFolder,
     summary,
   };

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/tooling/cli/schema.json",
+  "productName": "Markdown Them",
+  "version": "1.4.0",
+  "identifier": "com.thelongride.markdown-them",
+  "build": {
+    "beforeDevCommand": "npm run start:web",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "node scripts/build-apps.mjs web",
+    "frontendDist": "../dist/web"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Markdown Them",
+        "width": 1180,
+        "height": 760,
+        "minWidth": 840,
+        "minHeight": 560,
+        "decorations": false,
+        "transparent": false,
+        "center": true,
+        "backgroundColor": "#E9E5DD",
+        "zoomHotkeysEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; worker-src 'self' blob:; connect-src 'self' ipc: http://ipc.localhost;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      },
+      "nsis": {
+        "languages": ["English"]
+      }
+    }
+  }
+}

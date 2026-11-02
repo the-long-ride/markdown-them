@@ -1,0 +1,17 @@
+{
+  "name": "Markdown Them",
+  "short_name": "MarkdownThem",
+  "description": "100% Private Client-Side Document to Markdown Converter",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#E9E5DD",
+  "theme_color": "#E9E5DD",
+  "icons": [
+    {
+      "src": "./assets/markdown-them-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -4,10 +4,10 @@
 
 # Markdown Them
 
-Convert various document files into Markdown (.md) from a web application, an Electron desktop app, a VS Code extension, or a Node.js package.
+Convert various document files into Markdown (.md) from a web application, a Tauri v2 desktop app (Rust + React), a VS Code extension, or a Node.js package.
 
 - **Web App:** Client-side only document converter running entirely in your browser. Hosted and deployed directly on GitHub Pages.
-- **Desktop App:** A premium Electron application for converting local files, folders, and text inputs with custom output directory options. Available for Windows (Portable), Linux (.AppImage, .deb), and macOS (.dmg).
+- **Desktop App:** A modern, lightweight Tauri v2 desktop application (powered by Rust and React) for converting local files, folders, and text inputs with custom output directory options. Available for Windows (.exe / .msi), Linux (.AppImage, .deb), and macOS (.dmg).
 - **VS Code Extension:** Right-click context menus in the file explorer and side-by-side Markdown previews for developer workflows.
 - **Node.js Package:** Integrate the same converter engine in your custom scripts, CLIs, and automations.
 
@@ -18,21 +18,31 @@ Convert various document files into Markdown (.md) from a web application, an El
 
 Markdown Them comes in four variants so you can use the same converter wherever it fits your workflow:
 
-| Variant | Best for | Local/privacy model | Where to start |
-|---|---|---|---|
-| **Web app** | Browser-based conversion with no install | Client-side only; no document uploads or outbound conversion requests. Deployed on GitHub Pages. | [Open web app](https://the-long-ride.github.io/markdown-them/) |
-| **Desktop app** | Local file, folder, and text conversion with an app shell | Electron app running on your computer; optional output folder selection. Installers built for Windows, Linux, and macOS. | [Open latest release](https://github.com/the-long-ride/markdown-them/releases/latest) |
-| **VS Code extension** | Explorer context menu, active editor previews, developer workflows | Runs inside VS Code on your machine | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) or [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
-| **Node.js package** | Scripts, CLIs, automation, and server-side tooling you control | Runs in your Node.js process | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them) |
+| Variant               | Best for                                                           | Local/privacy model                                                                                                                                                                                                                 | Where to start                                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Web app**           | Browser-based conversion with no install                           | Client-side only; no document uploads or outbound conversion requests. Deployed on GitHub Pages.                                                                                                                                    | [Open web app](https://the-long-ride.github.io/markdown-them/)                                                                                                                   |
+| **Desktop app**       | Local file, folder, and text conversion with native OS dialogs     | Tauri v2 (Rust + React) app running on your computer; in-memory document conversion in TypeScript with native Rust file I/O, window controls, and optional output folder selection. Installers built for Windows, Linux, and macOS. | [Open latest release](https://github.com/the-long-ride/markdown-them/releases/latest)                                                                                            |
+| **VS Code extension** | Explorer context menu, active editor previews, developer workflows | Runs inside VS Code on your machine                                                                                                                                                                                                 | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) or [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
+| **Node.js package**   | Scripts, CLIs, automation, and server-side tooling you control     | Runs in your Node.js process                                                                                                                                                                                                        | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them)                                                                                     |
 
 ---
 
 ## Web and Desktop Apps
 
-This repo includes a shared React UI for a local-only web app and an Electron desktop app.
+This repo includes a shared React 19 UI for a local-only web app and a native Tauri v2 desktop app.
 
 - **Web app:** Client-side conversion only. It accepts multiple files or text input and does not send files to a server. Deployed to GitHub Pages.
-- **Desktop app:** Electron shell with custom window controls. It accepts text input, one or many files, and multiple folders. File conversions write sibling `.md` files next to the originals.
+- **Desktop app:** Lightweight Tauri v2 application with custom window controls and native OS integration. It accepts text input, one or many files, and recursive folder scanning. Under the hood, it features a hybrid architecture: in-memory document conversion runs entirely within the TypeScript runtime (`src/app/browser-converter.ts`), while native file dialogs, recursive directory traversal, binary file I/O, and file saving are handled by a multi-threaded Rust backend (`src-tauri/`) with concurrent parallel processing preserved.
+
+### Desktop Quick Start
+
+```bash
+# Run desktop application in development mode
+npm run dev:desktop
+
+# Build production desktop bundle
+npm run build:desktop
+```
 
 ![Online Web App](media/demo-pics/Markdown-them-Online-web-app.png)
 ![Desktop App](media/demo-pics/Markdown-them-Desktop-app.png)
@@ -42,15 +52,18 @@ This repo includes a shared React UI for a local-only web app and an Electron de
 ### Usage
 
 #### 1. Convert Multiple Files (Batch)
+
 1. In the **Explorer** side bar, select one or more files.
 2. Right-click and choose **Convert to Markdown**.
 3. Files will be converted **concurrently** (up to the defined limit). You'll see notifications as each file completes.
 
 #### 2. Convert Active File
+
 - While viewing a document, press `Ctrl+M Ctrl+D` (or `Cmd+M Ctrl+D` on Mac).
 - A markdown preview will open in a new pane beside your current editor.
 
 #### 3. Change Concurrency Limit
+
 - Use the command palette (`Ctrl+Shift+P`) and search for **Markdown Them: Set Max Concurrent Conversions**.
 - Or, go to **File > Preferences > Settings** and search for `Markdown Them`.
 
@@ -58,13 +71,14 @@ This repo includes a shared React UI for a local-only web app and an Electron de
 > `.pptx`, `.odt`, and `.odp` conversion extracts structured text plus main content images as inline Base64 data URIs where available. Backgrounds, repeated logos, and small decorative icons are filtered to keep Markdown readable. `.ods` extracts sheets as Markdown tables, and `.rtf` preserves common text styling, headings, and bullets.
 
 #### 4. Troubleshooting
+
 If a file fails to convert, you can view detailed error logs and stack traces by opening the **Developer: Toggle Developer Tools** command (from the Command Palette) and checking the **Console** tab.
 
 ### Configuration
 
-| Setting | Type | Default | Range | Description |
-|---|---|---|---|---|
-| `markdown-them.maxConcurrentConversions` | `integer` | `6` | `1` – `16` | Maximum number of files converted simultaneously during a batch "Convert to Markdown" operation. |
+| Setting                                  | Type      | Default | Range      | Description                                                                                      |
+| ---------------------------------------- | --------- | ------- | ---------- | ------------------------------------------------------------------------------------------------ |
+| `markdown-them.maxConcurrentConversions` | `integer` | `6`     | `1` – `16` | Maximum number of files converted simultaneously during a batch "Convert to Markdown" operation. |
 
 You can change this in three ways:
 
@@ -77,7 +91,7 @@ You can change this in three ways:
 ```jsonc
 {
   // Convert up to 4 files at the same time
-  "markdown-them.maxConcurrentConversions": 4
+  "markdown-them.maxConcurrentConversions": 4,
 }
 ```
 
@@ -93,10 +107,10 @@ pnpm add @the-long-ride/markdown-them
 ```
 
 ```ts
-import { convertFileToMarkdown, generateMarkdown } from "@the-long-ride/markdown-them";
+import { convertFileToMarkdown, generateMarkdown } from '@the-long-ride/markdown-them';
 
-const outputPath = await convertFileToMarkdown("./docs/report.docx");
-const markdown = await generateMarkdown("./docs/report.docx");
+const outputPath = await convertFileToMarkdown('./docs/report.docx');
+const markdown = await generateMarkdown('./docs/report.docx');
 ```
 
 ## Safely Powered By
@@ -105,7 +119,6 @@ I care about security & licensing for commercial use, so I picked popular packag
 Special thanks to the authors and contributors of these incredible libraries that power this project:
 
 - [`react`](https://github.com/facebook/react) / [`react-dom`](https://github.com/facebook/react) (MIT License): Interactive interface structure.
-- [`gsap`](https://github.com/greensock/GSAP) / [`@gsap/react`](https://github.com/greensock/react) (GreenSock Standard License): Premium page transition animations.
 - [`lucide-react`](https://github.com/lucide-icons/lucide) (ISC License): Elegant UI icons.
 - [`mammoth`](https://github.com/mwilliamson/mammoth.js) (BSD-2-Clause License): Robust conversion of `.docx` documents.
 - [`@opendocsg/pdf2md`](https://github.com/opendocsg/pdf2md) (MIT License): Reliable text extraction from `.pdf` files.
@@ -117,11 +130,13 @@ Special thanks to the authors and contributors of these incredible libraries tha
 ---
 
 ## Credits & Links
-[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) 
-| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) 
-| [GitHub Repository](https://github.com/the-long-ride/markdown-them) 
-| [Changelog](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md) 
+
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them)
+| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them)
+| [GitHub Repository](https://github.com/the-long-ride/markdown-them)
+| [Changelog](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
 | [Contribution Guidelines](https://github.com/the-long-ride/markdown-them/blob/main/GUIDELINE.md)
 
 ## License
+
 [MIT (with Theme Usage Restriction)](https://github.com/the-long-ride/markdown-them/blob/main/LICENSE)

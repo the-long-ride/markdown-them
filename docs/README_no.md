@@ -4,10 +4,10 @@
 
 # Markdown Them
 
-Konverter ulike dokumentfiler til Markdown (.md) fra en web-applikasjon, en Electron-skrivebordsapp, en VS Code-utvidelse eller en Node.js-pakke.
+Konverter ulike dokumentfiler til Markdown (.md) fra en web-applikasjon, en Tauri v2-skrivebordsapp (Rust + React), en VS Code-utvidelse eller en Node.js-pakke.
 
 - **Web-app:** Dokumentkonverterer som kun kjører på klientsiden i nettleseren din. Vertet og distribuert direkte på GitHub Pages.
-- **Skrivebordsapp:** En førsteklasses Electron-app for konvertering av lokale filer, mapper og tekstinndata med egne valg for utdatamappe. Tilgjengelig for Windows (Portable), Linux (.AppImage, .deb) og macOS (.dmg).
+- **Skrivebordsapp:** En moderne, lettvektig Tauri v2-skrivebordsapp (drevet av Rust og React) for konvertering av lokale filer, mapper og tekstinndata med egne valg for utdatamappe. Tilgjengelig for Windows (.exe / .msi), Linux (.AppImage, .deb) og macOS (.dmg).
 - **VS Code-utvidelse:** Høyreklikkmenyer i filutforskeren og side-by-side Markdown-forhåndsvisninger integrert i utviklerens arbeidsflyt.
 - **Node.js-pakke:** Integrer den samme konverteringsmotoren i egne skript, CLI-verktøy og automatiseringer.
 
@@ -18,32 +18,30 @@ Konverter ulike dokumentfiler til Markdown (.md) fra en web-applikasjon, en Elec
 
 Markdown Them kommer i fire varianter, slik at du kan bruke den samme konvertereren der den passer best i din arbeidsflyt:
 
-| Variant | Best for | Lokal-/personvernmodell | Hvor du starter |
-|---|---|---|---|
-| **Web-app** | Nettleserbasert konvertering uten installasjon | Kun på klientsiden; ingen dokumenter lastes opp, ingen eksterne forespørsler. Distribuert på GitHub Pages. | `npm run start:web` |
-| **Skrivebordsapp** | Konvertering av lokale filer, mapper og tekst ved hjelp av et app-skall | Electron-app som kjører på datamaskinen din; støtte for valg av utdatamappe. Installere bygget for Windows, Linux og macOS. | `npm run start:desktop` |
-| **VS Code-utvidelse** | Utforskerens høyreklikkmeny, aktive forhåndsvisninger i editor, utvikler-arbeidsflyt | Kjører lokalt i VS Code på din maskin | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) eller [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
-| **Node.js-pakke** | Skript, CLI, automatisering og verktøy på serversiden som du kontrollerer | Kjører i din Node.js-prosess | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them) |
+| Variant               | Best for                                                                             | Lokal-/personvernmodell                                                                                                                                                                              | Hvor du starter                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Web-app**           | Nettleserbasert konvertering uten installasjon                                       | Kun på klientsiden; ingen dokumenter lastes opp, ingen eksterne forespørsler. Distribuert på GitHub Pages.                                                                                           | `npm run start:web`                                                                                                                                                                 |
+| **Skrivebordsapp**    | Konvertering av lokale filer, mapper og tekst med native OS-integrasjon              | Tauri v2-app (Rust + React) som kjører på datamaskinen din; dokumentkonvertering i minnet i TypeScript med native fil-I/O og vinduskontroller i Rust. Installere bygget for Windows, Linux og macOS. | `npm run dev:desktop`                                                                                                                                                               |
+| **VS Code-utvidelse** | Utforskerens høyreklikkmeny, aktive forhåndsvisninger i editor, utvikler-arbeidsflyt | Kjører lokalt i VS Code på din maskin                                                                                                                                                                | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) eller [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) |
+| **Node.js-pakke**     | Skript, CLI, automatisering og verktøy på serversiden som du kontrollerer            | Kjører i din Node.js-prosess                                                                                                                                                                         | [`@the-long-ride/markdown-them`](https://www.npmjs.com/package/@the-long-ride/markdown-them)                                                                                        |
 
 ---
 
 ## Web- og Skrivebordsapper
 
-Dette repositoriet inkluderer et delt React-grensesnitt for en lokal web-app og en Electron-skrivebordsapp.
+Dette repositoriet inkluderer et delt React 19-grensesnitt for en lokal web-app og en native Tauri v2-skrivebordsapp.
 
 - **Web-app:** Kun konvertering på klientsiden. Godtar flere filer eller tekstinndata, og sender aldri filer til en ekstern server. Distribuert til GitHub Pages.
-- **Skrivebordsapp:** Electron-skall med tilpassede vinduskontroller. Godtar tekst, enkeltfiler, flere filer eller hele mapper. Konverterte filer lagres ved siden av originalfilene.
+- **Skrivebordsapp:** Tauri v2-app med tilpassede vinduskontroller og native OS-integrasjon. Hybrid kjøremodell: in-memory dokumentkonvertering i TypeScript (`src/app/browser-converter.ts`), mens native fildialoger, rekursiv mappesøk, binær fil-I/O og lagring håndteres av Rust (`src-tauri/`) med bevart parallellprosessering.
 
 ![Nettapp](../media/demo-pics/Markdown-them-Online-web-app.png)
 ![Skrivebordsapp](../media/demo-pics/Markdown-them-Desktop-app.png)
-
 
 ### Lokale oppstartskommandoer:
 
 ```bash
 npm run start:web
-npm run start:desktop
-npm run preview:desktop
+npm run dev:desktop
 ```
 
 ### Kommandoer for bygging:
@@ -56,23 +54,13 @@ npm run build:apps
 
 ### Distribusjonsflyt for skrivebordsapp:
 
-Bygg produksjonsklare installasjonsfiler (Windows Portable `.exe`, Linux `.AppImage`/`.deb`, macOS `.dmg`) ved hjelp av `electron-builder`:
+Bygg produksjonsklare native installasjonsfiler (Windows `.exe`/`.msi`, Linux `.AppImage`/`.deb`, macOS `.dmg`/`.app`) ved hjelp av Tauri v2 CLI:
 
 ```bash
-# Bygg for Windows (Portable exe)
-npm run dist:desktop:win
-
-# Bygg for Linux (AppImage & deb)
-npm run dist:desktop:linux
-
-# Bygg for macOS (dmg)
-npm run dist:desktop:mac
-
-# Bygg for alle plattformer samtidig
-npm run dist:desktop:all
+npm run build:desktop
 ```
 
-De genererte filene vil bli plassert i mappen `dist/installers`.
+De genererte filene vil bli plassert i mappen `src-tauri/target/release/bundle/`.
 
 ---
 
@@ -81,15 +69,18 @@ De genererte filene vil bli plassert i mappen `dist/installers`.
 ### Bruk
 
 #### 1. Konverter flere filer samtidig (Batch)
+
 1. I **Explorer**-sidelinjen i VS Code, velg én eller flere filer.
 2. Høyreklikk og velg **Convert to Markdown**.
 3. Filene vil bli konvertert **samtidig** (opp til den definerte grensen). Du vil se varsler etter hvert som hver fil fullføres.
 
 #### 2. Konverter aktiv fil
+
 - Mens du viser et dokument, trykker du `Ctrl+M Ctrl+D` (eller `Cmd+M Ctrl+D` på Mac).
 - En Markdown-forhåndsvisning vil åpne i et nytt vindu ved siden av din gjeldende editor.
 
 #### 3. Endre grensen for antall samtidige konverteringer
+
 - Bruk kommandopaletten (`Ctrl+Shift+P`) og søk etter **Markdown Them: Set Max Concurrent Conversions**.
 - Eller gå til **File > Preferences > Settings** og søk etter `Markdown Them`.
 
@@ -97,13 +88,14 @@ De genererte filene vil bli plassert i mappen `dist/installers`.
 > Konvertering av `.pptx`, `.odt` og `.odp` trekker ut strukturert tekst og hovedbilder som innebygde Base64-data URI-er der dette er tilgjengelig. Bakgrunner, gjentatte logoer og små dekorative ikoner blir filtrert ut for å holde Markdown-teksten lesbar. `.ods` trekker ut ark som Markdown-tabeller, og `.rtf` bevarer vanlig tekstformatering, overskrifter og punktlister.
 
 #### 4. Feilsøking
+
 Hvis en fil ikke kan konverteres, kan du se detaljerte feillogger og stakkesporing (stack traces) ved å åpne **Developer: Toggle Developer Tools** (fra kommandopaletten) og sjekke fanen **Console**.
 
 ### Konfigurasjon
 
-| Innstilling | Type | Standard | Område | Beskrivelse |
-|---|---|---|---|---|
-| `markdown-them.maxConcurrentConversions` | `integer` | `6` | `1` – `16` | Maksimalt antall filer som kan konverteres samtidig under en batch-prosessering med "Convert to Markdown". |
+| Innstilling                              | Type      | Standard | Område     | Beskrivelse                                                                                                |
+| ---------------------------------------- | --------- | -------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
+| `markdown-them.maxConcurrentConversions` | `integer` | `6`      | `1` – `16` | Maksimalt antall filer som kan konverteres samtidig under en batch-prosessering med "Convert to Markdown". |
 
 Du kan endre dette på tre måter:
 
@@ -116,7 +108,7 @@ Du kan endre dette på tre måter:
 ```jsonc
 {
   // Konverter opptil 4 filer samtidig
-  "markdown-them.maxConcurrentConversions": 4
+  "markdown-them.maxConcurrentConversions": 4,
 }
 ```
 
@@ -132,10 +124,10 @@ pnpm add @the-long-ride/markdown-them
 ```
 
 ```ts
-import { convertFileToMarkdown, generateMarkdown } from "@the-long-ride/markdown-them";
+import { convertFileToMarkdown, generateMarkdown } from '@the-long-ride/markdown-them';
 
-const outputPath = await convertFileToMarkdown("./docs/report.docx");
-const markdown = await generateMarkdown("./docs/report.docx");
+const outputPath = await convertFileToMarkdown('./docs/report.docx');
+const markdown = await generateMarkdown('./docs/report.docx');
 ```
 
 ### Lokale byggekommandoer:
@@ -156,8 +148,8 @@ NPM_TOKEN
 ## Kildekodestruktur
 
 - `src/core`: Delt dokument-til-Markdown konverteringslogikk.
-- `src/app`: Delt React-grensesnitt og adapter for nettleserkonvertering.
-- `src/electron`: Hovedprosess og preload-skript for Electron-skrivebordsappen.
+- `src/app`: Delt React 19 UI-kode med TypeScript in-memory dokumentkonvertering og parallellkø.
+- `src-tauri`: Rust- og Tauri v2-basert skrivebordsbackend for native dialoger, mappeskanning, binær I/O og vinduskontroll.
 - `src/shared`: Delte formatmetadata og filnavnhjelpere.
 - `src/vscode`: VS Code kommandoer og editor-integrasjon.
 - `src/nodejs-package`: Eksport-inngangspunkt for Node.js-pakken.
@@ -172,7 +164,6 @@ Jeg bryr meg om sikkerhet og lisensiering for kommersiell bruk, så jeg valgte p
 Spesiell takk til forfatterne og bidragsyterne til disse fantastiske bibliotekene som gjør dette prosjektet mulig:
 
 - [`react`](https://github.com/facebook/react) / [`react-dom`](https://github.com/facebook/react) (MIT-lisens): Interaktiv grensesnittstruktur.
-- [`gsap`](https://github.com/greensock/GSAP) / [`@gsap/react`](https://github.com/greensock/react) (GreenSock Standard-lisens): Førsteklasses animasjoner for sideoverganger.
 - [`lucide-react`](https://github.com/lucide-icons/lucide) (ISC-lisens): Elegante grensesnittikoner.
 - [`mammoth`](https://github.com/mwilliamson/mammoth.js) (BSD-2-Clause-lisens): Robust konvertering av `.docx`-dokumenter.
 - [`@opendocsg/pdf2md`](https://github.com/opendocsg/pdf2md) (MIT-lisens): Pålitelig tekstuttrekk fra `.pdf`-filer.
@@ -184,11 +175,13 @@ Spesiell takk til forfatterne og bidragsyterne til disse fantastiske biblioteken
 ---
 
 ## Lenker og bidrag
-[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them) 
-| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them) 
-| [GitHub Repository](https://github.com/the-long-ride/markdown-them) 
-| [Endringslogg](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md) 
+
+[VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them)
+| [Open VSX](https://open-vsx.org/extension/the-long-ride/markdown-them)
+| [GitHub Repository](https://github.com/the-long-ride/markdown-them)
+| [Endringslogg](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
 | [Bidragsyter-retningslinjer](https://github.com/the-long-ride/markdown-them/blob/main/GUIDELINE.md)
 
 ## Lisens
+
 [MIT (med restriksjoner på bruk av tema)](https://github.com/the-long-ride/markdown-them/blob/main/LICENSE)

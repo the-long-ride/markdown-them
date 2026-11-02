@@ -1,7 +1,15 @@
+@media (max-width: 1360px) {
+  .desktop-shell .trust-strip,
+  .trust-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
 @media (max-width: 1100px) {
   .workspace {
-    gap: 16px;
-    padding: 22px;
+    gap: 14px;
+    padding: 14px 16px 12px;
   }
 
   .files-panel,
@@ -11,15 +19,74 @@
 }
 
 @media (max-width: 820px) {
-  .workspace,
-  .desktop-shell .workspace {
-    min-height: 100dvh;
+  .workspace {
+    min-height: 100%;
     height: auto;
-    padding: 18px;
+    padding: 12px 14px 16px;
     overflow: visible;
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: 16px 12px;
+    gap: 14px 12px;
+  }
+
+  .desktop-shell .workspace {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100% - 38px) !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    gap: 14px !important;
+    padding: 14px max(14px, calc((100% - 94rem) / 2)) 10px !important;
+    box-sizing: border-box !important;
+    grid-template-columns: none !important;
+  }
+
+  .desktop-shell .topline,
+  .desktop-shell .brand-lockup {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .desktop-shell .topline-actions {
+    display: none !important;
+  }
+
+  .desktop-shell .workspace > * {
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  .desktop-shell .workspace .mode-surface {
+    flex: 0 0 auto !important;
+    min-height: auto !important;
+    height: auto !important;
+    width: 100% !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  .desktop-shell .trust-strip {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  .desktop-shell .workspace .app-footer {
+    display: flex !important;
+    margin-top: auto !important;
+    padding-top: 12px !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 0 !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
   }
 
   .tool-grid,
@@ -36,32 +103,69 @@
   }
 
   .brand-lockup {
+    display: contents;
+  }
+
+  .brand-identity {
     grid-column: 1;
     grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
   }
 
-  .theme-toggle {
+  .brand-identity img,
+  .brand-lockup img {
+    grid-column: auto;
+    grid-row: auto;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  .brand-title-row {
+    grid-column: auto;
+    grid-row: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-wrap: nowrap;
+  }
+
+  .brand-lockup h1 {
+    font-size: 18px;
+    white-space: nowrap;
+  }
+
+  .topline-end-actions {
     grid-column: 2;
     grid-row: 1;
     justify-self: end;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .language-selector-container {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    margin-right: 44px;
+  .brand-tagline {
+    grid-column: 1 / span 2;
+    grid-row: 2;
+    margin-top: 2px;
+    width: 100%;
   }
 
   .trust-strip {
     grid-column: 1 / span 2;
-    grid-row: 2;
-    grid-template-columns: 1fr;
+    grid-row: 3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .variants-menu {
     grid-column: 1 / span 2;
-    grid-row: 3;
+    grid-row: 4;
     justify-self: start;
   }
 
@@ -72,19 +176,19 @@
 
   .segmented {
     grid-column: 1 / span 2;
-    grid-row: 4;
+    grid-row: 5;
     width: 100%;
     min-width: 0;
   }
 
   .mode-surface {
     grid-column: 1 / span 2;
-    grid-row: 5;
+    grid-row: 6;
   }
 
   .app-footer {
     grid-column: 1 / span 2;
-    grid-row: 6;
+    grid-row: 7;
   }
 
   .legal-container {
@@ -105,26 +209,38 @@
 }
 
 @media (max-width: 560px) {
-  .workspace,
+  .workspace {
+    gap: 12px;
+    padding: 10px 10px 14px;
+  }
+
   .desktop-shell .workspace {
-    gap: 14px;
-    padding: 14px;
+    padding: 10px max(10px, calc((100% - 94rem) / 2)) 8px !important;
+    gap: 12px !important;
   }
 
-  .brand-lockup {
-    align-items: center;
-  }
-
+  .brand-identity img,
   .brand-lockup img {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .brand-title-row {
+    gap: 6px;
   }
 
   .brand-lockup h1 {
-    font-size: 20px;
+    font-size: 16px;
   }
 
-  .brand-lockup p {
+  .app-version {
+    font-size: 11px;
+    min-height: 20px;
+    padding: 0 6px;
+  }
+
+  .brand-lockup p,
+  .brand-tagline {
     font-size: 12px;
   }
 
@@ -149,6 +265,11 @@
     padding: 8px;
   }
 
+  .desktop-shell .trust-strip,
+  .trust-strip {
+    grid-template-columns: 1fr !important;
+  }
+
   .trust-icon {
     width: 30px;
     height: 30px;
@@ -160,6 +281,8 @@
 
   .output-list-panel {
     padding: 10px;
+    height: auto !important;
+    max-height: 480px !important;
   }
 
   .drop-zone {

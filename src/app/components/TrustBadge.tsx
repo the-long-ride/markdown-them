@@ -1,8 +1,16 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from 'lucide-react';
 
-export function TrustBadge({ detail, icon: Icon, title }: { detail: string; icon: LucideIcon; title: string }) {
+export function TrustBadge({
+  detail,
+  icon: Icon,
+  title,
+}: {
+  detail: string;
+  icon: LucideIcon;
+  title: string;
+}) {
   return (
-    <div className="trust-badge">
+    <div className="trust-badge" title={`${title} — ${detail}`}>
       <span className="trust-icon" aria-hidden="true">
         <Icon size={17} />
       </span>

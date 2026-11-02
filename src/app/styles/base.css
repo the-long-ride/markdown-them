@@ -7,17 +7,27 @@ body,
 #root {
   width: 100%;
   min-width: 320px;
+  height: 100%;
   min-height: 100%;
   margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 body {
-  overflow: auto;
+  overflow: hidden;
+  font-family: var(--font-body, monospace);
+  background-color: var(--shell-bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
-textarea {
-  font: inherit;
+textarea,
+input,
+select {
+  font-family: inherit;
 }
 
 button {
@@ -32,10 +42,13 @@ button:disabled {
 
 button:focus-visible,
 textarea:focus-visible,
+input:focus-visible,
 .app-footer a:focus-visible,
 .variants-link:focus-visible,
-.update-link:focus-visible {
-  outline: 2px solid var(--focus-ring);
+.update-link:focus-visible,
+.titlebar-version-link:focus-visible,
+.titlebar-update-link:focus-visible {
+  outline: 2px solid var(--focus-ring, #a96f28);
   outline-offset: 3px;
 }
 
@@ -55,13 +68,13 @@ button:not(:disabled):active {
 
 @keyframes dragPulse {
   from {
-    opacity: 0.7;
-    transform: scale(0.998);
+    opacity: 0.85;
+    border-color: var(--accent);
   }
 
   to {
     opacity: 1;
-    transform: scale(1);
+    border-color: var(--accent-strong);
   }
 }
 
@@ -75,18 +88,18 @@ button:not(:disabled):active {
   }
 }
 
-/* ─── Minimalist scrollbar ────────────────────────────────────────────────── */
+/* ─── Terminal Paper Minimalist Square Scrollbar ─────────────────────────── */
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: var(--rule-strong, rgba(23, 23, 22, 0.28)) transparent;
 }
 
-/* Chromium / Electron / Edge / Safari */
+/* Chromium / WebView2 / Edge / Safari */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -94,27 +107,14 @@ button:not(:disabled):active {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 9999px;
+  background: var(--rule-strong, rgba(23, 23, 22, 0.25));
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.32);
+  background: var(--accent, #a96f28);
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
-}
-
-/* Light theme overrides */
-:root[data-theme="light"] * {
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-:root[data-theme="light"] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.35);
 }

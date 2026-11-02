@@ -4,32 +4,55 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; base-uri 'self'; connect-src 'none'; font-src 'self'; form-action 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self' blob:"
+      content="default-src 'self'; base-uri 'self'; connect-src 'none'; font-src 'self' https://fonts.gstatic.com; form-action 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; worker-src 'self' blob:"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Them - 100% Private Client-Side Document to Markdown Converter</title>
     <meta
       name="description"
-      content="Markdown Them is a free, privacy-first online document converter that runs 100% client-side in your browser. Convert DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text files to clean Markdown locally with no document uploads."
+      content="Convert DOCX, PDF, HTML, XLSX, XLS, PPTX, ODT, ODP, ODS, RTF, and text files into clean Markdown locally in your browser. 100% private, zero file uploads, zero telemetry, free and open source."
     />
     <meta
       name="keywords"
-      content="Markdown converter, convert to markdown, docx to markdown, pdf to markdown, html to markdown, xlsx to markdown, pptx to markdown, odt to markdown, odp to markdown, ods to markdown, rtf to markdown, text to markdown, local markdown converter, client-side markdown converter, browser markdown converter, private document converter, offline markdown converter, privacy first markdown"
+      content="Markdown converter, convert to markdown, docx to markdown, pdf to markdown, html to markdown, xlsx to markdown, pptx to markdown, odt to markdown, odp to markdown, ods to markdown, rtf to markdown, text to markdown, local markdown converter, client-side markdown converter, browser markdown converter, private document converter, offline markdown converter, privacy first markdown, open source document converter"
     />
     <meta name="author" content="the-long-ride" />
     <meta name="application-name" content="Markdown Them" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#171717" />
-    
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+    <meta name="theme-color" content="#E9E5DD" />
+
+    <!-- PWA & Mobile Icons -->
+    <link rel="manifest" href="./site.webmanifest" />
+    <link rel="icon" type="image/png" href="./assets/markdown-them-logo.png" />
+    <link rel="apple-touch-icon" href="./assets/markdown-them-logo.png" />
+
+    <!-- Fonts: JetBrains Mono + Orbitron + Outfit with CJK & Vietnamese commercial-use fonts (Be Vietnam Pro, Noto Sans SC/KR/JP) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=Orbitron:wght@500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Open Graph / Facebook / LinkedIn / Slack -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://the-long-ride.github.io/markdown-them" />
+    <meta property="og:url" content="https://the-long-ride.github.io/markdown-them/" />
     <meta property="og:site_name" content="Markdown Them" />
-    <meta property="og:title" content="Markdown Them - Private Client-Side Markdown Converter" />
+    <meta
+      property="og:title"
+      content="Markdown Them - 100% Private Client-Side Document to Markdown Converter"
+    />
     <meta
       property="og:description"
-      content="Convert DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text to clean Markdown locally in your browser. 100% private, no document uploads."
+      content="Convert DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text files to clean Markdown locally in your browser. 100% private, zero document uploads."
     />
-    <meta property="og:image" content="https://the-long-ride.github.io/markdown-them/assets/markdown-them-logo.png" />
+    <meta
+      property="og:image"
+      content="https://the-long-ride.github.io/markdown-them/assets/markdown-them-logo.png"
+    />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
     <meta property="og:image:alt" content="Markdown Them Logo" />
@@ -37,22 +60,142 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:url" content="https://the-long-ride.github.io/markdown-them" />
-    <meta name="twitter:title" content="Markdown Them - Private Client-Side Markdown Converter" />
+    <meta name="twitter:url" content="https://the-long-ride.github.io/markdown-them/" />
+    <meta
+      name="twitter:title"
+      content="Markdown Them - 100% Private Client-Side Document to Markdown Converter"
+    />
     <meta
       name="twitter:description"
-      content="Convert DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text to Markdown locally in your browser. 100% private."
+      content="Convert DOCX, PDF, HTML, XLSX, PPTX, ODT, ODP, ODS, RTF, and text to Markdown locally in your browser. 100% private, zero uploads."
     />
-    <meta name="twitter:image" content="https://the-long-ride.github.io/markdown-them/assets/markdown-them-logo.png" />
+    <meta
+      name="twitter:image"
+      content="https://the-long-ride.github.io/markdown-them/assets/markdown-them-logo.png"
+    />
 
-    <link rel="canonical" href="https://the-long-ride.github.io/markdown-them" />
+    <link rel="canonical" href="https://the-long-ride.github.io/markdown-them/" />
     <link rel="author" href="https://github.com/the-long-ride" />
     <link rel="license" href="https://github.com/the-long-ride/markdown-them/blob/main/LICENSE" />
-    <title>Markdown Them - Private Client-Side Markdown Converter</title>
-    <link rel="icon" href="./assets/markdown-them-logo.png" />
     <link rel="stylesheet" href="./assets/app.css" />
+
+    <!-- Structured Data (JSON-LD) for Search Engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebApplication",
+            "@id": "https://the-long-ride.github.io/markdown-them/#webapp",
+            "name": "Markdown Them",
+            "url": "https://the-long-ride.github.io/markdown-them/",
+            "description": "A 100% private, client-side document converter that turns DOCX, PDF, HTML, XLSX, XLS, PPTX, ODT, ODP, ODS, RTF, and text into clean Markdown without uploading files to any server.",
+            "applicationCategory": "UtilityApplication",
+            "operatingSystem": "All (Web Browser, Windows, macOS, Linux)",
+            "browserRequirements": "Requires JavaScript and modern Web standards (WebAssembly, Web Worker)",
+            "softwareVersion": "1.3.2",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "the-long-ride",
+              "url": "https://github.com/the-long-ride"
+            },
+            "featureList": [
+              "DOCX to Markdown conversion",
+              "PDF to Markdown conversion",
+              "HTML to Markdown conversion",
+              "Excel XLSX to Markdown table conversion",
+              "PowerPoint PPTX to Markdown conversion",
+              "OpenDocument (ODT, ODP, ODS) to Markdown conversion",
+              "Rich Text Format (RTF) to Markdown conversion",
+              "Plain Text to Markdown conversion",
+              "100% Client-Side In-Browser Execution",
+              "Zero Network Document Uploads",
+              "Zero Tracking and Telemetry",
+              "Batch Multi-file Processing",
+              "Live Text Input and Markdown Output with Preview"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://the-long-ride.github.io/markdown-them/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Are my documents uploaded to a remote server when converting?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Markdown Them executes 100% client-side inside your browser or native desktop environment using WebAssembly and Web Workers. Your files never leave your computer."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Which file formats can I convert to Markdown?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Markdown Them supports DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF, and plain text files."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is Markdown Them free and open source?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Markdown Them is completely free and licensed under the permissive MIT license. You can inspect the source code on GitHub."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>
+      <div
+        style="
+          max-width: 800px;
+          margin: 40px auto;
+          padding: 24px;
+          font-family: sans-serif;
+          line-height: 1.6;
+          color: #23221e;
+          background: #fdfbf7;
+          border: 1px solid #d3cdc1;
+          border-radius: 4px;
+        "
+      >
+        <h1 style="margin-top: 0">Markdown Them - 100% Private Document to Markdown Converter</h1>
+        <p>
+          Markdown Them is a free, privacy-first document converter running entirely in your
+          browser. All file processing happens locally using WebAssembly and Web Workers. Zero file
+          uploads, zero telemetry.
+        </p>
+        <h2>Supported Document Formats</h2>
+        <ul>
+          <li><strong>Documents:</strong> DOCX, DOC, PDF, RTF, ODT</li>
+          <li><strong>Spreadsheets:</strong> XLSX, XLS, XLM, ODS</li>
+          <li><strong>Presentations:</strong> PPTX, ODP</li>
+          <li><strong>Web & Text:</strong> HTML, TXT, MD</li>
+        </ul>
+        <h2>Links & Resources</h2>
+        <ul>
+          <li><a href="https://github.com/the-long-ride/markdown-them">GitHub Repository</a></li>
+          <li><a href="#/privacy">Privacy Policy</a></li>
+          <li><a href="#/terms">Terms of Service</a></li>
+          <li>
+            <a href="https://github.com/the-long-ride/markdown-them/releases"
+              >Download Desktop App (Windows, macOS, Linux)</a
+            >
+          </li>
+        </ul>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script src="./assets/app.js"></script>
   </body>

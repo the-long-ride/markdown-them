@@ -1,7 +1,7 @@
-import { markdownOutputName } from "../shared/formats";
-import type { DesktopFileEntry } from "./desktop-api";
-import { desktopApi } from "./app-constants";
-import type { FileItem } from "./app-types";
+import { markdownOutputName } from '../shared/formats';
+import type { DesktopFileEntry } from './desktop-api';
+import { desktopApi } from './app-constants';
+import type { FileItem } from './app-types';
 
 export function createBrowserItem(file: File): FileItem {
   return {
@@ -9,7 +9,7 @@ export function createBrowserItem(file: File): FileItem {
     name: file.name,
     size: file.size,
     file,
-    status: "queued",
+    status: 'queued',
     outputName: markdownOutputName(file.name),
   };
 }
@@ -20,7 +20,7 @@ export function createDesktopItem(entry: DesktopFileEntry): FileItem {
     name: entry.name,
     size: entry.size,
     sourcePath: entry.path,
-    status: "queued",
+    status: 'queued',
     outputName: markdownOutputName(entry.name),
   };
 }
@@ -39,7 +39,11 @@ export function mergeFileItems(current: FileItem[], incoming: FileItem[]): FileI
   return merged;
 }
 
-export async function runLimited<T>(items: T[], limit: number, worker: (item: T) => Promise<void>): Promise<void> {
+export async function runLimited<T>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<void>,
+): Promise<void> {
   let index = 0;
   const workerCount = Math.min(limit, items.length);
 
@@ -63,12 +67,12 @@ export async function copyToClipboard(text: string): Promise<void> {
 }
 
 export function downloadMarkdown(fileName: string, markdown: string) {
-  downloadBlob(fileName, new Blob([markdown], { type: "text/markdown;charset=utf-8" }));
+  downloadBlob(fileName, new Blob([markdown], { type: 'text/markdown;charset=utf-8' }));
 }
 
 export function downloadBlob(fileName: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
+  const anchor = document.createElement('a');
   anchor.href = url;
   anchor.download = fileName;
   anchor.click();
@@ -77,7 +81,7 @@ export function downloadBlob(fileName: string, blob: Blob) {
 
 export function formatSize(size?: number): string {
   if (!size) {
-    return "Ready";
+    return 'Ready';
   }
 
   if (size < 1024) {
@@ -92,7 +96,9 @@ export function formatSize(size?: number): string {
 }
 
 export function shouldReduceMotion(): boolean {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  return (
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 }
 
 export function getErrorMessage(error: unknown): string {

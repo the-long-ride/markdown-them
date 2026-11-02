@@ -1,11 +1,14 @@
-@import "./styles/theme.css";
-@import "./styles/base.css";
-@import "./styles/layout.css";
-@import "./styles/brand.css";
-@import "./styles/controls.css";
-@import "./styles/panels.css";
-@import "./styles/files.css";
-@import "./styles/feedback.css";
-@import "./styles/legal.css";
-@import "./styles/responsive.css";
-
+@import './styles/theme.css';
+@import './styles/base.css';
+@import './styles/titlebar.css';
+@import './styles/layout.css';
+@import './styles/brand.css';
+@import './styles/controls.css';
+@import './styles/panels.css';
+@import './styles/files.css';
+@import './styles/files-selection.css';
+@import './styles/files-table.css';
+@import './styles/feedback.css';
+@import './styles/legal.css';
+@import './styles/support-modal.css';
+@import './styles/responsive.css';

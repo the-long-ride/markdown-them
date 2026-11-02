@@ -1,11 +1,22 @@
-import JSZip from "jszip";
-import { XMLParser } from "fast-xml-parser";
-import { appendMarkdownTable, normalizeMarkdownHeading } from "./markdown-utils";
+import JSZip from 'jszip';
+import { XMLParser } from 'fast-xml-parser';
+import {
+  appendMarkdownTable,
+  decodeXmlEntities,
+  normalizeMarkdown,
+  normalizeMarkdownHeading,
+} from './markdown-utils';
+
+function localTagName(tagName: string): string {
+  const colonIndex = tagName.indexOf(':');
+  return colonIndex === -1 ? tagName : tagName.slice(colonIndex + 1);
+}
 
 const xmlParser = new XMLParser({
   ignoreAttributes: false,
-  attributeNamePrefix: "@_",
-  textNodeName: "#text",
+  attributeNamePrefix: '@_',
+  textNodeName: '#text',
+  transformTagName: localTagName,
   parseAttributeValue: false,
   parseTagValue: false,
   trimValues: false,
@@ -13,10 +24,10 @@ const xmlParser = new XMLParser({
 
 export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<string> {
   const zip = await JSZip.loadAsync(data);
-  const workbookXml = await readZipText(zip, "xl/workbook.xml");
+  const workbookXml = await readZipText(zip, 'xl/workbook.xml');
 
   if (!workbookXml) {
-    throw new Error("Invalid XLSX file: missing workbook.xml");
+    throw new Error('Invalid XLSX file: missing workbook.xml');
   }
 
   const workbook = xmlParser.parse(workbookXml);
@@ -27,15 +38,10 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
   const markdown: string[] = [];
 
   for (const sheet of sheets) {
-    const sheetName = normalizeMarkdownHeading(String(sheet?.["@_name"] || "Sheet"));
-    const relationshipId = sheet?.["@_r:id"];
+    const sheetName = normalizeMarkdownHeading(String(sheet?.['@_name'] || 'Sheet'));
+    const relationshipId =
+      sheet?.['@_r:id'] || sheet?.['@_id'] || sheet?.['@_r:Id'] || sheet?.['@_Id'];
     const sheetPath = relationshipId ? relationships.get(String(relationshipId)) : undefined;
-
-    if (markdown.length > 0) {
-      markdown.push("");
-    }
-
-    markdown.push(`## ${sheetName}`, "");
 
     if (!sheetPath) {
       continue;
@@ -50,15 +56,27 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
     const rows = toArray(worksheet?.worksheet?.sheetData?.row);
     const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings));
 
+    const isAllEmpty = tableRows.every((row) =>
+      row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
+    );
+    if (tableRows.length === 0 || isAllEmpty) {
+      continue;
+    }
+
+    if (markdown.length > 0) {
+      markdown.push('');
+    }
+
+    markdown.push(`## ${sheetName}`, '');
     appendMarkdownTable(markdown, tableRows);
   }
 
-  return markdown.join("\n").trimEnd();
+  return normalizeMarkdown(markdown.join('\n'));
 }
 
 async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string>> {
   const relationships = new Map<string, string>();
-  const relsXml = await readZipText(zip, "xl/_rels/workbook.xml.rels");
+  const relsXml = await readZipText(zip, 'xl/_rels/workbook.xml.rels');
 
   if (!relsXml) {
     return relationships;
@@ -66,8 +84,8 @@ async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string
 
   const rels = xmlParser.parse(relsXml);
   for (const relationship of toArray(rels?.Relationships?.Relationship)) {
-    const id = relationship?.["@_Id"];
-    const target = relationship?.["@_Target"];
+    const id = relationship?.['@_Id'] || relationship?.['@_id'] || relationship?.['@_r:id'];
+    const target = relationship?.['@_Target'] || relationship?.['@_target'];
 
     if (id && target) {
       relationships.set(String(id), resolveWorkbookTarget(String(target)));
@@ -78,7 +96,7 @@ async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string
 }
 
 async function readSharedStrings(zip: JSZip): Promise<string[]> {
-  const sharedStringsXml = await readZipText(zip, "xl/sharedStrings.xml");
+  const sharedStringsXml = await readZipText(zip, 'xl/sharedStrings.xml');
 
   if (!sharedStringsXml) {
     return [];
@@ -90,7 +108,7 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
 
 async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
   const file = zip.file(filePath);
-  return file ? file.async("text") : undefined;
+  return file ? file.async('text') : undefined;
 }
 
 function readXlsxRow(row: any, sharedStrings: string[]): string[] {
@@ -98,11 +116,11 @@ function readXlsxRow(row: any, sharedStrings: string[]): string[] {
   let nextColumn = 1;
 
   for (const cell of toArray(row?.c)) {
-    const cellRef = cell?.["@_r"];
+    const cellRef = cell?.['@_r'] || cell?.['@_R'];
     const column = cellRef ? columnIndexFromCellRef(String(cellRef)) : nextColumn;
 
     while (values.length < column - 1) {
-      values.push("");
+      values.push('');
     }
 
     values.push(readXlsxCell(cell, sharedStrings));
@@ -113,21 +131,23 @@ function readXlsxRow(row: any, sharedStrings: string[]): string[] {
 }
 
 function readXlsxCell(cell: any, sharedStrings: string[]): string {
-  const type = cell?.["@_t"];
+  const type = cell?.['@_t'] || cell?.['@_T'];
 
-  if (type === "inlineStr") {
+  if (type === 'inlineStr') {
     return readRichText(cell?.is);
   }
 
   const rawValue = readRichText(cell?.v);
 
-  if (type === "s") {
-    const sharedStringIndex = rawValue.trim() === "" ? NaN : Number(rawValue);
-    return Number.isInteger(sharedStringIndex) && sharedStringIndex >= 0 ? sharedStrings[sharedStringIndex] || "" : "";
+  if (type === 's') {
+    const sharedStringIndex = rawValue.trim() === '' ? NaN : Number(rawValue);
+    return Number.isInteger(sharedStringIndex) && sharedStringIndex >= 0
+      ? sharedStrings[sharedStringIndex] || ''
+      : '';
   }
 
-  if (type === "b") {
-    return rawValue === "1" ? "TRUE" : "FALSE";
+  if (type === 'b') {
+    return rawValue === '1' ? 'TRUE' : 'FALSE';
   }
 
   return rawValue;
@@ -135,15 +155,15 @@ function readXlsxCell(cell: any, sharedStrings: string[]): string {
 
 function readRichText(value: any): string {
   if (value === null || value === undefined) {
-    return "";
+    return '';
   }
 
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return String(value);
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return decodeXmlEntities(String(value));
   }
 
   if (Array.isArray(value)) {
-    return value.map(readRichText).join("");
+    return value.map(readRichText).join('');
   }
 
   if (value.t !== undefined) {
@@ -153,35 +173,30 @@ function readRichText(value: any): string {
   if (value.r !== undefined) {
     return toArray(value.r)
       .map((run) => readRichText(run.t))
-      .join("");
+      .join('');
   }
 
-  if (value["#text"] !== undefined) {
-    return String(value["#text"]);
+  if (value['#text'] !== undefined) {
+    return decodeXmlEntities(String(value['#text']));
   }
 
-  return "";
+  return '';
 }
 
 function resolveWorkbookTarget(target: string): string {
-  const normalized = target.replace(/\\/g, "/");
-
-  if (normalized.startsWith("/")) {
-    return normalized.replace(/^\/+/, "");
-  }
-
-  return normalizePosixPath(["xl", normalized]);
-}
-
-function normalizePosixPath(parts: string[]): string {
+  const normalized = target.replace(/\\/g, '/');
+  const base = normalized.startsWith('/') ? normalized.replace(/^\/+/, '') : `xl/${normalized}`;
   const resolved: string[] = [];
 
-  for (const part of parts.join("/").split("/")) {
-    if (!part || part === ".") {
+  for (const part of base.split('/')) {
+    if (!part || part === '.') {
       continue;
     }
 
-    if (part === "..") {
+    if (part === '..') {
+      if (resolved.length === 0) {
+        throw new Error(`Invalid workbook relationship target escapes archive: ${target}`);
+      }
       resolved.pop();
       continue;
     }
@@ -189,13 +204,17 @@ function normalizePosixPath(parts: string[]): string {
     resolved.push(part);
   }
 
-  return resolved.join("/");
+  const result = resolved.join('/');
+  if (!result.startsWith('xl/')) {
+    throw new Error(`Invalid workbook relationship target outside xl/: ${target}`);
+  }
+  return result;
 }
 
 function columnIndexFromCellRef(cellRef: string): number {
-  const columnLetters = cellRef.match(/^[A-Z]+/i)?.[0]?.toUpperCase() || "A";
+  const columnLetters = cellRef.match(/^[A-Z]+/i)?.[0]?.toUpperCase() || 'A';
 
-  return columnLetters.split("").reduce((index, char) => {
+  return columnLetters.split('').reduce((index, char) => {
     return index * 26 + char.charCodeAt(0) - 64;
   }, 0);
 }

@@ -7,7 +7,7 @@ export interface DesktopFileEntry {
 export interface DesktopConversionResult {
   sourcePath: string;
   name: string;
-  status: "done" | "error";
+  status: 'done' | 'error';
   outputPath?: string;
   error?: string;
 }
@@ -25,6 +25,12 @@ export interface DesktopUpdateInfo {
   updateAvailable: boolean;
 }
 
+export interface DragDropPayload {
+  type: 'enter' | 'over' | 'drop' | 'leave';
+  paths?: string[];
+  position?: { x: number; y: number };
+}
+
 export interface MarkdownThemDesktopApi {
   isDesktop: true;
   chooseFiles(): Promise<DesktopFileEntry[]>;
@@ -36,11 +42,24 @@ export interface MarkdownThemDesktopApi {
   copyText(text: string): Promise<void>;
   checkForUpdate(): Promise<DesktopUpdateInfo>;
   openExternal(url: string): Promise<void>;
+  isDebug?(): Promise<boolean>;
+  openPath?(path: string): Promise<void>;
+  readFileBinary?(filePath: string): Promise<Uint8Array>;
+  saveConvertedFile?(
+    sourcePath: string,
+    outputFolder: string | null | undefined,
+    markdown: string,
+  ): Promise<string>;
+  saveMarkdownDialog?(defaultName: string, markdown: string): Promise<string | null>;
+  onDragDropEvent?(callback: (payload: DragDropPayload) => void): () => void;
   window: {
     minimize(): void;
     toggleMaximize(): void;
     close(): void;
     isMaximized(): Promise<boolean>;
+    startDragging?(): void;
+    setZoom?(factor: number): Promise<void>;
+    getZoom?(): number;
     onMaximizedChange(callback: (isMaximized: boolean) => void): () => void;
   };
 }
@@ -48,5 +67,8 @@ export interface MarkdownThemDesktopApi {
 declare global {
   interface Window {
     markdownThemDesktop?: MarkdownThemDesktopApi;
+    __TAURI_INTERNALS__?: {
+      invoke<T = unknown>(cmd: string, args?: Record<string, unknown>): Promise<T>;
+    };
   }
 }

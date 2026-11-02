@@ -1,167 +1,266 @@
 :root,
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #121212;
+:root[data-theme='light'] {
+  color-scheme: light;
+  font-family: var(--font-body);
+  background: #e9e5dd;
   color: var(--text);
   font-synthesis: none;
   text-rendering: geometricPrecision;
-  --text: #f4f0ea;
-  --text-strong: #ffffff;
-  --text-soft: rgba(244, 240, 234, 0.9);
-  --muted: rgba(244, 240, 234, 0.68);
-  --muted-soft: rgba(244, 240, 234, 0.62);
-  --primary-text: #161616;
-  --shell-bg:
-    linear-gradient(135deg, rgba(104, 216, 189, 0.2), transparent 31%),
-    linear-gradient(315deg, rgba(247, 200, 115, 0.16), transparent 36%),
-    linear-gradient(180deg, #171817 0%, #111211 100%);
-  --grid-line-a: rgba(255, 255, 255, 0.045);
-  --grid-line-b: rgba(255, 255, 255, 0.035);
-  --shell-mask-opacity: 0.36;
-  --shell-shine:
-    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.05) 48%, transparent 56%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 42%);
-  --shell-shine-blend: screen;
-  --shell-shine-opacity: 0.55;
-  --titlebar-bg: rgba(12, 12, 12, 0.54);
-  --titlebar-line: rgba(255, 255, 255, 0.1);
-  --logo-bg: rgba(255, 255, 255, 0.08);
-  --logo-line: rgba(255, 255, 255, 0.14);
-  --logo-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.24),
-    0 0 26px rgba(104, 216, 189, 0.16);
-  --panel: rgba(255, 255, 255, 0.11);
-  --panel-strong: rgba(255, 255, 255, 0.17);
-  --panel-start: rgba(255, 255, 255, 0.075);
-  --panel-sheen-a: rgba(255, 255, 255, 0.08);
-  --panel-sheen-b: rgba(255, 255, 255, 0.06);
-  --line: rgba(255, 255, 255, 0.18);
-  --line-soft: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.24);
-  --control-bg: rgba(255, 255, 255, 0.1);
-  --control-bg-soft: rgba(255, 255, 255, 0.08);
-  --control-hover-bg: rgba(255, 255, 255, 0.15);
-  --active-bg:
-    linear-gradient(135deg, rgba(104, 216, 189, 0.15), rgba(247, 200, 115, 0.12)),
-    rgba(255, 255, 255, 0.16);
-  --active-text: #ffffff;
-  --trust-surface:
-    linear-gradient(135deg, var(--badge-accent-soft), transparent 64%),
-    rgba(255, 255, 255, 0.08);
-  --trust-line: rgba(255, 255, 255, 0.16);
-  --trust-text: rgba(244, 240, 234, 0.9);
-  --trust-detail: rgba(244, 240, 234, 0.62);
-  --trust-sheen: rgba(255, 255, 255, 0.08);
-  --trust-sweep: rgba(255, 255, 255, 0.12);
-  --accent: #68d8bd;
-  --accent-strong: #f7c873;
-  --accent-cool: #9bb8ff;
-  --danger: #ff6b6b;
-  --focus-ring: rgba(247, 200, 115, 0.9);
-  --button-hover-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-  --editor-bg: rgba(10, 10, 10, 0.38);
-  --editor-focus-bg: rgba(10, 10, 10, 0.5);
-  --editor-text: #fffaf2;
-  --drop-border: rgba(255, 255, 255, 0.22);
-  --drop-bg:
-    linear-gradient(135deg, rgba(104, 216, 189, 0.08), transparent 62%),
-    rgba(255, 255, 255, 0.06);
-  --drop-hover-bg:
-    linear-gradient(135deg, rgba(104, 216, 189, 0.13), transparent 62%),
-    rgba(255, 255, 255, 0.08);
-  --drop-scan-bg:
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent),
-    linear-gradient(180deg, transparent, rgba(104, 216, 189, 0.08), transparent);
-  --output-bg: rgba(10, 10, 10, 0.2);
-  --status-bg: rgba(255, 255, 255, 0.07);
-  --empty-border: rgba(255, 255, 255, 0.12);
-  --empty-bg: rgba(255, 255, 255, 0.035);
-  --toast-bg: rgba(18, 18, 18, 0.72);
-  --toast-text: #ffffff;
-  --footer-text: rgba(244, 240, 234, 0.64);
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-  --shadow-lift: 0 28px 90px rgba(0, 0, 0, 0.42);
+
+  /* Fonts: JetBrains Mono + Orbitron with free commercial-use CJK & Vietnamese fallbacks (Noto Sans SC/KR/JP, Be Vietnam Pro) */
+  --font-display:
+    'Orbitron', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', 'JetBrains Mono',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', 'Yu Gothic UI', sans-serif;
+  --font-name:
+    'Satoshi', 'Outfit', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI',
+    'Malgun Gothic', sans-serif;
+  --font-body:
+    'JetBrains Mono', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', ui-monospace, monospace;
+  --font-mono:
+    'JetBrains Mono', 'Noto Sans Mono', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', 'Cascadia Code', 'Consolas', ui-monospace,
+    monospace;
+
+  /* Terminal Paper Semantic Tokens */
+  --paper-archive: #e9e5dd;
+  --paper-pressed: #ded9cf;
+  --ink-carbon: #171716;
+  --plate-graphite: #242321;
+  --graphite-soft: #4d4b46;
+  --stone-faded: #858178;
+  --amber-signal: #a96f28;
+  --amber-deep: #7b4b16;
+  --amber-wash: rgba(169, 111, 40, 0.12);
+  --rule-structural: rgba(23, 23, 22, 0.16);
+  --rule-soft: rgba(23, 23, 22, 0.08);
+  --rule-strong: rgba(23, 23, 22, 0.32);
+
+  /* Typography Colors */
+  --text: #171716;
+  --text-strong: #171716;
+  --text-soft: #242321;
+  --muted: #4d4b46;
+  --muted-soft: #858178;
+  --primary-text: #e9e5dd;
+
+  /* Canvas and Structural Elements */
+  --shell-bg: #e9e5dd;
+  --grid-line-a: rgba(23, 23, 22, 0.045);
+  --grid-line-b: rgba(23, 23, 22, 0.03);
+  --shell-mask-opacity: 0.6;
+
+  --titlebar-bg: rgba(233, 229, 221, 0.92);
+  --titlebar-line: rgba(23, 23, 22, 0.14);
+
+  --logo-bg: #ded9cf;
+  --logo-line: rgba(23, 23, 22, 0.2);
+  --logo-shadow: 0 1px 3px rgba(23, 23, 22, 0.08);
+
+  /* Panels: Crisp ruled edges, sharp corners */
+  --panel: #e2ddd4;
+  --panel-strong: #dcd7cd;
+  --panel-start: #e6e2d9;
+  --panel-sheen-a: transparent;
+  --panel-sheen-b: transparent;
+  --line: rgba(23, 23, 22, 0.16);
+  --line-soft: rgba(23, 23, 22, 0.08);
+  --line-strong: rgba(23, 23, 22, 0.32);
+
+  /* Controls */
+  --control-bg: #ded9cf;
+  --control-bg-soft: #e4e0d7;
+  --control-hover-bg: #d5d0c5;
+  --active-bg: #242321;
+  --active-text: #e9e5dd;
+
+  /* Trust Readouts */
+  --trust-surface: #ede9e1;
+  --trust-line: rgba(23, 23, 22, 0.14);
+  --trust-text: #171716;
+  --trust-detail: #4d4b46;
+
+  /* Accent: Signal Amber */
+  --accent: #a96f28;
+  --accent-strong: #7b4b16;
+  --accent-cool: #858178;
+  --danger: #9e3223;
+  --focus-ring: #a96f28;
+  --button-hover-shadow: 0 4px 12px rgba(23, 23, 22, 0.12);
+
+  /* Editor and Dropzone */
+  --editor-bg: #eae6de;
+  --editor-focus-bg: #f0ece4;
+  --editor-text: #171716;
+  --editor-border: rgba(23, 23, 22, 0.22);
+  --drop-border: rgba(23, 23, 22, 0.24);
+  --drop-bg: #ded9cf;
+  --drop-hover-bg: #d7d2c7;
+  --drop-scan-bg: linear-gradient(90deg, transparent, rgba(169, 111, 40, 0.08), transparent);
+  --output-bg: #dcd7ce;
+  --status-bg: rgba(23, 23, 22, 0.06);
+  --empty-border: rgba(23, 23, 22, 0.18);
+  --empty-bg: #e4e0d7;
+  --toast-bg: #242321;
+  --toast-text: #e9e5dd;
+  --footer-text: #4d4b46;
+  --shadow: 0 2px 8px rgba(23, 23, 22, 0.06);
+  --shadow-lift: 0 4px 16px rgba(23, 23, 22, 0.1);
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  background: #f4f7f2;
-  --text: #20231f;
-  --text-strong: #11150f;
-  --text-soft: rgba(32, 35, 31, 0.88);
-  --muted: rgba(48, 58, 46, 0.68);
-  --muted-soft: rgba(48, 58, 46, 0.62);
-  --primary-text: #11150f;
-  --shell-bg:
-    linear-gradient(135deg, rgba(35, 151, 130, 0.14), transparent 31%),
-    linear-gradient(315deg, rgba(226, 168, 47, 0.2), transparent 36%),
-    linear-gradient(180deg, #f8faf7 0%, #eef3ee 100%);
-  --grid-line-a: rgba(35, 43, 33, 0.08);
-  --grid-line-b: rgba(35, 43, 33, 0.055);
-  --shell-mask-opacity: 0.42;
-  --shell-shine:
-    linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.42) 48%, transparent 56%),
-    linear-gradient(180deg, rgba(35, 151, 130, 0.06), transparent 42%);
-  --shell-shine-blend: normal;
-  --shell-shine-opacity: 0.68;
-  --titlebar-bg: rgba(245, 248, 243, 0.76);
-  --titlebar-line: rgba(35, 43, 33, 0.12);
-  --logo-bg: rgba(255, 255, 255, 0.82);
-  --logo-line: rgba(35, 43, 33, 0.14);
-  --logo-shadow:
-    0 10px 28px rgba(35, 43, 33, 0.14),
-    0 0 26px rgba(35, 151, 130, 0.16);
-  --panel: rgba(255, 255, 255, 0.74);
-  --panel-strong: rgba(255, 255, 255, 0.9);
-  --panel-start: rgba(255, 255, 255, 0.66);
-  --panel-sheen-a: rgba(255, 255, 255, 0.58);
-  --panel-sheen-b: rgba(255, 255, 255, 0.36);
-  --line: rgba(35, 43, 33, 0.14);
-  --line-soft: rgba(35, 43, 33, 0.12);
-  --line-strong: rgba(35, 151, 130, 0.32);
-  --control-bg: rgba(255, 255, 255, 0.68);
-  --control-bg-soft: rgba(255, 255, 255, 0.58);
-  --control-hover-bg: rgba(255, 255, 255, 0.9);
-  --active-bg:
-    linear-gradient(135deg, rgba(35, 151, 130, 0.16), rgba(226, 168, 47, 0.18)),
-    rgba(255, 255, 255, 0.92);
-  --active-text: #11150f;
-  --trust-surface:
-    linear-gradient(135deg, var(--badge-accent-soft), transparent 64%),
-    rgba(255, 255, 255, 0.7);
-  --trust-line: rgba(35, 43, 33, 0.13);
-  --trust-text: rgba(32, 35, 31, 0.9);
-  --trust-detail: rgba(48, 58, 46, 0.62);
-  --trust-sheen: rgba(255, 255, 255, 0.5);
-  --trust-sweep: rgba(255, 255, 255, 0.64);
-  --accent: #239782;
-  --accent-strong: #e2a82f;
-  --accent-cool: #5f76d8;
-  --danger: #d63f42;
-  --focus-ring: rgba(35, 151, 130, 0.9);
-  --button-hover-shadow: 0 10px 24px rgba(35, 43, 33, 0.12);
-  --editor-bg: rgba(255, 255, 255, 0.76);
-  --editor-focus-bg: #ffffff;
-  --editor-text: #161b16;
-  --drop-border: rgba(35, 43, 33, 0.24);
-  --drop-bg:
-    linear-gradient(135deg, rgba(35, 151, 130, 0.08), transparent 62%),
-    rgba(255, 255, 255, 0.58);
-  --drop-hover-bg:
-    linear-gradient(135deg, rgba(35, 151, 130, 0.13), transparent 62%),
-    rgba(255, 255, 255, 0.86);
-  --drop-scan-bg:
-    linear-gradient(90deg, transparent, rgba(35, 151, 130, 0.13), transparent),
-    linear-gradient(180deg, transparent, rgba(35, 151, 130, 0.1), transparent);
-  --output-bg: rgba(255, 255, 255, 0.6);
-  --status-bg: rgba(35, 43, 33, 0.06);
-  --empty-border: rgba(35, 43, 33, 0.16);
-  --empty-bg: rgba(255, 255, 255, 0.44);
-  --toast-bg: rgba(255, 255, 255, 0.86);
-  --toast-text: #17211d;
-  --footer-text: rgba(48, 58, 46, 0.66);
-  --shadow: 0 20px 58px rgba(48, 66, 49, 0.16);
-  --shadow-lift: 0 26px 70px rgba(48, 66, 49, 0.22);
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  font-family: var(--font-body);
+  background: #141413;
+  color: var(--text);
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+
+  /* Fonts: JetBrains Mono + Orbitron with free commercial-use CJK & Vietnamese fallbacks (Noto Sans SC/KR/JP, Be Vietnam Pro) */
+  --font-display:
+    'Orbitron', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', 'JetBrains Mono',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', 'Yu Gothic UI', sans-serif;
+  --font-name:
+    'Satoshi', 'Outfit', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI',
+    'Malgun Gothic', sans-serif;
+  --font-body:
+    'JetBrains Mono', 'Be Vietnam Pro', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', ui-monospace, monospace;
+  --font-mono:
+    'JetBrains Mono', 'Noto Sans Mono', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP',
+    'PingFang SC', 'Microsoft YaHei UI', 'Malgun Gothic', 'Cascadia Code', 'Consolas', ui-monospace,
+    monospace;
+
+  /* Terminal Graphite Semantic Tokens */
+  --paper-archive: #141413;
+  --paper-pressed: #1c1b19;
+  --ink-carbon: #e9e5dd;
+  --plate-graphite: #22211f;
+  --graphite-soft: #9e9a91;
+  --stone-faded: #757169;
+  --amber-signal: #d98a32;
+  --amber-deep: #f0a74d;
+  --amber-wash: rgba(217, 138, 50, 0.15);
+  --rule-structural: rgba(233, 229, 221, 0.14);
+  --rule-soft: rgba(233, 229, 221, 0.08);
+  --rule-strong: rgba(233, 229, 221, 0.28);
+
+  /* Typography Colors */
+  --text: #e9e5dd;
+  --text-strong: #faf8f5;
+  --text-soft: #ded9cf;
+  --muted: #9e9a91;
+  --muted-soft: #757169;
+  --primary-text: #141413;
+
+  /* Canvas and Structural Elements */
+  --shell-bg: #141413;
+  --grid-line-a: rgba(233, 229, 221, 0.04);
+  --grid-line-b: rgba(233, 229, 221, 0.025);
+  --shell-mask-opacity: 0.5;
+
+  --titlebar-bg: rgba(20, 20, 19, 0.92);
+  --titlebar-line: rgba(233, 229, 221, 0.12);
+
+  --logo-bg: #1e1d1b;
+  --logo-line: rgba(233, 229, 221, 0.18);
+  --logo-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+
+  /* Panels: Crisp ruled edges, sharp corners */
+  --panel: #1d1c1a;
+  --panel-strong: #242320;
+  --panel-start: #21201d;
+  --panel-sheen-a: transparent;
+  --panel-sheen-b: transparent;
+  --line: rgba(233, 229, 221, 0.14);
+  --line-soft: rgba(233, 229, 221, 0.08);
+  --line-strong: rgba(233, 229, 221, 0.28);
+
+  /* Controls */
+  --control-bg: #22211f;
+  --control-bg-soft: #1b1a18;
+  --control-hover-bg: #2a2926;
+  --active-bg: #e9e5dd;
+  --active-text: #141413;
+
+  /* Trust Readouts */
+  --trust-surface: #1a1918;
+  --trust-line: rgba(233, 229, 221, 0.12);
+  --trust-text: #e9e5dd;
+  --trust-detail: #9e9a91;
+
+  /* Accent: Signal Amber */
+  --accent: #d98a32;
+  --accent-strong: #f0a74d;
+  --accent-cool: #757169;
+  --danger: #cf493c;
+  --focus-ring: #d98a32;
+  --button-hover-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+  /* Editor and Dropzone */
+  --editor-bg: #181716;
+  --editor-focus-bg: #1c1b19;
+  --editor-text: #e9e5dd;
+  --editor-border: rgba(233, 229, 221, 0.18);
+  --drop-border: rgba(233, 229, 221, 0.22);
+  --drop-bg: #1b1a18;
+  --drop-hover-bg: #21201d;
+  --drop-scan-bg: linear-gradient(90deg, transparent, rgba(217, 138, 50, 0.08), transparent);
+  --output-bg: #181716;
+  --status-bg: rgba(233, 229, 221, 0.06);
+  --empty-border: rgba(233, 229, 221, 0.16);
+  --empty-bg: #191817;
+  --toast-bg: #e9e5dd;
+  --toast-text: #141413;
+  --footer-text: #757169;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  --shadow-lift: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* ─── Language-specific typography optimization ────────────────────────────── */
+
+/* Vietnamese (vi) — Be Vietnam Pro provides balanced Vietnamese diacritics & proportions */
+:root[data-lang='vi'] {
+  --font-display:
+    'Be Vietnam Pro', 'Orbitron', 'Outfit', 'JetBrains Mono', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  --font-name:
+    'Be Vietnam Pro', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body:
+    'JetBrains Mono', 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+}
+
+/* Simplified Chinese / Mandarin (zh) — Noto Sans SC + PingFang SC / Microsoft YaHei UI */
+:root[data-lang='zh'] {
+  --font-display:
+    'Noto Sans SC', 'Orbitron', 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+  --font-name:
+    'Noto Sans SC', 'Outfit', 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+  --font-body:
+    'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei',
+    monospace;
+  --font-mono:
+    'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei UI', 'Microsoft YaHei',
+    monospace;
+}
+
+/* Korean (ko) — Noto Sans KR + Apple SD Gothic Neo / Malgun Gothic */
+:root[data-lang='ko'] {
+  --font-display: 'Noto Sans KR', 'Orbitron', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-name: 'Noto Sans KR', 'Outfit', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-body: 'JetBrains Mono', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
+  --font-mono: 'JetBrains Mono', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', monospace;
+}
+
+/* Japanese (ja) — Noto Sans JP + Hiragino Sans / Yu Gothic UI */
+:root[data-lang='ja'] {
+  --font-display:
+    'Noto Sans JP', 'Orbitron', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', sans-serif;
+  --font-name: 'Noto Sans JP', 'Outfit', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', sans-serif;
+  --font-body:
+    'JetBrains Mono', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', monospace;
+  --font-mono:
+    'JetBrains Mono', 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', monospace;
 }

@@ -12,5 +12,5 @@
     "target": "ES2022",
     "types": ["node", "react", "react-dom"]
   },
-  "include": ["src/app/**/*", "src/core/**/*", "src/electron/**/*", "src/shared/**/*"]
+  "include": ["src/app/**/*", "src/core/**/*", "src/shared/**/*"]
 }

@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Globe } from "lucide-react";
-import { languages, useLanguage } from "../context/LanguageContext";
+import { useEffect, useRef, useState } from 'react';
+import { Globe } from 'lucide-react';
+import { languages, useLanguage } from '../context/LanguageContext';
+import { Tooltip } from './Tooltip';
 
 export function LanguageSelector() {
   const { language, setLanguage } = useLanguage();
@@ -15,31 +16,32 @@ export function LanguageSelector() {
     }
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
 
   return (
     <div className="language-selector-container" ref={dropdownRef}>
-      <button
-        className="icon-button language-toggle"
-        type="button"
-        title="Select Language"
-        aria-label="Select Language"
-        onClick={() => setIsOpen((prev) => !prev)}
-      >
-        <Globe size={16} />
-      </button>
+      <Tooltip content="Select Language">
+        <button
+          className="icon-button language-toggle"
+          type="button"
+          aria-label="Select Language"
+          onClick={() => setIsOpen((prev) => !prev)}
+        >
+          <Globe size={16} />
+        </button>
+      </Tooltip>
 
       {isOpen && (
         <div className="language-dropdown">
           {languages.map((lang) => (
             <button
               key={lang.code}
-              className={language === lang.code ? "active" : ""}
+              className={language === lang.code ? 'active' : ''}
               type="button"
               onClick={() => {
                 setLanguage(lang.code);

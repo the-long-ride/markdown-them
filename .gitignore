@@ -1,3 +1,6 @@
+coverage/
+.coverage-v8/
+.coverage-dist/
 node_modules/
 out/
 dist/
@@ -10,3 +13,6 @@ artifacts/
 *.env
 *.pptx
 .agents/
+src-tauri/target/
+src-tauri/target*/
+src-tauri/gen/

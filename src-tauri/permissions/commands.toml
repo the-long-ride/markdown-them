@@ -1,0 +1,21 @@
+# src-tauri/permissions/commands.toml
+[[permission]]
+identifier = "allow-commands"
+description = "Enables Markdown Them custom application commands for file operations, dialogs, and window controls"
+commands.allow = [
+  "choose_files",
+  "choose_folders",
+  "choose_output_folder",
+  "read_file_binary",
+  "save_converted_file",
+  "save_markdown_dialog",
+  "open_external",
+  "open_path",
+  "window_minimize",
+  "window_toggle_maximize",
+  "window_close",
+  "window_is_maximized",
+  "window_start_dragging",
+  "window_set_zoom",
+  "app_is_debug"
+]

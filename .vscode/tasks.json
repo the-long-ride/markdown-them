@@ -2,18 +2,29 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "app: build desktop",
+      "label": "tauri dev",
       "type": "shell",
       "command": "npm",
-      "args": [
-        "run",
-        "build:desktop",
-        "--",
-        "--development"
-      ],
-      "problemMatcher": [],
+      "args": ["run", "dev:desktop"],
+      "isBackground": true,
+      "options": {
+        "env": {
+          "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--remote-debugging-port=9222"
+        }
+      },
+      "problemMatcher": {
+        "owner": "tauri",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*(dev:desktop|start:web|tauri dev).*",
+          "endsPattern": ".*(Running|Watching|ready|Markdown Them web app).*"
+        }
+      },
       "presentation": {
-        "reveal": "silent",
+        "reveal": "always",
         "panel": "dedicated"
       }
     },
@@ -21,10 +32,7 @@
       "label": "app: start web",
       "type": "shell",
       "command": "npm",
-      "args": [
-        "run",
-        "start:web"
-      ],
+      "args": ["run", "start:web"],
       "isBackground": true,
       "problemMatcher": {
         "owner": "markdown-them-web",
@@ -41,15 +49,6 @@
         "reveal": "always",
         "panel": "dedicated"
       }
-    },
-    {
-      "label": "app: build desktop and start web",
-      "dependsOn": [
-        "app: start web",
-        "app: build desktop"
-      ],
-      "dependsOrder": "sequence",
-      "problemMatcher": []
     },
     {
       "type": "npm",
