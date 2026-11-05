@@ -425,5 +425,12 @@ export function registerTier2Tests(harness) {
       assertContains(win1252Md, '“Quoted”', 'Correctly maps Windows-1252 smart quotes');
       assertContains(win1252Md, '—dash', 'Correctly maps Windows-1252 em-dash');
     });
+
+    harness.test('RTF Encoding: Skips hex-escaped \\uc1 fallback characters', () => {
+      // Word writes \u233\'e9 (Unicode char, then a \'xx ANSI fallback): the fallback is one character
+      const hexFallbackRtf = "{\\rtf1\\ansi\\uc1 caf\\u233\\'e9 ok \\u20013\\'3f\\u25991\\'3f}";
+      const hexFallbackMd = convertRtfToMarkdown(hexFallbackRtf);
+      assertEqual(hexFallbackMd, 'café ok 中文', "Drops the \\'xx fallback after \\u");
+    });
   });
 }
