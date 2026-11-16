@@ -138,6 +138,10 @@ export function readRtfParagraphs(rtf: string): RtfRun[][] {
 
     if (skipFallbackChars > 0) {
       skipFallbackChars -= 1;
+      // A \'xx hex escape is a single fallback character
+      if (char === '\\' && rtf[index + 1] === "'") {
+        index += 3;
+      }
       continue;
     }
 
