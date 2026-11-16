@@ -49,7 +49,9 @@ pnpm add @the-long-ride/markdown-them
 ### Synopsis
 
 ```bash
-mdthem -s <source> [options]
+mdthem <source> [options]
+mdthem --skill [agent]
+mdthem --skill --uninstall [agent]
 ```
 
 ### Options
@@ -66,6 +68,10 @@ mdthem -s <source> [options]
 
 - **Single File**: Output is written to `<file-directory>/<file-name>.md` (or `<file-name>_converted.md` if source file is `.md`).
 - **Directory**: Output is written to `<source-directory>/results/`.
+
+### AI agent skill installation
+
+Run `mdthem --skill` to install a shared skill to `~/.agents/skills/markdown-them/SKILL.md`. Run `mdthem --skill claude`, `hermes`, `codex`, `antigravity`, `opencode`, or `grok` to create an agent-specific symbolic link to that shared skill. `mdthem --skill --uninstall claude` removes only the managed Claude link; `mdthem --skill --uninstall` removes managed agent links and the unmodified global skill. Existing unrelated agent folders are not overwritten. On Windows, directory junctions are used.
 
 ### CLI Examples
 

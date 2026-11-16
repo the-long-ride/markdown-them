@@ -1,0 +1,139 @@
+name: Manual Build
+
+# Build artifacts on demand. Nothing is published, released, or deployed.
+on:
+  workflow_dispatch:
+    inputs:
+      windows:
+        description: 'Build Windows desktop portable executable'
+        type: boolean
+        default: false
+      macos:
+        description: 'Build macOS desktop application'
+        type: boolean
+        default: false
+      linux:
+        description: 'Build Linux desktop package'
+        type: boolean
+        default: false
+      vsix:
+        description: 'Build VS Code extension (VSIX)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate-selection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require at least one build target
+        env:
+          WINDOWS: ${{ inputs.windows }}
+          MACOS: ${{ inputs.macos }}
+          LINUX: ${{ inputs.linux }}
+          VSIX: ${{ inputs.vsix }}
+        shell: bash
+        run: |
+          if [[ "$WINDOWS" != "true" && "$MACOS" != "true" && "$LINUX" != "true" && "$VSIX" != "true" ]]; then
+            echo "::error::Select at least one target before running the workflow."
+            exit 1
+          fi
+
+  windows:
+    name: Windows (portable EXE)
+    if: ${{ inputs.windows }}
+    needs: validate-selection
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run dist:desktop:win
+      - uses: actions/upload-artifact@v7
+        with:
+          name: markdown-them-windows
+          path: dist/installers/*
+          if-no-files-found: error
+          retention-days: 14
+
+  macos:
+    name: macOS (desktop app)
+    if: ${{ inputs.macos }}
+    needs: validate-selection
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run dist:desktop:mac
+      - uses: actions/upload-artifact@v7
+        with:
+          name: markdown-them-macos
+          path: dist/installers/*
+          if-no-files-found: error
+          retention-days: 14
+
+  linux:
+    name: Linux (DEB)
+    if: ${{ inputs.linux }}
+    needs: validate-selection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install Linux build requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf libfuse2 build-essential curl wget file libssl-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run dist:desktop:linux
+      - uses: actions/upload-artifact@v7
+        with:
+          name: markdown-them-linux
+          path: dist/installers/*
+          if-no-files-found: error
+          retention-days: 14
+
+  vsix:
+    name: VS Code (VSIX)
+    if: ${{ inputs.vsix }}
+    needs: validate-selection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run security:lock
+      - run: npm run pack:vsix
+      - uses: actions/upload-artifact@v7
+        with:
+          name: markdown-them-vsix-manual
+          path: '*.vsix'
+          if-no-files-found: error
+          retention-days: 14

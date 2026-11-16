@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import * as process from 'node:process';
+import { manageSkill } from './skill-installer';
 import {
   SUPPORTED_EXTENSIONS,
   CliOptions,
@@ -38,6 +39,16 @@ export {
 };
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
+  if (argv.includes('--skill')) {
+    try {
+      await manageSkill(argv);
+    } catch (error: any) {
+      console.error(`Error: ${error?.message || error}`);
+      process.exit(1);
+    }
+    return;
+  }
+
   const options = parseCliArgs(argv);
 
   if (options.help) {

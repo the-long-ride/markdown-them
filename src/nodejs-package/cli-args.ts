@@ -135,7 +135,11 @@ export function parseCliArgs(argv: string[]): CliOptions {
       continue;
     }
 
-    unknownArgs.push(arg);
+    if (!source && (endOfOptions || !arg.startsWith('-'))) {
+      source = cleanPath(arg);
+    } else {
+      unknownArgs.push(arg);
+    }
   }
 
   if (!pendingError) {
@@ -176,14 +180,20 @@ export function printHelp(): void {
   console.log(`mdthem v${version} - Document to Markdown converter
 
 Usage:
+  mdthem <source> [options]
   mdthem -s <source> [options]
+  mdthem --skill [agent]
+  mdthem --skill --uninstall [agent]
 
 Arguments:
-  -s, --source <path>         Source file or directory to convert (required)
+  <source>                    File/directory (positional; -s also supported)
+  -s, --source <path>         Source file or directory to convert
   -d, --destination <path>    Destination file or directory (optional)
   -a, --all, -all             Recursively convert all subdirectories (when source is a directory)
   -h, --help                  Show this help message and exit
   -v, --version               Show version number and exit
+  --skill [agent]             Install SKILL.md globally and optionally link an agent
+  --skill --uninstall [agent]  Uninstall managed skill or an agent link
 
 Default Output Behavior:
   - Single file mode:
@@ -200,6 +210,10 @@ Default Output Behavior:
     Unsupported files in directory mode are skipped without halting batch processing.
 
 Examples:
+  mdthem document.docx
+  mdthem --skill
+  mdthem --skill claude
+  mdthem --skill --uninstall claude
   mdthem -s document.docx
   mdthem -s document.docx -d converted.md
   mdthem -s ./my-docs

@@ -101,7 +101,8 @@
     "pack:node-package": "npm run build:node-package && npm run prepare:artifacts && npm pack ./nodejs-package --pack-destination ./artifacts",
     "pack:vsix": "vsce package --no-dependencies",
     "pack:all": "npm run pack:vsix && npm run pack:node-package",
-    "publish:vsix": "npm run pack:vsix"
+    "publish:vsix": "npm run pack:vsix",
+    "security:lock": "node scripts/check-xml-locks.mjs"
   },
   "devDependencies": {
     "@opendocsg/pdf2md": "^0.2.6",
