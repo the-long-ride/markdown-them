@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -27,7 +28,76 @@ export function extractChangelogForVersion(changelogText, tagOrVersion) {
   return result.length > 0 ? result : null;
 }
 
-export function buildReleaseBody({ tagName, changelogNotes }) {
+/**
+ * List the human commit authors and co-authors between adjacent version tags.
+ * For the first version tag, include all reachable history instead.
+ */
+export function collectReleaseContributors(tagName, cwd = process.cwd()) {
+  if (!/^v[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$/.test(tagName)) {
+    throw new Error('Expected a version tag such as v1.4.0.');
+  }
+
+  const git = (args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+  git(['rev-parse', '--verify', 'refs/tags/' + tagName + '^{commit}']);
+
+  const versions = git([
+    'tag',
+    '--merged',
+    tagName,
+    '--list',
+    'v[0-9]*',
+    '--sort=-version:refname',
+  ]);
+  const previous = versions.split('\n').find((tag) => tag && tag !== tagName);
+  const range = previous ? previous + '..' + tagName : tagName;
+  const history = git(['log', '--no-merges', '--format=%aN%x1f%aE%x1f%B%x1e', range]);
+  const contributors = new Map();
+
+  const add = (name, email) => {
+    const normalizedName = name.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const match = normalizedEmail.match(
+      /^(?:[0-9]+\+)?([a-z0-9-]+(?:\[bot\])?)@users\.noreply\.github\.com$/i,
+    );
+    const login = match ? match[1] : null;
+    if (!normalizedName || /\[bot\]$/i.test(login || normalizedName)) return;
+    const key = login
+      ? 'github:' + login.toLowerCase()
+      : normalizedEmail || normalizedName.toLowerCase();
+    if (!contributors.has(key)) {
+      contributors.set(key, { name: normalizedName, login });
+    }
+  };
+
+  for (const item of history.split('\x1e')) {
+    const parts = item.trim().split('\x1f');
+    if (parts.length < 3) continue;
+    add(parts[0], parts[1]);
+    const message = parts.slice(2).join('\x1f');
+    for (const match of message.matchAll(/^Co-authored-by:\s*(.+?)\s*<([^<>]+)>\s*$/gim)) {
+      add(match[1], match[2]);
+    }
+  }
+
+  return [...contributors.values()].sort((a, b) =>
+    (a.login || a.name).localeCompare(b.login || b.name, 'en', { sensitivity: 'base' }),
+  );
+}
+
+export function formatContributors(contributors) {
+  const escapeName = (name) => name.replace(/([\\[\]()*_<>])/g, '\\$1');
+  const entries = contributors.map(({ name, login }) =>
+    login ? '- [@' + login + '](https://github.com/' + login + ')' : '- ' + escapeName(name),
+  );
+  return (
+    '### Contributors\n\n' +
+    (entries.length
+      ? entries.join('\n')
+      : '_No individual contributors identified for this release._')
+  );
+}
+
+export function buildReleaseBody({ tagName, changelogNotes, contributors = [] }) {
   const version = tagName.replace(/^v/, '');
   const changelogSection = changelogNotes
     ? `<details>\n<summary><b>Changelog for ${tagName}</b></summary>\n\n${changelogNotes}\n\n</details>`
@@ -53,6 +123,8 @@ Choose the file that matches how you want to use Markdown Them:
 * **Project Website:** https://the-long-ride.github.io/markdown-them/
 
 For a list of changes in this release, see the [CHANGELOG.md](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md).
+
+${formatContributors(contributors)}
 `;
 }
 
@@ -68,7 +140,8 @@ function main() {
     changelogNotes = extractChangelogForVersion(changelogText, tagName);
   }
 
-  const body = buildReleaseBody({ tagName, changelogNotes });
+  const contributors = collectReleaseContributors(tagName);
+  const body = buildReleaseBody({ tagName, changelogNotes, contributors });
   fs.writeFileSync(outputPath, body, 'utf8');
   console.log(`Generated release notes for ${tagName} at ${outputPath}`);
 }

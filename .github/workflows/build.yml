@@ -85,6 +85,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test release contributor attribution
+        run: node --test tests/release-contributors.test.mjs tests/seo-smoke.test.mjs
+
       - name: Verify Web App Build
         run: npm run build:web
 

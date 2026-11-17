@@ -27,9 +27,7 @@ pnpm add -g @the-long-ride/markdown-them
 Run on-the-fly without global installation:
 
 ```bash
-npx @the-long-ride/markdown-them -s ./report.docx
-# or using binary alias
-npx mdthem -s ./report.docx
+npx @the-long-ride/markdown-them ./report.docx
 ```
 
 ### As a Library Dependency
@@ -46,69 +44,114 @@ pnpm add @the-long-ride/markdown-them
 
 ## CLI Usage (`mdthem`)
 
+### Quick start
+
+```bash
+# Short form: convert a file to ./docs/report.md in the same folder
+mdthem "./docs/report.docx"
+
+# Older -s / --source syntax is still supported
+mdthem -s "./docs/report.docx"
+
+# Choose an output file (creates missing parent directories)
+mdthem "./docs/report.docx" -d "./notes/report.md"
+
+# Convert only files at the top level of a directory (./docs/results/)
+mdthem "./docs"
+
+# Include nested directories
+mdthem "./docs" --all
+```
+
 ### Synopsis
 
 ```bash
 mdthem <source> [options]
+mdthem -s <source> [options]
 mdthem --skill [agent]
 mdthem --skill --uninstall [agent]
 ```
 
-### Options
+### Conversion options
 
-| Option                     | Description                                                                                                                                                 |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-s, --source <path>`      | **Required**. Path to the source file or directory to convert.                                                                                              |
-| `-d, --destination <path>` | **Optional**. Target output file or destination directory. If missing, it will be automatically created.                                                    |
-| `-a, --all, -all`          | **Optional**. When source is a directory, recursively process all subdirectories. When omitted, only top-level files in the source directory are converted. |
-| `-h, --help`               | Display usage information and available options.                                                                                                            |
-| `-v, --version`            | Display the installed package version number.                                                                                                               |
+| Argument / option          | What it does                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `<source>`                 | Positional file or directory path (short form; no flag required).            |
+| `-s, --source <path>`      | Alternative to the positional source path (legacy syntax remains supported). |
+| `-d, --destination <path>` | Output file or folder; parent directories are created as needed.             |
+| `-a, --all, -all`          | Recursively convert directories instead of only their top-level files.       |
+| `-h, --help`               | Print usage and available commands.                                          |
+| `-v, --version`            | Print the installed package version.                                         |
 
-### Default Destination Behavior (when `-d` is omitted)
+With no `-d`, a single file produces a sibling `<filename>.md`; a Markdown `.md` input uses `<filename>_converted.md` instead. A directory produces a `results/` subdirectory. Directory mode skips unsupported files, and recursive traversal skips `results`, `.git`, and `node_modules`.
 
-- **Single File**: Output is written to `<file-directory>/<file-name>.md` (or `<file-name>_converted.md` if source file is `.md`).
-- **Directory**: Output is written to `<source-directory>/results/`.
+### Install AI agent skill (`--skill`)
 
-### AI agent skill installation
-
-Run `mdthem --skill` to install a shared skill to `~/.agents/skills/markdown-them/SKILL.md`. Run `mdthem --skill claude`, `hermes`, `codex`, `antigravity`, `opencode`, or `grok` to create an agent-specific symbolic link to that shared skill. `mdthem --skill --uninstall claude` removes only the managed Claude link; `mdthem --skill --uninstall` removes managed agent links and the unmodified global skill. Existing unrelated agent folders are not overwritten. On Windows, directory junctions are used.
-
-### CLI Examples
-
-#### Single File Conversion
+`mdthem --skill` installs the reusable skill at `~/.agents/skills/markdown-them/SKILL.md`. You can additionally link the same skill into an AI agent's skills folder:
 
 ```bash
-# Convert a file with default output (./docs/report.md)
-mdthem -s "./docs/report.docx"
+# Install the shared skill only (no agent symlinks)
+mdthem --skill
 
-# Convert a file to an explicit destination path (auto-creates destination folders)
+# Install the shared skill and link it to one agent
+mdthem --skill claude
+mdthem --skill hermes
+mdthem --skill codex
+mdthem --skill antigravity
+mdthem --skill opencode
+mdthem --skill grok
+
+# Alias for Claude Code
+mdthem --skill claude-code
+```
+
+Supported agent directories (each link is named `markdown-them`):
+
+| Agent       | Command argument              | Skill directory             |
+| ----------- | ----------------------------- | --------------------------- |
+| Claude Code | `claude` (also `claude-code`) | `~/.claude/skills`          |
+| Hermes      | `hermes`                      | `~/.hermes/skills`          |
+| Codex       | `codex`                       | `~/.codex/skills`           |
+| Antigravity | `antigravity`                 | `~/.gemini/config/skills`   |
+| OpenCode    | `opencode`                    | `~/.config/opencode/skills` |
+| Grok        | `grok`                        | `~/.grok/skills`            |
+
+Agent commands create a symbolic link from `~/.agents/skills/markdown-them` to the selected agent's skill directory. On Windows, directory junctions are used. Installing for several agents uses the same shared skill; run one command per agent. Existing unrelated skill entries are not overwritten.
+
+### Uninstall AI agent skill
+
+```bash
+# Remove only the managed link for Claude; keep the shared skill and other agents
+mdthem --skill --uninstall claude
+
+# Same form for any other supported agent
+mdthem --skill --uninstall codex
+
+# Remove all managed agent links and the unmodified shared skill
+mdthem --skill --uninstall
+```
+
+Uninstall operations preserve unmanaged entries and locally modified shared skill files. A targeted uninstall does not delete the shared skill, even if it is no longer linked to any agent.
+
+### More conversion examples
+
+```bash
+# Explicit output path
 mdthem -s "./docs/report.docx" -d "./dist/notes/summary.md"
-```
 
-#### Directory Conversion (Top-Level Only)
+# Convert a directory into a custom output directory
+mdthem "./docs" -d "./converted-markdown"
 
-```bash
-# Convert all supported documents in the folder into ./docs/results/
-mdthem -s "./docs"
+# Recursive conversion with an explicit output directory
+mdthem "./docs" -a -d "./all-markdown"
 
-# Convert all supported documents in the folder into a custom destination folder
-mdthem -s "./docs" -d "./converted-markdown"
-```
-
-#### Recursive Directory Conversion (`-a` / `--all` / `-all`)
-
-```bash
-# Recursively convert all supported documents across subfolders into ./docs/results/
-mdthem -s "./docs" -a
-
-# Recursively convert with long flag and custom output destination
-mdthem -s "./docs" --all -d "./all-markdown"
-
-# Flag-ordering resilience (flags can appear before or after arguments)
+# Existing flag-ordering behavior remains supported
 mdthem -s -all "./docs" -d "./all-markdown"
-```
 
-In directory mode, unsupported files (such as `.png`, `.zip`, `.bin`) and subdirectories (in non-recursive mode) are skipped cleanly without crashing or aborting batch execution. Loop guards prevent recursive scanning from re-entering destination folders (`results/`), `.git`, or `node_modules`.
+# CLI reference
+mdthem --help
+mdthem --version
+```
 
 ---
 
