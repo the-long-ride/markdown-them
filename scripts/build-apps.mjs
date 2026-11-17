@@ -36,6 +36,8 @@ async function buildWeb(outDir, clean = true) {
   const assetsDir = path.join(outDir, 'assets');
   await mkdir(assetsDir, { recursive: true });
   let html = await readFile(path.join(rootDir, 'src', 'app', 'index.html'), 'utf-8');
+  // Keep structured-data softwareVersion in sync with the built package, not a stale constant.
+  html = html.replaceAll('__MARKDOWN_THEM_VERSION__', appVersion);
   html = html.replace(
     "connect-src 'none'",
     "connect-src 'self' http://localhost:* http://127.0.0.1:* ipc: http://ipc.localhost",

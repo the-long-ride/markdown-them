@@ -4,6 +4,13 @@
 
 # Markdown Them
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-black?style=flat-square&labelColor=black)](LICENSE)
+[![Built from GHA](https://img.shields.io/badge/Built%20from%20GHA-%E2%9C%93-black?style=flat-square&labelColor=black&logo=githubactions&logoColor=white)](https://github.com/the-long-ride/markdown-them/actions/workflows/release.yml)
+[![Install from VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install-black?style=flat-square&labelColor=black&logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=the-long-ride.markdown-them)
+[![Open VSX downloads](https://img.shields.io/open-vsx/dt/the-long-ride/markdown-them?style=flat-square&labelColor=black&color=black&logo=openvsx&logoColor=white&label=Open%20VSX%20downloads)](https://open-vsx.org/extension/the-long-ride/markdown-them)
+[![GitHub release asset downloads](https://img.shields.io/github/downloads/the-long-ride/markdown-them/total?style=flat-square&labelColor=black&color=black&logo=github&logoColor=white&label=Release%20asset%20downloads)](https://github.com/the-long-ride/markdown-them/releases/latest)
+[![npm package](https://img.shields.io/badge/npm-Package-black?style=flat-square&labelColor=black&logo=npm&logoColor=white)](https://www.npmjs.com/package/@the-long-ride/markdown-them)
+
 Convert various document files into Markdown (.md) from a web application, a Tauri v2 desktop app (Rust + React), a VS Code extension, or a Node.js package.
 
 - **Web App:** Client-side only document converter running entirely in your browser. Hosted and deployed directly on GitHub Pages.
@@ -138,4 +145,4 @@ Special thanks to the authors and contributors of these incredible libraries tha
 
 ## License
 
-[MIT (with Theme Usage Restriction)](https://github.com/the-long-ride/markdown-them/blob/main/LICENSE)
+[MIT License](LICENSE)
