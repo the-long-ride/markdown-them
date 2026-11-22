@@ -46,7 +46,7 @@
     }
   },
   "files": [
-    "dist/**/*",
+    "dist/nodejs-package/**/*",
     "README.md",
     "LICENSE"
   ],

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -48,6 +48,56 @@ test('font stylesheets reference only vendored stylesheets and WOFF2 files', asy
   assert.match(html, /href="\.\/assets\/fonts\/fonts.css"/);
   const tauri = await readFile(path.join(root, 'src-tauri/tauri.conf.json'), 'utf8');
   assert.doesNotMatch(html + tauri, /fonts\.(?:googleapis|gstatic)\.com/);
+});
+
+test('fonts ship only Latin/Vietnamese subsets at used CSS weights within the size budget', async () => {
+  const fonts = path.join(root, 'assets/fonts');
+  const files = await readdir(fonts);
+  const weights = {
+    'be-vietnam-pro': [400, 500, 600, 700],
+    'jetbrains-mono': [400, 500, 550, 600, 700],
+    'noto-sans-jp': [400, 500, 550, 600, 700],
+    'noto-sans-kr': [400, 500, 550, 600, 700],
+    'noto-sans-sc': [400, 500, 550, 600, 700],
+    orbitron: [400, 600],
+    outfit: [600],
+  };
+  const referenced = new Set();
+  let bytes = 0;
+  for (const file of files) bytes += (await stat(path.join(fonts, file))).size;
+  assert.ok(bytes < 1_200_000, `font assets grew to ${bytes} bytes`);
+  assert.ok(files.length < 100, `font assets grew to ${files.length} files`);
+  for (const [family, used] of Object.entries(weights)) {
+    const css = await readFile(path.join(fonts, `${family}.css`), 'utf8');
+    const declared = new Set();
+    for (const [block] of css.matchAll(/@font-face\s*\{[^}]+\}/g)) {
+      const weight = Number(block.match(/font-weight: (\d+);/)?.[1]);
+      assert.ok(used.includes(weight), `${family}: unexpected weight ${weight}`);
+      declared.add(weight);
+      assert.match(block, /unicode-range:\s*U\+/);
+      const file = block.match(/url\(\.\/([^)]*)\)/)?.[1];
+      assert.match(
+        file,
+        new RegExp(`^${family}-(latin|latin-ext|vietnamese)-${weight}-normal\\.woff2$`),
+      );
+      referenced.add(file);
+    }
+    assert.deepEqual([...declared].sort(), [...used].sort());
+  }
+  assert.deepEqual([...referenced].sort(), files.filter((file) => file.endsWith('.woff2')).sort());
+});
+
+test('extension and npm package exclude web font assets', async () => {
+  const ignore = await readFile(path.join(root, '.vscodeignore'), 'utf8');
+  assert.match(ignore, /^assets\/\*\*$/m);
+  assert.deepEqual(
+    ignore.split('\n').filter((line) => line.startsWith('!assets/')),
+    ['!assets/markdown-them-logo.png'],
+  );
+  const manifest = JSON.parse(
+    await readFile(path.join(root, 'nodejs-package/package.json'), 'utf8'),
+  );
+  assert.deepEqual(manifest.files, ['dist/nodejs-package/**/*', 'README.md', 'LICENSE']);
 });
 
 test('asset copying uses the worker package, preserves empty folders and fails on missing assets', async (t) => {
