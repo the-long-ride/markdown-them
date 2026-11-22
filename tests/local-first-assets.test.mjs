@@ -97,7 +97,7 @@ test('extension and npm package exclude web font assets', async () => {
   const manifest = JSON.parse(
     await readFile(path.join(root, 'nodejs-package/package.json'), 'utf8'),
   );
-  assert.deepEqual(manifest.files, ['dist/nodejs-package/**/*', 'README.md', 'LICENSE']);
+  assert.deepEqual(manifest.files, ['dist/**/*', 'README.md', 'LICENSE']);
 });
 
 test('asset copying uses the worker package, preserves empty folders and fails on missing assets', async (t) => {
