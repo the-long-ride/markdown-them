@@ -1,0 +1,149 @@
+/* noto-sans-jp-[60]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-60-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2227, U+26a0, U+2713, U+301f, U+4ff8, U+5239, U+526a, U+54fa, U+5740, U+5937, U+5993, U+59fb,
+    U+5a3c, U+5c41, U+6028, U+626e, U+646f, U+647a, U+64b0, U+64e2, U+65a7, U+66fe, U+6727, U+6955,
+    U+6bef, U+6f23, U+724c, U+767c, U+7a83, U+7ac4, U+7b67, U+8000, U+8471, U+8513, U+8599, U+86db,
+    U+8718, U+87f2, U+88f3, U+8ad2, U+8e2a, U+8fa3, U+95a5, U+9798, U+9910, U+9957, U+9bab, U+9c3b,
+    U+9daf, U+ff95;
+}
+
+/* noto-sans-jp-[61]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-61-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+a8, U+2032, U+2261, U+2282, U+3090, U+30f1, U+339c, U+535c, U+53d9, U+56a2, U+56c1, U+5806,
+    U+589f, U+59d0, U+5a7f, U+60e0, U+639f, U+65af, U+68fa, U+69ae, U+6d1b, U+6ef2, U+71fb, U+725d,
+    U+7262, U+75bc, U+7768, U+7940, U+79bf, U+7bed, U+7d68, U+7dfb, U+814b, U+8207, U+83e9, U+8494,
+    U+8526, U+8568, U+85ea, U+86d9, U+87ba, U+8861, U+887f, U+8fe6, U+9059, U+9061, U+916a, U+976d,
+    U+97ad, U+9ece;
+}
+
+/* noto-sans-jp-[62]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-62-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2d9, U+21d4, U+301d, U+515c, U+52fe, U+5420, U+5750, U+5766, U+5954, U+5b95, U+5f8a, U+5f98,
+    U+620c, U+621f, U+641c, U+66d9, U+676d, U+6775, U+67f5, U+694a, U+6a02, U+6a3a, U+6a80, U+6c23,
+    U+6c72, U+6dcb, U+6faa, U+707c, U+71c8, U+7422, U+74e2, U+7791, U+7825, U+7a14, U+7a1c, U+7c95,
+    U+7fc1, U+82a5, U+82db, U+8304, U+853d, U+8cd3, U+8de8, U+8f0c, U+8f3f, U+9091, U+91c7, U+929a,
+    U+98af, U+9913;
+}
+
+/* noto-sans-jp-[63]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-63-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2ca-2cb, U+2229, U+2468, U+2669, U+266f, U+273f, U+4ec0, U+4f60, U+4fb6, U+5347, U+540e,
+    U+543b, U+5b0c, U+5d4c, U+5f14, U+5f9e, U+6155, U+62d0, U+6602, U+6666, U+66f3, U+67a2, U+67ca,
+    U+69cc, U+6d29, U+6d9b, U+6e3e, U+6f81, U+7109, U+73c0, U+73c2, U+7425, U+7435-7436, U+7525,
+    U+7554, U+785d, U+786b, U+7ae3, U+7b94, U+7d18, U+81bf, U+8511, U+8549, U+9075, U+9640, U+98e2,
+    U+9e9f, U+ff96;
+}
+
+/* noto-sans-jp-[64]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-64-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2467, U+4ece, U+4ed4, U+4f91, U+4fae, U+534d, U+53c9, U+54b3, U+586b, U+5944, U+5b78, U+5df7,
+    U+5f77, U+6101, U+6167-6168, U+61a4, U+62d9, U+698a, U+699b, U+6a59, U+6cc4, U+6e07, U+7099,
+    U+75d2, U+77ad, U+7953, U+7984, U+7a92, U+7baa, U+7dbb, U+817f, U+82ad, U+85e9, U+868a, U+8caa,
+    U+8f44, U+9017, U+907c, U+908a, U+92f3, U+936e, U+9435, U+978d, U+9838, U+9a28, U+9b41, U+9ba8,
+    U+9c57, U+9eb9;
+}
+
+/* noto-sans-jp-[65]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-65-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+b1, U+309b, U+4e5e, U+51f1, U+5506, U+55c5, U+58cc, U+59d1, U+5c51, U+5ef7, U+6284, U+62d7,
+    U+6689, U+673d, U+6a2b, U+6a8e, U+6a9c, U+6d63, U+6dd1, U+70b8, U+7235, U+72db, U+72f8, U+7560,
+    U+7c9b, U+7ce7, U+7e1e, U+80af, U+82eb, U+8463, U+8499, U+85dd, U+86ee, U+8a60, U+8a6e, U+8c79,
+    U+8e87, U+8e8a, U+8f5f, U+9010, U+918d, U+9190, U+965b, U+97fb, U+9ab8, U+9bad, U+9d3b, U+9d5c,
+    U+9dfa, U+9e93;
+}
+
+/* noto-sans-jp-[66]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-66-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2020, U+3003, U+3231, U+4e9b, U+4f3d, U+4f47, U+51b6, U+51dc, U+53e1, U+5bc5, U+602f, U+60bc,
+    U+61c9, U+633d, U+637b, U+6492, U+65fa, U+660f, U+66f0, U+6703, U+681e, U+6876, U+6893, U+6912,
+    U+698e, U+6c7d, U+714c, U+7169, U+71d5, U+725f, U+72d7, U+745b, U+74dc, U+75e2, U+7891, U+7897,
+    U+7dcb, U+810a, U+8218, U+8339, U+840e, U+852d, U+8823, U+8a0a, U+9089, U+919c, U+971c, U+9ad9,
+    U+ff4a, U+ff5a;
+}
+
+/* noto-sans-jp-[67]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-67-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2466, U+2600, U+4eab, U+4fe3, U+4ff5, U+51a5, U+51f0, U+536f, U+53d4, U+53f1, U+54a5, U+559d,
+    U+55e3, U+58fa, U+5962, U+59ea, U+5c16, U+5cef, U+5d16, U+5f10, U+5fd6, U+6190, U+6216, U+634f,
+    U+63bb, U+66d6, U+6756, U+6bc5, U+6e26, U+727d, U+731f, U+76f2, U+7729, U+7a7f, U+7aff, U+7c9f,
+    U+818f, U+8236, U+82b9, U+8338, U+85aa, U+88b4, U+8b33, U+904d, U+93a7, U+96cc, U+96eb, U+9aed,
+    U+9b8e, U+fa11;
+}
+
+/* noto-sans-jp-[68]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-68-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+251c, U+2523, U+4e14, U+545f, U+54bd, U+553e, U+55dc, U+56da, U+589c, U+5b55, U+5bb5, U+5ce1,
+    U+5df4, U+5eb6, U+5ec9, U+6191, U+62f7, U+6357, U+64a5, U+6591, U+65bc, U+6897, U+6e1a, U+7063,
+    U+711a, U+721b, U+722c, U+75b9, U+75d5, U+75fa, U+7766, U+7aae, U+7b48, U+7b8b, U+7d21, U+7e55,
+    U+7f75, U+842c, U+8910, U+8a63, U+8b39, U+8b5a, U+8cdc, U+8d74, U+907d, U+91e7, U+9306, U+96bc,
+    U+98f4, U+9ac4;
+}
+
+/* noto-sans-jp-[69]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans JP';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-jp-69-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2003, U+2312, U+266c, U+4f86, U+51ea, U+5243, U+5256, U+541f, U+5841, U+59dc, U+5df3, U+601c,
+    U+60e7, U+632b, U+638c, U+64ad, U+6881, U+697c, U+69cd, U+6c50, U+6d2a, U+6fc1, U+7027, U+7058,
+    U+70f9, U+714e, U+7345, U+751a, U+760d, U+764c, U+77db, U+7d79, U+7e8f, U+80ce, U+814e, U+81fc,
+    U+8247, U+8278, U+85a9, U+8a03, U+90ed, U+9784, U+9801, U+984e, U+99b3, U+9bc9, U+9bdb, U+9be8,
+    U+9e78, U+ff6b;
+}

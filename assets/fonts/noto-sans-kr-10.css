@@ -1,0 +1,173 @@
+/* noto-sans-kr-[90]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-90-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+539a, U+53a0, U+53a5-53a6, U+53ad, U+53bb, U+53c3, U+53c8-53cb, U+53cd, U+53d4, U+53d6-53d7,
+    U+53db, U+53e1-53e3, U+53e5, U+53e9-53ed, U+53f1, U+53f3, U+53f8, U+5403-5404, U+540a,
+    U+540e-5411, U+541b, U+541d, U+541f-5420, U+5426, U+5429, U+542b, U+5433, U+5438-5439,
+    U+543b-543c, U+543e, U+5442, U+5448, U+544a, U+5451, U+5468, U+546a, U+5471, U+5473, U+5475,
+    U+547b-547d, U+5480, U+5486, U+548e, U+5490, U+54a4, U+54a8, U+54ab-54ac, U+54b3, U+54b8,
+    U+54bd, U+54c0, U+54c4, U+54c8-54c9, U+54e1, U+54e5, U+54e8, U+54ed-54ee, U+54f2, U+54fa,
+    U+5504, U+5506-5507, U+550e, U+5510, U+551c, U+552f, U+5531, U+5535, U+553e, U+5544, U+5546,
+    U+554f, U+5553, U+5556, U+555e, U+5563, U+557c, U+5580, U+5584, U+5586-5587, U+5589-558a,
+    U+5598-559a, U+559c-559d, U+55a7, U+55a9-55ac, U+55ae, U+55c5, U+55c7, U+55d4, U+55da, U+55dc,
+    U+55df, U+55e3-55e4, U+55fd-55fe, U+5606, U+5609, U+5614, U+5617, U+562f, U+5632, U+5634,
+    U+5636, U+5653, U+5668, U+566b, U+5674, U+5686, U+56a5, U+56ac, U+56ae, U+56b4, U+56bc, U+56ca,
+    U+56cd, U+56d1, U+56da-56db, U+56de, U+56e0, U+56f0, U+56f9-56fa;
+}
+
+/* noto-sans-kr-[91]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-91-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+516e, U+5175-5178, U+517c, U+5180, U+5186, U+518a, U+518d, U+5192, U+5195, U+5197, U+51a0,
+    U+51a5, U+51aa, U+51ac, U+51b6-51b7, U+51bd, U+51c4, U+51c6, U+51c9, U+51cb-51cd, U+51dc-51de,
+    U+51e1, U+51f0-51f1, U+51f6, U+51f8-51f9, U+51fd, U+5200, U+5203, U+5207-5208, U+520a, U+520e,
+    U+5211, U+5217, U+521d, U+5224-5225, U+522a, U+522e, U+5230, U+5236-523b, U+5243, U+5247,
+    U+524a-524c, U+5254, U+5256, U+525b, U+525d, U+5261, U+5269-526a, U+526f, U+5272, U+5275,
+    U+527d, U+527f, U+5283, U+5287-5289, U+528d, U+5291-5292, U+529f, U+52a3-52a4, U+52a9-52ab,
+    U+52be, U+52c1, U+52c3, U+52c5, U+52c7, U+52c9, U+52cd, U+52d2, U+52d6, U+52d8-52d9, U+52db,
+    U+52dd-52df, U+52e2-52e4, U+52f3, U+52f5, U+52f8, U+52fa-52fb, U+52fe-52ff, U+5305, U+5308,
+    U+530d, U+530f-5310, U+5315, U+5319, U+5320-5321, U+5323, U+532a, U+532f, U+5339, U+533f-5341,
+    U+5343-5344, U+5347-534a, U+534d, U+5351-5354, U+535a, U+535c, U+535e, U+5360, U+5366, U+5368,
+    U+536f-5371, U+5374-5375, U+5377, U+537d, U+537f, U+5384, U+5393, U+5398;
+}
+
+/* noto-sans-kr-[92]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-92-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+4f43, U+4f46-4f48, U+4f4d-4f51, U+4f55, U+4f59-4f5a, U+4f69, U+4f6f-4f70, U+4f73, U+4f76,
+    U+4f7a, U+4f7e-4f7f, U+4f81, U+4f83-4f84, U+4f86, U+4f88, U+4f8a-4f8b, U+4f8d, U+4f8f, U+4f91,
+    U+4f96, U+4f98, U+4f9b, U+4f9d, U+4fae-4faf, U+4fb5-4fb6, U+4fbf, U+4fc2-4fc4, U+4fc9-4fca,
+    U+4fce, U+4fd1, U+4fd3-4fd4, U+4fd7, U+4fda, U+4fdf-4fe0, U+4fee-4fef, U+4ff1, U+4ff3, U+4ff5,
+    U+4ff8, U+4ffa, U+5002, U+5006, U+5009, U+500b, U+500d, U+5011-5012, U+5016, U+5019-501a,
+    U+501c, U+501e-501f, U+5021, U+5023-5024, U+5026-5028, U+502a-502d, U+503b, U+5043, U+5047-5049,
+    U+504f, U+5055, U+505a, U+505c, U+5065, U+5074-5076, U+5078, U+5080, U+5085, U+508d, U+5091,
+    U+5098-5099, U+50ac-50ad, U+50b2-50b3, U+50b5, U+50b7, U+50be, U+50c5, U+50c9-50ca, U+50d1,
+    U+50d5-50d6, U+50da, U+50de, U+50e5, U+50e7, U+50ed, U+50f9, U+50fb, U+50ff-5101, U+5104,
+    U+5106, U+5109, U+5112, U+511f, U+5121, U+512a, U+5132, U+5137, U+513a, U+513c, U+5140-5141,
+    U+5143-5148, U+514b-514e, U+5152, U+515c, U+5162, U+5169-516b, U+516d;
+}
+
+/* noto-sans-kr-[93]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-93-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+338c-339c, U+339f-33a0, U+33a2-33cb, U+33cf-33d0, U+33d3, U+33d6, U+33d8, U+33db-33dd, U+4e01,
+    U+4e03, U+4e07-4e08, U+4e11, U+4e14-4e15, U+4e18-4e19, U+4e1e, U+4e32, U+4e38-4e39, U+4e42-4e43,
+    U+4e45, U+4e4d-4e4f, U+4e56, U+4e58-4e59, U+4e5d-4e5e, U+4e6b, U+4e6d, U+4e73, U+4e76-4e77,
+    U+4e7e, U+4e82, U+4e86, U+4e88, U+4e8e, U+4e90-4e92, U+4e94-4e95, U+4e98, U+4e9b, U+4e9e,
+    U+4ea1-4ea2, U+4ea4-4ea6, U+4ea8, U+4eab, U+4ead-4eae, U+4eb6, U+4ec0-4ec1, U+4ec4, U+4ec7,
+    U+4ecb, U+4ecd, U+4ed4-4ed5, U+4ed7-4ed9, U+4edd, U+4edf, U+4ee4, U+4ef0, U+4ef2, U+4ef6-4ef7,
+    U+4efb, U+4f01, U+4f09, U+4f0b, U+4f0d-4f11, U+4f2f, U+4f34, U+4f36, U+4f38, U+4f3a, U+4f3c-4f3d;
+}
+
+/* noto-sans-kr-[94]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-94-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+3136, U+3138, U+313a-3140, U+3143-3144, U+3150, U+3152, U+3154-3156, U+3158-315b, U+315d-315f,
+    U+3162, U+3164-318c, U+318e, U+3200-321b, U+3231, U+3239, U+3251-325a, U+3260-327b, U+327e-327f,
+    U+328a-3290, U+3294, U+329e, U+32a5, U+3380-3384, U+3388-338b;
+}
+
+/* noto-sans-kr-[95]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-95-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2f7d, U+2f7f-2f8b, U+2f8e-2f90, U+2f92-2f97, U+2f99-2fa0, U+2fa2-2fa3, U+2fa5-2fa9,
+    U+2fac-2fb1, U+2fb3-2fbc, U+2fc1-2fca, U+2fcd-2fd4, U+3003, U+3012-3019, U+301c, U+301e-3020,
+    U+3036, U+3041, U+3043, U+3045, U+3047, U+3049, U+304e, U+3050, U+3052, U+3056, U+305a, U+305c,
+    U+305e, U+3062, U+3065, U+306c, U+3070-307d, U+3080, U+3085, U+3087, U+308e, U+3090-3091,
+    U+30a1, U+30a5, U+30a9, U+30ae, U+30b1-30b2, U+30b4, U+30b6, U+30bc-30be, U+30c2, U+30c5,
+    U+30cc, U+30d2, U+30d4, U+30d8-30dd, U+30e4, U+30e6, U+30e8, U+30ee, U+30f0-30f2, U+30f4-30f6,
+    U+3133, U+3135;
+}
+
+/* noto-sans-kr-[96]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-96-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2541-254b, U+25a4-25a9, U+25b1, U+25b5, U+25b9, U+25bf, U+25c1, U+25c3, U+25c9-25ca, U+25cc,
+    U+25ce, U+25d0-25d1, U+25e6, U+25ef, U+260f, U+261d, U+261f, U+262f, U+2660, U+2664,
+    U+2667-2669, U+266d, U+266f, U+2716, U+271a, U+273d, U+2756, U+2776-277f, U+278a-2793, U+2963,
+    U+2965, U+2ac5-2ac6, U+2acb-2acc, U+2f00, U+2f04, U+2f06, U+2f08, U+2f0a-2f0b, U+2f11-2f12,
+    U+2f14, U+2f17-2f18, U+2f1c-2f1d, U+2f1f-2f20, U+2f23-2f26, U+2f28-2f29, U+2f2b, U+2f2d,
+    U+2f2f-2f32, U+2f38, U+2f3c-2f40, U+2f42-2f4c, U+2f4f-2f52, U+2f54-2f58, U+2f5a-2f66,
+    U+2f69-2f70, U+2f72-2f76, U+2f78, U+2f7a-2f7c;
+}
+
+/* noto-sans-kr-[97]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-97-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+2479-2487, U+249c-24d1, U+24d3-24d7, U+24d9-24e9, U+24eb-24f4, U+2500-2501, U+2503,
+    U+250c-2513, U+2515-2516, U+2518-2540;
+}
+
+/* noto-sans-kr-[98]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-98-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+215b-215e, U+2162-2169, U+2170-2179, U+2195-2199, U+21b0-21b4, U+21bc, U+21c0, U+21c4-21c5,
+    U+21cd, U+21cf-21d4, U+21e0-21e3, U+21e6-21e9, U+2200, U+2202-2203, U+2206-2209, U+220b-220c,
+    U+220f, U+2211, U+2213, U+221a, U+221d-2220, U+2222, U+2225-2227, U+2229-222c, U+222e,
+    U+2234-2237, U+223d, U+2243, U+2245, U+2248, U+2250-2253, U+225a, U+2260-2262, U+2264-2267,
+    U+226a-226b, U+226e-2273, U+2276-2277, U+2279-227b, U+2280-2287, U+228a-228b, U+2295-2297,
+    U+22a3-22a5, U+22bb-22bc, U+22ce-22cf, U+22da-22db, U+22ee-22ef, U+2306, U+2312, U+2314,
+    U+2467-2478;
+}
+
+/* noto-sans-kr-[99]-wght-normal */
+@font-face {
+  font-family: 'Noto Sans KR';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(./noto-sans-kr-99-wght-normal.woff2) format('woff2-variations');
+  unicode-range:
+    U+81-82, U+84, U+a2-a5, U+a7-a8, U+aa, U+ac-ad, U+b1-b3, U+b6, U+b8-ba, U+bc-be, U+c0, U+c2,
+    U+c6-cb, U+ce-d0, U+d4, U+d8-d9, U+db-dc, U+de-df, U+e6, U+eb, U+ee-f0, U+f4, U+f7-f9, U+fb,
+    U+fe-ff, U+111, U+126-127, U+132-133, U+138, U+13f-142, U+149-14b, U+152-153, U+166-167, U+2bc,
+    U+2c7, U+2d0, U+2d8-2d9, U+2db-2dd, U+391-394, U+396-3a1, U+3a3-3a9, U+3b2-3b6, U+3b8, U+3bc,
+    U+3be-3c1, U+3c3-3c9, U+2010, U+2015-2016, U+2018-2019, U+201b, U+201f-2021, U+2025, U+2030,
+    U+2033-2036, U+203c, U+203e, U+2042, U+2074, U+207a-207f, U+2081-2084, U+2109, U+2113, U+2116,
+    U+2121, U+2126, U+212b, U+2153-2154;
+}

@@ -24,10 +24,10 @@ const TEXT_FILE_EXTENSIONS = new Set([
   '.text',
 ]);
 
-function resolvePdfWorkerSrc(): string | undefined {
+function resolveAssetUrl(asset: string): string | undefined {
   if (typeof window !== 'undefined' && window.location?.href) {
     try {
-      return new URL('assets/pdf.worker.min.mjs', window.location.href).toString();
+      return new URL(`assets/${asset}`, window.location.href).toString();
     } catch {
       return undefined;
     }
@@ -36,11 +36,14 @@ function resolvePdfWorkerSrc(): string | undefined {
 }
 
 async function parseOfficeWithAst(buffer: Uint8Array, fileType?: string): Promise<string> {
-  const workerSrc = resolvePdfWorkerSrc();
+  const workerSrc = resolveAssetUrl('pdf.worker.min.mjs');
   const config: Record<string, any> = {
     extractAttachments: false,
     includeRawContent: false,
     ocr: false,
+    allowRemoteAssets: false,
+    pdfCMapUrl: resolveAssetUrl('cmaps/') ?? '',
+    pdfDecoderUrl: resolveAssetUrl('wasm/') ?? '',
     outputErrorToConsole: false,
   };
   if (fileType) {
