@@ -86,6 +86,7 @@ async function main() {
 
   console.log('\x1b[1m► Stage 1: Fast Parallel Verification (Format, Style, Types, LOC)\x1b[0m');
   const stage1Steps = [
+    runStep('CJK Font Glyph Coverage', process.execPath, ['--test', 'tests/cjk-fonts.test.mjs']),
     runStep('Cargo Format Check', 'cargo', [
       'fmt',
       '--manifest-path',

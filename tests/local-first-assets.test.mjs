@@ -43,16 +43,16 @@ test('font stylesheets reference only vendored stylesheets and WOFF2 files', asy
     'Orbitron',
     'Outfit',
   ]);
-  assert.equal(files.filter((name) => name.endsWith('-LICENSE.txt')).length, 7);
+  assert.equal(files.filter((name) => name.endsWith('-LICENSE.txt')).length, 8);
   const html = await readFile(path.join(root, 'src/app/index.html'), 'utf8');
   assert.match(html, /href="\.\/assets\/fonts\/fonts.css"/);
   const tauri = await readFile(path.join(root, 'src-tauri/tauri.conf.json'), 'utf8');
   assert.doesNotMatch(html + tauri, /fonts\.(?:googleapis|gstatic)\.com/);
 });
 
-test('fonts ship only Latin/Vietnamese subsets at used CSS weights within the size budget', async () => {
+test('Latin/Vietnamese fonts ship only used CSS weights within the size budget', async () => {
   const fonts = path.join(root, 'assets/fonts');
-  const files = await readdir(fonts);
+  const files = (await readdir(fonts)).filter((file) => !file.includes('cjk'));
   const weights = {
     'be-vietnam-pro': [400, 500, 600, 700],
     'jetbrains-mono': [400, 500, 550, 600, 700],

@@ -41,6 +41,7 @@ export function LanguageSelector() {
           {languages.map((lang) => (
             <button
               key={lang.code}
+              lang={lang.code}
               className={language === lang.code ? 'active' : ''}
               type="button"
               onClick={() => {

@@ -13,7 +13,7 @@ Vendored from the following Fontsource npm packages (normal style):
 | @fontsource-variable/outfit         | 5.3.0   | 600                     |
 
 Only Fontsource's latin, latin-ext and vietnamese subsets are retained where
-available, with their matching Unicode ranges. CJK, Greek and Cyrillic glyphs
+available, with their matching Unicode ranges. Greek and Cyrillic glyphs
 use the application's existing system-font fallbacks instead of bundled fonts.
 CSS uses the application's existing family names and local URLs.
 
@@ -32,3 +32,41 @@ font service is needed at runtime. To update, obtain the listed packages, retain
 their license notices, instantiate only the listed weights, and update the WOFF2
 files and matching Unicode-range CSS together. Font tooling is needed only when
 updating these assets, not when building or running the application.
+
+## App-specific CJK coverage
+
+Main's Google Fonts CSS2 URL requested Noto Sans SC, JP and KR at weights
+400/500/600/700, without a `text=` restriction. The language-specific rules in
+`theme.css` select SC for zh, JP for ja and KR for ko. These same families are
+self-hosted here; their CJK subsets contain only characters extracted from the
+locale source files, support-prompt translations and language-menu labels:
+
+| Locale | Family       | Code points | Weights                 |
+| ------ | ------------ | ----------- | ----------------------- |
+| zh     | Noto Sans SC | 380         | 400, 500, 550, 600, 700 |
+| ja     | Noto Sans JP | 338         | 400, 500, 550, 600, 700 |
+| ko     | Noto Sans KR | 291         | 400, 500, 550, 600, 700 |
+
+`cjk-sources.json` records upstream Google Fonts source URLs and SHA-256 hashes.
+The upstream CJK SIL license/copyright notice is included as `noto-cjk-LICENSE.txt`.
+Each WOFF2 has an exact matching
+`unicode-range` in `cjk-{zh,ja,ko}.css`; Latin text does not load these fonts.
+Opening the language menu loads the fonts needed for its native-language labels,
+even when the current locale is English. Arbitrary CJK text outside the app's
+translations (for example, a document filename) still needs system-font fallbacks.
+
+To regenerate after changing translations, download the three upstream variable
+TTF files named `NotoSansSC.ttf`, `NotoSansJP.ttf`, `NotoSansKR.ttf` into a working
+directory, then run with fonttools/brotli installed and Node available:
+
+```sh
+python3 scripts/subset-cjk-fonts.py /path/to/source-fonts
+npx prettier --write 'assets/fonts/cjk*.css' assets/fonts/cjk-sources.json
+```
+
+The tool uses fonttools' `Subsetter` (the `pyftsubset` implementation), then
+instantiates only the five CSS weights. Normal web/desktop builds require no
+Python tooling: a Node-only build gate reads each WOFF2's actual Unicode cmap
+and CSS range, and rejects missing or unused locale characters. `npm test` runs
+the same gate plus a regression proving a newly added escaped CJK character
+fails until the assets are regenerated.
