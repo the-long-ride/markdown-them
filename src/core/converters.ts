@@ -211,7 +211,11 @@ async function convertRtf(filePath: string): Promise<string> {
 }
 
 async function convertOfficeFallback(filePath: string): Promise<string> {
-  const officeResult: unknown = await officeParser.parseOffice(filePath);
+  const officeResult: unknown = await officeParser.parseOffice(filePath, {
+    ocr: false,
+    extractAttachments: false,
+    allowRemoteAssets: false,
+  });
   return officeAstToMarkdown(officeResult as any);
 }
 

@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
+import { copyLocalAssets } from './lib/local-assets.mjs';
 
 const require = createRequire(import.meta.url);
 
@@ -132,6 +133,7 @@ async function copyAssets() {
     throw new Error('Could not locate pdf.worker.min.mjs in node_modules');
   }
   await copyFile(resolvedWorkerPath, path.join(webDir, 'assets', 'pdf.worker.min.mjs'));
+  await copyLocalAssets(path.join(webDir, 'assets'), resolvedWorkerPath);
 }
 
 export async function startServer(port = defaultPort) {
