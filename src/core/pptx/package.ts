@@ -1,4 +1,5 @@
 import type JSZip from 'jszip';
+import { readZipText as readZipEntryText } from '../shared/zip';
 import type { ContentTypes, Relationship } from './types';
 import { parseXml, readAttr, toArray } from './xml';
 
@@ -59,8 +60,7 @@ export function relationshipsPathForPart(partPath: string): string {
 }
 
 export async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
-  const file = zip.file(normalizePartPath(filePath));
-  return file ? file.async('text') : undefined;
+  return readZipEntryText(zip, normalizePartPath(filePath));
 }
 
 export async function readRelationships(

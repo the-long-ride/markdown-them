@@ -1,6 +1,8 @@
 import type { Box, PositionedItem } from './types';
-import { centerX, comparePosition, isSameVisualColumn, unionBoxes } from './geometry';
-import { hasLetter } from './styles';
+import { comparePosition } from './geometry';
+import { centerX } from '../shared/geometry';
+import { hasLetter, markdownHeadingLevel } from '../shared/inline';
+import { groupSections } from '../shared/sections';
 
 export function stripMarkdown(markdown: string): string {
   return markdown
@@ -25,11 +27,6 @@ export function boldRatio(markdown: string): number {
   return boldText.length / stripped.length;
 }
 
-export function markdownHeadingLevel(markdown: string): number | undefined {
-  const match = markdown.match(/^(#{1,6})\s+/);
-  return match ? match[1].length : undefined;
-}
-
 export function isSectionTitleCandidate(item: PositionedItem): boolean {
   const text = itemText(item);
   return (
@@ -39,58 +36,6 @@ export function isSectionTitleCandidate(item: PositionedItem): boolean {
     !/^[\d\s%.,:/-]+$/.test(text) &&
     (markdownHeadingLevel(item.markdown) !== undefined || boldRatio(item.markdown) > 0.4)
   );
-}
-
-export function findNearestTitle(
-  body: PositionedItem,
-  titles: PositionedItem[],
-  pageSize: Box,
-): PositionedItem | undefined {
-  const candidates = titles
-    .filter((title) => {
-      if (body.y < title.y + Math.min(title.height * 0.45, pageSize.height * 0.035)) {
-        return false;
-      }
-
-      const verticalGap = Math.max(0, body.y - (title.y + title.height));
-      if (verticalGap > pageSize.height * 0.16 || !isSameVisualColumn(title, body)) {
-        return false;
-      }
-
-      return !titles.some(
-        (otherTitle) =>
-          otherTitle !== title &&
-          otherTitle.y > title.y &&
-          otherTitle.y < body.y &&
-          isSameVisualColumn(otherTitle, body),
-      );
-    })
-    .map((title) => ({
-      title,
-      centerDistance: Math.abs(centerX(title) - centerX(body)),
-      verticalGap: Math.max(0, body.y - (title.y + title.height)),
-    }));
-
-  candidates.sort((a, b) => a.verticalGap - b.verticalGap || a.centerDistance - b.centerDistance);
-  return candidates[0]?.title;
-}
-
-export function combineSection(title: PositionedItem, bodies: PositionedItem[]): PositionedItem {
-  const allItems = [title, ...bodies];
-  const bounds = unionBoxes(allItems);
-
-  return {
-    ...title,
-    markdown: allItems
-      .map((item) => item.markdown)
-      .filter(Boolean)
-      .join('\n\n'),
-    x: bounds.x,
-    y: title.y,
-    width: bounds.width,
-    height: Math.max(title.height, bounds.y + bounds.height - title.y),
-    order: Math.min(...allItems.map((item) => item.order)),
-  };
 }
 
 export function promotePageHeading(
@@ -137,54 +82,72 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const textItems = items.filter((item) => item.kind === 'text' && hasLetter(itemText(item)));
-  const titles = textItems.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
-  const titleSet = new Set(titles);
-  const assignments = new Map<PositionedItem, PositionedItem[]>();
-
-  for (const body of textItems) {
-    if (body === pageHeading || titleSet.has(body)) {
-      continue;
-    }
-
-    const title = findNearestTitle(body, titles, pageSize);
-    if (!title) {
-      continue;
-    }
-
-    const bodies = assignments.get(title) || [];
-    bodies.push(body);
-    assignments.set(title, bodies);
-  }
-
-  if (assignments.size === 0) {
-    return items;
-  }
-
-  const consumed = new Set<PositionedItem>();
-  const grouped: PositionedItem[] = [];
-
-  for (const item of items) {
-    if (consumed.has(item)) {
-      continue;
-    }
-
-    const bodies = assignments.get(item);
-    if (bodies?.length) {
-      bodies.sort((a, b) => comparePosition(a, b, pageSize));
-      bodies.forEach((body) => consumed.add(body));
-      grouped.push(combineSection(item, bodies));
-      continue;
-    }
-
-    grouped.push(item);
-  }
-
-  return grouped;
+  const bodies = items.filter((item) => item.kind !== 'text' || hasLetter(itemText(item)));
+  const titles = bodies.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
+  return groupSections(
+    items,
+    bodies,
+    titles,
+    pageSize,
+    (sectionBodies) => orderSlideItems(sectionBodies, pageSize),
+    pageHeading,
+  );
 }
 
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
   const structuredItems = items.map((item) => ({ ...item }));
   const heading = promotePageHeading(structuredItems, pageSize);
-  return groupPositionedSections(structuredItems, pageSize, heading);
+  return orderSlideItems(
+    groupPositionedSections(structuredItems, pageSize, heading),
+    pageSize,
+    heading,
+  );
+}
+
+function orderSlideItems(
+  items: PositionedItem[],
+  pageSize: Box,
+  pageHeading?: PositionedItem,
+): PositionedItem[] {
+  const tolerance = Math.max(0.01, pageSize.height * 0.025);
+  const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x || a.order - b.order);
+  const ordered: PositionedItem[] = [];
+  const orderRow = (row: PositionedItem[]) => {
+    const title =
+      pageHeading &&
+      row.includes(pageHeading) &&
+      row.some((item) => item.kind === 'table') &&
+      !row.some((item) => item !== pageHeading && isSectionTitleCandidate(item))
+        ? pageHeading
+        : undefined;
+    return row.sort(
+      (a, b) =>
+        Number(b === title) - Number(a === title) || a.x - b.x || a.y - b.y || a.order - b.order,
+    );
+  };
+  let row: PositionedItem[] = [];
+  let bottom = Infinity;
+
+  // Allow neighboring frames to share a row even if their margins overlap.
+  for (const item of sorted) {
+    const rowStart = row[0]?.y ?? item.y;
+    const belowRow =
+      item.y > rowStart &&
+      (item.y >= bottom ||
+        row.some(
+          (peer) =>
+            peer.y < item.y &&
+            Math.abs(centerX(peer) - centerX(item)) < Math.max(peer.width, item.width) / 2,
+        ));
+    if (item.y - rowStart > tolerance || belowRow) {
+      ordered.push(...orderRow(row));
+      row = [];
+      bottom = Infinity;
+    }
+    row.push(item);
+    if (item.height > 0) {
+      bottom = Math.min(bottom, item.y + item.height);
+    }
+  }
+  return ordered.concat(orderRow(row));
 }

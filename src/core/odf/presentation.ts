@@ -1,7 +1,7 @@
 import type { Box, OrderedXmlNode, PositionedItem, RenderContext } from './types';
 import { DEFAULT_PAGE_SIZE } from './types';
 import { childrenOf, directChildren, findFirst, nodeName, readAttr } from './xml';
-import { comparePosition, readFrameBox, readPageBox } from './geometry';
+import { readFrameBox, readPageBox } from './geometry';
 import { normalizeOdfHref } from './styles';
 import {
   collectPresentationImageCounts,
@@ -19,7 +19,8 @@ export async function renderFrameItems(
 ): Promise<PositionedItem[]> {
   const box = readFrameBox(frame);
   const items: PositionedItem[] = [];
-  const image = findFirst(childrenOf(frame), 'image');
+  const frameChildren = childrenOf(frame);
+  const image = findFirst(frameChildren, 'image');
   const href = image ? normalizeOdfHref(readAttr(image, 'href') || '') : '';
 
   if (href) {
@@ -31,14 +32,16 @@ export async function renderFrameItems(
     }
   }
 
-  const textBox = findFirst(childrenOf(frame), 'text-box');
+  const [textBox] = directChildren(frameChildren, 'text-box');
   const textNodes = textBox
     ? childrenOf(textBox)
-    : childrenOf(frame).filter((child) => nodeName(child) !== 'image');
-  const textMarkdown = (await renderFlowNodes(textNodes, context)).join('\n\n').trim();
+    : frameChildren.filter((child) => nodeName(child) !== 'image');
+  const elements = textNodes.filter((child) => nodeName(child) !== '#text');
+  const table = elements.length === 1 && nodeName(elements[0]) === 'table';
+  const markdown = (await renderFlowNodes(textNodes, context)).join('\n\n').trim();
 
-  if (textMarkdown) {
-    items.push({ kind: 'text', markdown: textMarkdown, order: order + items.length, ...box });
+  if (markdown) {
+    items.push({ kind: table ? 'table' : 'text', markdown, order: order + items.length, ...box });
   }
 
   return items;
@@ -102,7 +105,12 @@ export async function collectPresentationItems(
     if (name === 'p' || name === 'h' || name === 'list' || name === 'table') {
       const markdown = (await renderFlowNode(child, context)).trim();
       if (markdown) {
-        items.push({ kind: 'text', markdown, order: order++, ...DEFAULT_PAGE_SIZE });
+        items.push({
+          kind: name === 'table' ? 'table' : 'text',
+          markdown,
+          order: order++,
+          ...DEFAULT_PAGE_SIZE,
+        });
       }
     }
   }
@@ -125,7 +133,6 @@ export async function renderPresentation(
     const pageContext = { ...context, pageSize, presentationMode: true };
     const items = await collectPresentationItems(page, pageContext);
     const structuredItems = structurePositionedText(items, pageSize);
-    structuredItems.sort((a, b) => comparePosition(a, b, pageSize));
 
     const markdown = structuredItems
       .map((item) => item.markdown)

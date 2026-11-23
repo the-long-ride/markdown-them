@@ -26,7 +26,7 @@ export interface RenderContext {
 }
 
 export interface PositionedItem extends Box {
-  kind: 'image' | 'text';
+  kind: 'image' | 'text' | 'table';
   markdown: string;
   order: number;
   href?: string;

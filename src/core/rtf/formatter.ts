@@ -1,3 +1,4 @@
+import { applyInlineMarks } from '../shared/inline';
 import type { RtfRun } from './types';
 
 export function plainText(runs: RtfRun[]): string {
@@ -14,28 +15,8 @@ export function boldRatio(runs: RtfRun[]): number {
   return boldLength / text.length;
 }
 
-export function wrapMarkdown(value: string, marker: string): string {
-  const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(value);
-  if (!match || !match[2]) {
-    return value;
-  }
-
-  return `${match[1]}${marker}${match[2]}${marker}${match[3]}`;
-}
-
 export function formatRun(run: RtfRun): string {
-  let markdown = run.text;
-  if (run.bold) {
-    markdown = wrapMarkdown(markdown, '**');
-  }
-  if (run.italic) {
-    markdown = wrapMarkdown(markdown, '*');
-  }
-  if (run.strikethrough) {
-    markdown = wrapMarkdown(markdown, '~~');
-  }
-
-  return markdown;
+  return applyInlineMarks(run.text, run);
 }
 
 export function formatRuns(runs: RtfRun[]): string {

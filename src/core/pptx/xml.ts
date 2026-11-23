@@ -6,7 +6,7 @@ export function localTagName(tagName: string): string {
   return colonIndex >= 0 ? tagName.slice(colonIndex + 1) : tagName;
 }
 
-export const xmlParser = new XMLParser({
+const parserOptions = {
   attributeNamePrefix: '@_',
   ignoreAttributes: false,
   ignoreDeclaration: true,
@@ -17,14 +17,48 @@ export const xmlParser = new XMLParser({
   textNodeName: '#text',
   transformTagName: localTagName,
   trimValues: false,
-});
+};
 
-export function parseXml(xml: string, partPath: string): any {
+export const xmlParser = new XMLParser(parserOptions);
+const orderedXmlParser = new XMLParser({ ...parserOptions, preserveOrder: true });
+
+type OrderedXmlNode = Record<string, unknown>;
+
+function groupXmlChildren(nodes: OrderedXmlNode[], parent?: string): Record<string, any> {
+  const grouped = Object.create(null);
+  const paragraphChildren: [string, unknown][] = [];
+  for (const node of nodes) {
+    for (const [name, value] of Object.entries(node)) {
+      if (name === ':@') {
+        continue;
+      }
+      const child = Array.isArray(value)
+        ? Object.assign(groupXmlChildren(value, name), node[':@'])
+        : value;
+      if (parent === 'p') {
+        paragraphChildren.push([name, child]);
+      } else if (grouped[name] === undefined) {
+        grouped[name] = child;
+      } else if (name === '#text') {
+        grouped[name] += child;
+      } else {
+        grouped[name] = [...toArray(grouped[name]), child];
+      }
+    }
+  }
+  if (parent === 'p') {
+    grouped.paragraphChildren = paragraphChildren;
+    grouped.pPr = paragraphChildren.find(([name]) => name === 'pPr')?.[1];
+  }
+  return grouped;
+}
+
+export function parseXml(xml: string, partPath: string, orderedParagraphs = false): any {
   if (/<!DOCTYPE/i.test(xml)) {
     throw new Error(`Unsupported XML doctype in PPTX part: ${partPath}`);
   }
 
-  return xmlParser.parse(xml);
+  return orderedParagraphs ? groupXmlChildren(orderedXmlParser.parse(xml)) : xmlParser.parse(xml);
 }
 
 export function readAttr(node: any, name: string): string | undefined {
