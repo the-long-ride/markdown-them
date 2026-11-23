@@ -11,7 +11,7 @@
  *
  * Stage 2 (Parallel Test Suites):
  *   - Tauri Rust backend tests (`cargo test`)
- *   - End-to-end multi-format & condition coverage suite (`scripts/test-coverage.mjs`)
+ *   - TypeScript unit and end-to-end coverage suite (`scripts/test-coverage.mjs`)
  */
 
 import { spawn } from 'node:child_process';
@@ -102,19 +102,15 @@ async function main() {
 
   await Promise.all(stage1Steps);
 
-  console.log('\n\x1b[1m► Stage 2: Parallel Full Test Suites (Rust & Node.js Coverage)\x1b[0m');
+  console.log('\n\x1b[1m► Stage 2: Parallel Full Test Suites (Rust & TypeScript Coverage)\x1b[0m');
   const stage2Steps = [
     runStep('Tauri Rust Backend Tests', 'cargo', [
       'test',
       '--manifest-path',
       'src-tauri/Cargo.toml',
     ]),
-    runStep('Node.js E2E & Condition Coverage Suite', process.execPath, [
+    runStep('TypeScript Unit & E2E Coverage Suite', process.execPath, [
       'scripts/test-coverage.mjs',
-    ]),
-    runStep('Legacy DOC/XLS Binary Conversion', process.execPath, [
-      '--test',
-      'tests/legacy-office.test.mjs',
     ]),
   ];
 

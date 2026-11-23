@@ -155,7 +155,7 @@ jobs:
           if-no-files-found: error
 
   coverage:
-    name: Node Coverage
+    name: TypeScript Coverage
     runs-on: ubuntu-latest
 
     steps:
@@ -174,16 +174,14 @@ jobs:
       - name: Compile core and extension
         run: npm run compile
 
-      - name: Test legacy Office conversion
-        run: node --test tests/legacy-office.test.mjs
-
-      - name: Run coverage suite
+      - name: Run coverage for all TypeScript variants
         run: node scripts/test-coverage.mjs
 
-      - name: Upload Node coverage artifact
+      - name: Upload TypeScript coverage artifact
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: node-coverage
+          name: typescript-coverage
           path: |
             coverage/coverage-summary.json
             coverage/lcov.info

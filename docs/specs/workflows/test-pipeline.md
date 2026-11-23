@@ -41,7 +41,7 @@ Enforces code quality, structural modularity, and regression testing across the 
    - `Prettier Style Check`: checks repository code formatting via `prettier --check .`.
 2. **Stage 2: Parallel Full Test Execution**:
    - `Tauri Rust Backend Tests`: executes 51 backend integration tests (`cargo test --manifest-path src-tauri/Cargo.toml`).
-   - `Node.js E2E & Condition Coverage Suite`: executes 84 automated tests across Tiers 1–7 with `c8` coverage reporting (`scripts/test-coverage.mjs`).
+   - `TypeScript Unit & E2E Coverage Suite`: runs unit, legacy Office and Tiers 1–7 end-to-end tests. The `c8` report gates lines, functions, branches and statements at 90% for core, the Node.js package, VS Code, the app, shared code and the combined total (`scripts/test-coverage.mjs`).
 3. **CI Automation**:
    - `.github/workflows/build.yml` executes this unified workflow on all pushes and pull requests across Linux, macOS, and Windows.
 
@@ -49,7 +49,7 @@ Enforces code quality, structural modularity, and regression testing across the 
 - `scripts/run-all-tests.mjs` — staged parallel test runner orchestrating verification steps
 - `scripts/loc-lint.mjs` — CLI entry point for lines-of-code policy enforcement
 - `scripts/lib/source-policy.mjs` — core LOC policy definitions and file discovery filters
-- `scripts/test-coverage.mjs` — wrapper running the 84 E2E tests with `c8` condition/branch coverage metrics
+- `scripts/test-coverage.mjs` — runner for the TypeScript tests and per-variant `c8` coverage gate
 - `tests/e2e/run-e2e.mjs` — multi-tier E2E test harness
 - `.github/workflows/build.yml` — GitHub Actions continuous integration workflow
 
