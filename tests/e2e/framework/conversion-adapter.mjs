@@ -146,7 +146,7 @@ export async function resolveOutputPaths(filePaths, outputFolder) {
 }
 
 /**
- * Concurrency-controlled worker pool (matches `runLimited` in Desktop & UI)
+ * Concurrency-controlled worker pool (matches `runLimited` in the VS Code extension)
  */
 export async function runLimited(items, limit, worker) {
   let index = 0;

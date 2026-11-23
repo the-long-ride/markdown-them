@@ -22,9 +22,9 @@ tests/e2e/
 
 ### Key Architectural Pillars
 
-1. **Zero External Binary Dependencies**: All test fixtures (`.docx`, `.pdf`, `.xlsx`, `.pptx`, `.odt`, `.rtf`, `.html`, `.txt`) are synthesized deterministically in-memory using pure Node.js and existing project packages (`jszip`). No Microsoft Office, LibreOffice, or external CLI utilities are required.
+1. **Offline Fixtures**: Synthetic fixtures are generated deterministically with Node.js and project dependencies. Legacy Office tests use [bundled binary fixtures](fixtures/legacy/README.md), and Tier 6 runs [bundled document originals](e2e/fixtures/real-files.md) offline. No Microsoft Office, LibreOffice, or external CLI utilities are required.
 2. **Opaque-Box Verification**: Tests interact only with the published conversion APIs and file I/O boundaries, asserting that valid Markdown with the required headings, tables, formatting, and content is generated.
-3. **Progressive Testability**: Operates against the stable TypeScript core conversion engine (`src/core/`) and automatically builds artifacts if needed, ensuring milestone readiness without regressions.
+3. **Build Prerequisites**: The standalone E2E runner uses the compiled TypeScript core (`src/core/`). The TypeScript coverage runner compiles the required variants before running the tests.
 4. **Hermetic State & Isolation**: Each test suite creates isolated temporary directories in the operating system's temp location (`os.tmpdir()`) and completely cleans up on test lifecycle completion.
 
 ---
@@ -34,7 +34,8 @@ tests/e2e/
 The test suite is driven by a standalone Node.js runner:
 
 ```bash
-# Execute the full test suite (Tiers 1 through 4)
+# Compile the converter and run the full E2E suite (Tiers 1 through 8)
+npm run compile
 node tests/e2e/run-e2e.mjs
 
 # Execute a specific tier
@@ -42,6 +43,7 @@ node tests/e2e/run-e2e.mjs --tier=1
 node tests/e2e/run-e2e.mjs --tier=2
 node tests/e2e/run-e2e.mjs --tier=3
 node tests/e2e/run-e2e.mjs --tier=4
+node tests/e2e/run-e2e.mjs --tier=8
 
 # Run with detailed assertion stack traces
 node tests/e2e/run-e2e.mjs --verbose
@@ -120,11 +122,13 @@ Validates production deployment scenarios:
 
 ---
 
-## 4. Verification Record
+### Tiers 5–8: CLI, Office Regressions, Coverage, and Graded Inputs
 
-The test suite runs synchronously in CI and local developer environments:
+- Tier 5 exercises the packaged Node.js CLI.
+- Tier 6 checks complex documents and runs the bundled manual-report originals.
+- Tier 7 exercises conversion and CLI branches.
+- Tier 8 grades Markdown structure and content across Markdown inputs and every supported file extension.
 
-- Total Tests: 30
-- Passing: 30 (100%)
-- Failing: 0
-- Execution Time: ~0.30s
+## 4. Coverage and CI
+
+`npm run test:coverage` runs unit, legacy Office, and E2E tests with 90% minimum TypeScript lines, functions, branches, and statements per variant and overall. See the [test pipeline](../docs/specs/workflows/test-pipeline.md) for the local and GitHub CI jobs.
