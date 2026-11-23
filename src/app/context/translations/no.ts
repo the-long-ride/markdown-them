@@ -50,6 +50,8 @@ export const no: Record<string, string> = {
   words: 'ord',
   chars: 'tegn',
   lines: 'linjer',
+  webApp: 'Webapplikasjon',
+  webAppVariantDetail: 'Åpne nettleserversjonen på GitHub Pages.',
   desktopApp: 'Skrivebordsapplikasjon',
   desktopApplication: 'Skrivebordsapplikasjon',
   desktopVariantDetail:

@@ -48,6 +48,8 @@ export const es: Record<string, string> = {
   words: 'palabras',
   chars: 'caracteres',
   lines: 'líneas',
+  webApp: 'Aplicación web',
+  webAppVariantDetail: 'Abre la versión de navegador en GitHub Pages.',
   desktopApp: 'Aplicación de escritorio',
   desktopApplication: 'Aplicación de escritorio',
   desktopVariantDetail:

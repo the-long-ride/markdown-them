@@ -49,6 +49,8 @@ export const ja: Record<string, string> = {
   words: '単語',
   chars: '文字',
   lines: '行',
+  webApp: 'Web アプリケーション',
+  webAppVariantDetail: 'GitHub Pages でブラウザ版を開きます。',
   desktopApp: 'デスクトップアプリケーション',
   desktopApplication: 'デスクトップアプリケーション',
   desktopVariantDetail:

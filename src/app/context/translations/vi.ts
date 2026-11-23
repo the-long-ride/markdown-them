@@ -48,6 +48,8 @@ export const vi: Record<string, string> = {
   words: 'từ',
   chars: 'ký tự',
   lines: 'dòng',
+  webApp: 'Ứng dụng web',
+  webAppVariantDetail: 'Mở phiên bản trình duyệt trên GitHub Pages.',
   desktopApp: 'Ứng dụng máy tính',
   desktopApplication: 'Ứng dụng máy tính',
   desktopVariantDetail:
