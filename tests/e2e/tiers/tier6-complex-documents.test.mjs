@@ -27,6 +27,7 @@ import {
   generateWorksheetHyperlinksXlsx,
 } from '../fixtures/content-loss-fixtures.mjs';
 import { generateMarkdown } from '../framework/conversion-adapter.mjs';
+import { registerRealFileTests } from './real-files.mjs';
 import {
   assert,
   assertContains,
@@ -35,6 +36,7 @@ import {
 } from '../framework/assertions.mjs';
 
 export function registerTier6Tests(harness) {
+  registerRealFileTests(harness);
   harness.suite('Tier 6: Complex Multi-Feature Document Coverage', () => {
     let tmpDir;
 
