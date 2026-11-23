@@ -113,6 +113,10 @@ async function main() {
     runStep('Node.js E2E & Condition Coverage Suite', process.execPath, [
       'scripts/test-coverage.mjs',
     ]),
+    runStep('Legacy DOC/XLS Binary Conversion', process.execPath, [
+      '--test',
+      'tests/legacy-office.test.mjs',
+    ]),
   ];
 
   await Promise.all(stage2Steps);

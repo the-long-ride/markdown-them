@@ -124,7 +124,8 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "turndown": "^7.2.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "resolutions": {
     "fast-uri": "^3.1.2",
