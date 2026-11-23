@@ -11,7 +11,7 @@ Konverter ulike dokumentfiler til Markdown (.md) fra en web-applikasjon, en Taur
 - **VS Code-utvidelse:** Høyreklikkmenyer i filutforskeren og side-by-side Markdown-forhåndsvisninger integrert i utviklerens arbeidsflyt.
 - **Node.js-pakke:** Integrer den samme konverteringsmotoren i egne skript, CLI-verktøy og automatiseringer.
 
-- **Støttede formater:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Merk: Eldre formater `.doc`, `.xls`, `.xlm` bruker emulert filnavnendring, og konverteringen vil av og til ikke fungere korrekt).
+- **Støttede formater:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
 - **Samtidig batch-prosessering:** Konverter dusinvis av filer samtidig med optimalisert ytelse.
 
 ## Markdown Them-varianter

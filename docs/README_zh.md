@@ -11,7 +11,7 @@
 - **VS Code 插件：** 集成在资源管理器中的右键上下文菜单，以及面向开发者工作流的 Markdown 双栏实时预览。
 - **Node.js 依赖包：** 在您自建的脚本、CLI 命令行以及自动化工具中直接调用相同的转换引擎。
 
-- **支持的格式：** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`（注意：旧版格式 `.doc`, `.xls`, `.xlm` 使用重命名模拟，有时可能无法正确转换）。
+- **支持的格式：** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`。
 - **并发批量处理：** 同时转换数十个文件，性能极佳。
 
 ## Markdown Them 版本

@@ -41,8 +41,8 @@ Markdown Them Desktop utilizes a high-performance **hybrid execution architectur
 1. **Frontend / UI Runtime (React 19 + TypeScript)**:
    - Location: `src/app/`
    - **In-Memory Document Conversion Engine**: Converts raw binary file buffers (`Uint8Array`) to Markdown entirely in memory via `src/app/browser-converter.ts`.
-     - Libraries: `mammoth` (.docx), `@opendocsg/pdf2md` (.pdf), `jszip` + `fast-xml-parser` (.xlsx), `officeparser` (.pptx, .odt, .odp, .ods, .rtf), `turndown` (.html).
-   - **Parallel Conversion Queue**: `src/app/parallel-queue.ts` coordinates asynchronous batch conversions using an internal concurrency queue (`runLimited`). Concurrency defaults to 6 files simultaneously and provides live task progress updates and cancellation support via `AbortSignal`.
+     - The browser dispatcher uses shared parsers for binary DOC, XLS/XLM (SheetJS), XLSX, PPTX, ODF, and RTF. It uses `officeparser` for DOCX, PDF, and supported fallback paths, and `turndown` for HTML.
+   - **Parallel Conversion Queue**: `src/app/parallel-queue.ts` coordinates asynchronous batch conversions using an internal concurrency-limited worker pool. Concurrency defaults to 6 files simultaneously and provides live task progress updates and cancellation support via `AbortSignal`.
    - **IPC Client Adapter**: `src/app/tauri-api.ts` implements the unified `MarkdownThemDesktopApi` interface by calling `@tauri-apps/api/core` (`invoke`).
 
 2. **Backend Native Runtime (Rust / Tauri v2)**:

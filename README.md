@@ -18,7 +18,8 @@ Convert various document files into Markdown (.md) from a web application, a Tau
 - **VS Code Extension:** Right-click context menus in the file explorer and side-by-side Markdown previews for developer workflows.
 - **Node.js Package:** Integrate the same converter engine in your custom scripts, CLIs, and automations.
 
-- **Supported formats:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Note: Legacy formats `.doc`, `.xls`, `.xlm` use renaming emulation and sometimes will not work correctly).
+- **Supported formats:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
+- **Legacy Office files:** All four variants read binary Word 97–2003 (`.doc`) and legacy Excel workbooks (`.xls`, `.xlm`) directly. No renaming or resaving in Office is required.
 - **Concurrent batch processing:** Convert dozens of files at once with optimized performance.
 
 ## Markdown Them Variants
@@ -130,6 +131,7 @@ Special thanks to the authors and contributors of these incredible libraries tha
 - [`@opendocsg/pdf2md`](https://github.com/opendocsg/pdf2md) (MIT License): Reliable text extraction from `.pdf` files.
 - [`jszip`](https://github.com/Stuk/jszip) (MIT or GPL-3.0 License): Zip extraction of files.
 - [`fast-xml-parser`](https://github.com/NaturalIntelligence/fast-xml-parser) (MIT License): Lightweight XML parsing for Office documents.
+- [SheetJS Community Edition](https://sheetjs.com/) (Apache-2.0 License): Reads legacy Excel workbooks and provides OLE container handling.
 - [`turndown`](https://github.com/mixmark-io/turndown) (MIT License): Clean conversion of HTML content to Markdown.
 - [`officeparser`](https://github.com/harshankur/officeParser) (MIT License): Fallback text extractor for unusual Office formats.
 
