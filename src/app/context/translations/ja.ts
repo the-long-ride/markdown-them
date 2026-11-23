@@ -1,7 +1,7 @@
 export const ja: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    'DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF、およびテキストファイルを読みやすい markdown に変換します。\n注意：レガシーフォーマット（.doc, .xls, .xlm）は名前変更エミュレーションを使用するため、正しく変換されない場合があります。',
+    'DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF、およびテキストファイルを読みやすい markdown に変換します。',
   files: 'ファイル',
   text: 'テキスト',
   privacyFirst: 'プライバシー第一',

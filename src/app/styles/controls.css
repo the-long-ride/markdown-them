@@ -289,6 +289,18 @@
   min-height: auto;
 }
 
+.language-dropdown button[lang='zh'] {
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.language-dropdown button[lang='ja'] {
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.language-dropdown button[lang='ko'] {
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
 .language-dropdown button:hover {
   background: var(--amber-wash, rgba(169, 111, 40, 0.1));
   color: var(--text-strong);
