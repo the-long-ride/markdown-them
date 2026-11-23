@@ -1,7 +1,7 @@
 export const es: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    'Convierta archivos DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF y de texto a un formato markdown legible.\nNota: Los formatos heredados (.doc, .xls, .xlm) usan emulación de cambio de nombre y a veces no se convertirán correctamente.',
+    'Convierta archivos DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF y de texto a un formato markdown legible.',
   files: 'Archivos',
   text: 'Texto',
   privacyFirst: 'Privacidad primero',

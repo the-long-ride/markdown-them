@@ -1,7 +1,7 @@
 export const en: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    'Convert from DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF, and text files to readable markdown.\nNote: Legacy formats (.doc, .xls, .xlm) use renaming emulation and sometimes will not work correctly.',
+    'Convert from DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF, and text files to readable markdown.',
   files: 'Files',
   text: 'Text',
   privacyFirst: 'Privacy-first',
