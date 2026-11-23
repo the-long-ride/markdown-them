@@ -48,9 +48,6 @@ jobs:
       - name: Test release metadata and SEO smoke
         run: node --test tests/release-contributors.test.mjs tests/seo-smoke.test.mjs
 
-      - name: Test legacy Office conversion
-        run: node --test tests/legacy-office.test.mjs
-
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
@@ -176,6 +173,9 @@ jobs:
 
       - name: Compile core and extension
         run: npm run compile
+
+      - name: Test legacy Office conversion
+        run: node --test tests/legacy-office.test.mjs
 
       - name: Run coverage suite
         run: node scripts/test-coverage.mjs
