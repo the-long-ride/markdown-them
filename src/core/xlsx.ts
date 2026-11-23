@@ -69,16 +69,14 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
     let nextRow = 1;
     const tableRows = new Map<number, string[]>();
     for (const row of rows) {
-      const firstCell = toArray(row?.c)[0];
-      const firstRef = String(firstCell?.['@_r'] || firstCell?.['@_R'] || '');
-      const rowNumber =
-        Number(row?.['@_r'] || row?.['@_R']) || cellAddress(firstRef)?.row || nextRow;
-      tableRows.set(rowNumber, readXlsxRow(row, rowNumber, sharedStrings, hyperlinkIndex));
+      const cells = toArray(row?.c);
+      const rowNumber = Number(row?.['@_r'] || row?.['@_R']) || inferRowFromCells(cells) || nextRow;
+      tableRows.set(rowNumber, readXlsxRow(cells, rowNumber, sharedStrings, hyperlinkIndex));
       nextRow = rowNumber + 1;
     }
     for (const rowNumber of hyperlinkIndex?.anchors.keys() ?? []) {
       if (!tableRows.has(rowNumber)) {
-        tableRows.set(rowNumber, readXlsxRow(undefined, rowNumber, sharedStrings, hyperlinkIndex));
+        tableRows.set(rowNumber, readXlsxRow([], rowNumber, sharedStrings, hyperlinkIndex));
       }
     }
     const orderedRows = [...tableRows].sort(([a], [b]) => a - b).map(([, row]) => row);
@@ -138,8 +136,15 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
   return toArray(sharedStrings?.sst?.si).map(readRichText);
 }
 
+function inferRowFromCells(cells: any[]): number | undefined {
+  for (const cell of cells) {
+    const address = cellAddress(String(cell?.['@_r'] || cell?.['@_R'] || ''));
+    if (address) return address.row;
+  }
+}
+
 function readXlsxRow(
-  row: any,
+  cells: any[],
   rowNumber: number,
   sharedStrings: string[],
   hyperlinks?: ReturnType<typeof indexCellHyperlinks>,
@@ -147,7 +152,7 @@ function readXlsxRow(
   const values: string[] = [];
   let nextColumn = 1;
 
-  for (const cell of toArray(row?.c)) {
+  for (const cell of cells) {
     const cellRef = cell?.['@_r'] || cell?.['@_R'];
     const column = cellRef ? columnIndexFromCellRef(String(cellRef)) : nextColumn;
 

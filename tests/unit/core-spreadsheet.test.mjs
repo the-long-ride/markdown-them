@@ -52,8 +52,12 @@ test('XLSX preserves rich strings, inferred positions, blank gaps, booleans and 
       <row R="1"><c R="A1" t="s"><v>0</v></c><c r="C1" t="s"><v>1</v></c></row>
       <row><c r="A2" t="b"><v>1</v></c><c r="C2" t="b"><v>0</v></c></row>
       <row><c T="inlineStr"><is><r><t>Quarter </t></r><r><t>Four</t></r></is></c><c t="s"><v>-1</v></c><c t="s"><v/></c></row>
+      <row><c><v>9</v></c><c r="B7" t="inlineStr"><is><t>Summary</t></is></c></row>
     </sheetData>
-    <hyperlinks><hyperlink ref="B4" location="Sheet!A1" display="Details"/></hyperlinks>
+    <hyperlinks>
+      <hyperlink ref="B4" location="Sheet!A1" display="Details"/>
+      <hyperlink ref="B7" location="Sheet!A2"/>
+    </hyperlinks>
   </worksheet>`,
   );
   zip.file(
@@ -67,6 +71,7 @@ test('XLSX preserves rich strings, inferred positions, blank gaps, booleans and 
     '| TRUE |  | FALSE |',
     '| Quarter Four |  |  |',
     'Details (target: Sheet!A1)',
+    '| 9 | Summary (target: Sheet!A2) |',
     '## Second sheet',
     '| 25 |',
   ]) {
