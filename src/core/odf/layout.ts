@@ -187,13 +187,26 @@ export function groupPositionedSections(
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
   const structuredItems = items.map((item) => ({ ...item }));
   const heading = promotePageHeading(structuredItems, pageSize);
-  return orderSlideItems(groupPositionedSections(structuredItems, pageSize, heading), pageSize);
+  return orderSlideItems(
+    groupPositionedSections(structuredItems, pageSize, heading),
+    pageSize,
+    heading,
+  );
 }
 
-function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem[] {
+function orderSlideItems(
+  items: PositionedItem[],
+  pageSize: Box,
+  pageHeading?: PositionedItem,
+): PositionedItem[] {
   const tolerance = Math.max(0.01, pageSize.height * 0.025);
   const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x || a.order - b.order);
   const ordered: PositionedItem[] = [];
+  const compareRow = (a: PositionedItem, b: PositionedItem) =>
+    Number(b === pageHeading) - Number(a === pageHeading) ||
+    a.x - b.x ||
+    a.y - b.y ||
+    a.order - b.order;
   let row: PositionedItem[] = [];
   let bottom = Infinity;
 
@@ -209,7 +222,7 @@ function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem
             Math.abs(centerX(peer) - centerX(item)) < Math.max(peer.width, item.width) / 2,
         ));
     if (item.y - rowStart > tolerance || belowRow) {
-      ordered.push(...row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
+      ordered.push(...row.sort(compareRow));
       row = [];
       bottom = Infinity;
     }
@@ -218,5 +231,5 @@ function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem
       bottom = Math.min(bottom, item.y + item.height);
     }
   }
-  return ordered.concat(row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
+  return ordered.concat(row.sort(compareRow));
 }

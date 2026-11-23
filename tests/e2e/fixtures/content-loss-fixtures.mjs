@@ -94,10 +94,10 @@ export async function generateListHeaderTableOdp(imageColumn) {
           <draw:text-box><text:p>Count excludes spares.</text:p></draw:text-box>
         </draw:frame>
       </draw:page><draw:page>
-        <draw:frame svg:x="2cm" svg:y="3.35cm" svg:width="16cm" svg:height="1cm">
+        <draw:frame svg:x="2cm" svg:y="3.15cm" svg:width="10cm" svg:height="1cm">
           <table:table>${tableRow('Type', 'Code')}${tableRow('One', '1')}</table:table>
         </draw:frame>
-        <draw:frame svg:x="8cm" svg:y="3cm" svg:width="10cm" svg:height="0.3cm">
+        <draw:frame svg:x="9cm" svg:y="3cm" svg:width="10cm" svg:height="0.3cm">
           <draw:text-box><text:h text:outline-level="2">Nearby heading</text:h></draw:text-box>
         </draw:frame>
       </draw:page>
