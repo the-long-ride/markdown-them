@@ -141,6 +141,21 @@ export function registerTier8Tests(harness) {
         assertEqual(convertTextToMarkdown(input), `${fence}Outside\n\n\nNext`);
       });
 
+      harness.test('Preserves literal tabs and whitespace in a list fence', () => {
+        const fence = '-\t```text\n\tlist code   \n\t\n\t\n\t\n\t```';
+        assertEqual(convertTextToMarkdown(`${fence}\n\nOutside\t`), `${fence}\n\nOutside`);
+      });
+
+      harness.test('Does not treat a thematic break as a list before an indented fence', () => {
+        const fence = '  ```text\nflush-left code   \n\n\n\n  ```';
+        for (const rule of ['- - -', '* * *', '_ _ _']) {
+          assertEqual(
+            convertTextToMarkdown(`${rule}\n\n${fence}\n\nOutside\t`),
+            `${rule}\n\n${fence}\n\nOutside`,
+          );
+        }
+      });
+
       harness.test(
         'Converts a large Markdown file without dropping or reordering lines',
         async () => {

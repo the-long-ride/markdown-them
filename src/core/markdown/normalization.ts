@@ -11,13 +11,22 @@ export function cleanLine(line: string): string {
 
 type MarkdownContainer = 'quote' | number;
 
+function expandTabs(line: string): string {
+  let extraColumns = 0;
+  return line.replace(/\t/g, (_tab, index: number) => {
+    const width = 4 - ((index + extraColumns) % 4);
+    extraColumns += width - 1;
+    return ' '.repeat(width);
+  });
+}
+
 function quotePrefixLength(line: string): number {
-  return /^ {0,3}>[ \t]?/.exec(line)?.[0].length ?? 0;
+  return /^ {0,3}> ?/.exec(line)?.[0].length ?? 0;
 }
 
 function listPrefixLength(line: string): number {
   const marker = /^ {0,3}(?:[-+*]|\d{1,9}[.)])( +|$)/.exec(line);
-  if (!marker) return 0;
+  if (!marker || /^ {0,3}([-*_]) *(?:\1 *){2,}$/.test(line)) return 0;
 
   const padding = marker[1].length;
   return marker[0].length - padding + (padding >= 1 && padding <= 4 ? padding : 1);
@@ -32,15 +41,13 @@ export function normalizeMarkdown(markdown: string): string {
   let fence: string | undefined;
 
   for (const line of lines) {
-    let content = line;
+    let content = expandTabs(line);
     let depth = 0;
     for (const container of containers) {
       const prefix = container === 'quote' ? quotePrefixLength(content) : container;
       if (
         !prefix ||
-        (container !== 'quote' &&
-          !content.startsWith(' '.repeat(prefix)) &&
-          !/^[ \t]*$/.test(content))
+        (container !== 'quote' && !content.startsWith(' '.repeat(prefix)) && !/^ *$/.test(content))
       ) {
         break;
       }
@@ -70,7 +77,7 @@ export function normalizeMarkdown(markdown: string): string {
         delimiter &&
         delimiter[1][0] === fence[0] &&
         delimiter[1].length >= fence.length &&
-        /^[ \t]*$/.test(delimiter[2])
+        /^ *$/.test(delimiter[2])
       ) {
         fence = undefined;
       } else {
