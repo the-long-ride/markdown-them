@@ -119,6 +119,17 @@ export async function generateListHeaderTableOdp(imageColumn) {
       </draw:page>`
           : ''
       }
+      <draw:page>
+        <draw:frame svg:x="2cm" svg:y="1cm" svg:width="16cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="2">Overview</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="4cm" svg:y="8cm" svg:width="12cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="3">Inset heading</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="8.25cm" svg:width="16cm" svg:height="2cm">
+          <draw:text-box><text:p>Body in the same column.</text:p></draw:text-box>
+        </draw:frame>
+      </draw:page>
       <draw:page>${sideTable}${centerNote}${rightHeading}</draw:page>
       <draw:page>${rightHeading}${centerNote}${sideTable}</draw:page>
       </office:presentation></office:body>

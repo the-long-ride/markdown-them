@@ -197,10 +197,13 @@ function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem
   let row: PositionedItem[] = [];
   let bottom = Infinity;
 
-  // Decide row membership before sorting left-to-right; pairwise tolerances can create cycles.
+  // Form rows of side-by-side items before sorting left-to-right.
   for (const item of sorted) {
     const rowStart = row[0]?.y ?? item.y;
-    if (item.y - rowStart > tolerance || (item.y > rowStart && item.y >= bottom)) {
+    const belowRow =
+      item.y > rowStart &&
+      (item.y >= bottom || row.some((peer) => peer.y < item.y && isSameVisualColumn(peer, item)));
+    if (item.y - rowStart > tolerance || belowRow) {
       ordered.push(...row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
       row = [];
       bottom = Infinity;

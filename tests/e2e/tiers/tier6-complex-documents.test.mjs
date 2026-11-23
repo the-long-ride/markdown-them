@@ -127,6 +127,17 @@ export function registerTier6Tests(harness) {
       },
     );
 
+    harness.test('ODP: Reads an inset heading before overlapping text in its column', async () => {
+      const markdown = await convertFixture(
+        'inset-heading.odp',
+        await generateListHeaderTableOdp(),
+      );
+      assertEqual(
+        markdown.split('\n\n---\n\n').at(-3),
+        '## Overview\n\n### Inset heading\n\nBody in the same column.',
+      );
+    });
+
     harness.test(
       'RTF: Preserves smart quotes and ignores source wrapping inside words',
       async () => {
