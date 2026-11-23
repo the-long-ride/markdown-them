@@ -11,6 +11,7 @@ import {
   extractChangelogForVersion,
   extractUnreleasedChangelog,
   formatContributors,
+  resolveGitHubContributors,
   resolveReleaseChangelog,
 } from '../scripts/generate-release-notes.mjs';
 
@@ -79,7 +80,10 @@ test('rendered contributor list is the final section of a release', () => {
     contributors: [{ name: 'Alice', login: 'alice' }],
   });
   assert.match(body, /Changelog for v1\.1\.0/);
-  assert.match(body, /### Contributors\n\n- \[@alice\]\(https:\/\/github.com\/alice\)\n$/);
+  assert.match(
+    body,
+    /### Contributors\n\n<a href="https:\/\/github\.com\/alice"><img src="https:\/\/github\.com\/alice\.png\?size=80" width="40" height="40" alt="@alice" title="@alice" \/><\/a>\n$/,
+  );
   assert.match(formatContributors([]), /No individual contributors identified/);
   assert.equal(extractChangelogForVersion('## 1.2.0\n\nHello', 'v1.2.0'), 'Hello');
 });
@@ -125,6 +129,52 @@ test('release changelog uses version section, unreleased notes, or commits', () 
     assert.match(fromCommits, /compare\/v1\.0\.1\.\.\.v1\.0\.2$/);
     assert.equal(extractUnreleasedChangelog('## [Unreleased]\n\n- A\n\n## [1.0.0]\n\n- B'), '- A');
     assert.equal(collectReleaseCommits('v1.0.2', repo.cwd).commits.length, 1);
+  } finally {
+    repo.close();
+  }
+});
+
+test('github contributor resolution links avatars and deduplicates', async () => {
+  const repo = fixture();
+  try {
+    repo.commit('Old User', 'old@example.com');
+    repo.git('tag', 'v1.0.0');
+    repo.commit('the-long-ride', 'personal@example.com', 'feat: one');
+    repo.commit('Thế Long', '73347418+the-long-ride@users.noreply.github.com', 'feat: two');
+    repo.git('tag', 'v1.0.1');
+
+    const mockFetch = async () => ({
+      ok: true,
+      json: async () => ({
+        commits: [
+          {
+            sha: repo.git('rev-parse', 'v1.0.1~1'),
+            author: {
+              login: 'the-long-ride',
+              type: 'User',
+              avatar_url: 'https://avatars.githubusercontent.com/u/73347418?v=4',
+            },
+            commit: { author: { email: 'personal@example.com' } },
+          },
+        ],
+      }),
+    });
+
+    const contributors = await resolveGitHubContributors('v1.0.1', repo.cwd, {
+      fetchImpl: mockFetch,
+      repoSlug: 'the-long-ride/markdown-them',
+    });
+    assert.deepEqual(contributors, [
+      {
+        name: 'Thế Long',
+        login: 'the-long-ride',
+        avatarUrl: 'https://avatars.githubusercontent.com/u/73347418?v=4',
+      },
+    ]);
+    assert.equal(
+      formatContributors(contributors),
+      '### Contributors\n\n<a href="https://github.com/the-long-ride"><img src="https://avatars.githubusercontent.com/u/73347418?v=4&amp;s=80" width="40" height="40" alt="@the-long-ride" title="@the-long-ride" /></a>',
+    );
   } finally {
     repo.close();
   }

@@ -127,57 +127,209 @@ export function resolveReleaseChangelog({ tagName, changelogText = '', cwd = pro
   return lines.join('\n');
 }
 
-/**
- * List the human commit authors and co-authors between adjacent version tags.
- * For the first version tag, include all reachable history instead.
- */
-export function collectReleaseContributors(tagName, cwd = process.cwd()) {
-  const { git, range } = resolveReleaseRange(tagName, cwd);
-  const history = git(['log', '--no-merges', '--format=%aN%x1f%aE%x1f%B%x1e', range]);
+function parseNoreplyEmail(email) {
+  const match = email
+    .trim()
+    .toLowerCase()
+    .match(/^(?:([0-9]+)\+)?([a-z0-9-]+(?:\[bot\])?)@users\.noreply\.github\.com$/i);
+  if (!match) return null;
+  return { userId: match[1] || null, login: match[2] };
+}
+
+function parseRepositorySlug(cwd = process.cwd()) {
+  if (process.env.GITHUB_REPOSITORY && /^[^/]+\/[^/]+$/.test(process.env.GITHUB_REPOSITORY)) {
+    return process.env.GITHUB_REPOSITORY;
+  }
+  const pkgPath = path.join(cwd, 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      const repoUrl = typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url;
+      const match = repoUrl?.match(/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
+      if (match) return match[1];
+    } catch {
+      // ignore invalid package.json
+    }
+  }
+  return 'the-long-ride/markdown-them';
+}
+
+function collectContributorEntries(tagName, cwd = process.cwd()) {
+  const { git, previousTag, range } = resolveReleaseRange(tagName, cwd);
+  const history = git(['log', '--no-merges', '--format=%H%x1f%aN%x1f%aE%x1f%B%x1e', range]);
   const contributors = new Map();
 
-  const add = (name, email) => {
+  const add = (name, email, sha) => {
     const normalizedName = name.trim();
     const normalizedEmail = email.trim().toLowerCase();
-    const match = normalizedEmail.match(
-      /^(?:[0-9]+\+)?([a-z0-9-]+(?:\[bot\])?)@users\.noreply\.github\.com$/i,
-    );
-    const login = match ? match[1] : null;
+    const noreply = parseNoreplyEmail(normalizedEmail);
+    const login = noreply ? noreply.login : null;
     if (!normalizedName || /\[bot\]$/i.test(login || normalizedName)) return;
     const key = login
       ? 'github:' + login.toLowerCase()
       : normalizedEmail || normalizedName.toLowerCase();
     if (!contributors.has(key)) {
-      contributors.set(key, { name: normalizedName, login });
+      const avatarUrl = noreply?.userId
+        ? `https://avatars.githubusercontent.com/u/${noreply.userId}?v=4`
+        : null;
+      contributors.set(key, {
+        name: normalizedName,
+        email: normalizedEmail,
+        login,
+        avatarUrl,
+        sha,
+      });
     }
   };
 
   for (const item of history.split('\x1e')) {
     const parts = item.trim().split('\x1f');
-    if (parts.length < 3) continue;
-    add(parts[0], parts[1]);
-    const message = parts.slice(2).join('\x1f');
+    if (parts.length < 4) continue;
+    const sha = parts[0].trim();
+    add(parts[1], parts[2], sha);
+    const message = parts.slice(3).join('\x1f');
     for (const match of message.matchAll(/^Co-authored-by:\s*(.+?)\s*<([^<>]+)>\s*$/gim)) {
-      add(match[1], match[2]);
+      add(match[1], match[2], null);
     }
   }
 
-  return [...contributors.values()].sort((a, b) =>
+  return { entries: [...contributors.values()], previousTag };
+}
+
+/**
+ * List the human commit authors and co-authors between adjacent version tags.
+ * For the first version tag, include all reachable history instead.
+ */
+export function collectReleaseContributors(tagName, cwd = process.cwd()) {
+  const { entries } = collectContributorEntries(tagName, cwd);
+  return entries
+    .map(({ name, login }) => ({ name, login }))
+    .sort((a, b) =>
+      (a.login || a.name).localeCompare(b.login || b.name, 'en', { sensitivity: 'base' }),
+    );
+}
+
+export async function resolveGitHubContributors(
+  tagName,
+  cwd = process.cwd(),
+  {
+    fetchImpl = globalThis.fetch,
+    token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
+    repoSlug = parseRepositorySlug(cwd),
+  } = {},
+) {
+  const { entries, previousTag } = collectContributorEntries(tagName, cwd);
+  const byEmail = new Map();
+  const bySha = new Map();
+
+  if (typeof fetchImpl === 'function' && entries.length > 0) {
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'markdown-them-release-notes',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const fetchJson = async (url) => {
+      try {
+        const res = await fetchImpl(url, { headers });
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
+    };
+    const recordApiCommit = (item) => {
+      const login = item?.author?.login;
+      const isBot = item?.author?.type === 'Bot' || /\[bot\]$/i.test(login || '');
+      if (!login && !isBot) return;
+      const info = isBot
+        ? { isBot: true }
+        : { isBot: false, login, avatarUrl: item.author.avatar_url || null };
+      if (item?.sha) bySha.set(item.sha, info);
+      const email = item?.commit?.author?.email?.trim().toLowerCase();
+      if (email && !byEmail.has(email)) byEmail.set(email, info);
+    };
+
+    const listUrl = previousTag
+      ? `https://api.github.com/repos/${repoSlug}/compare/${encodeURIComponent(previousTag)}...${encodeURIComponent(tagName)}`
+      : `https://api.github.com/repos/${repoSlug}/commits?sha=${encodeURIComponent(tagName)}&per_page=100`;
+    const listData = await fetchJson(listUrl);
+    const listCommits = Array.isArray(listData) ? listData : listData?.commits;
+    if (Array.isArray(listCommits)) {
+      for (const item of listCommits) recordApiCommit(item);
+    }
+
+    const unresolvedShas = entries
+      .filter((entry) => !entry.login && entry.sha && !bySha.has(entry.sha))
+      .map((entry) => entry.sha)
+      .slice(0, 20);
+    for (const sha of unresolvedShas) {
+      const commitData = await fetchJson(
+        `https://api.github.com/repos/${repoSlug}/commits/${encodeURIComponent(sha)}`,
+      );
+      if (commitData) recordApiCommit(commitData);
+    }
+  }
+
+  const deduped = new Map();
+  for (const entry of entries) {
+    const apiMatch = (entry.sha && bySha.get(entry.sha)) || byEmail.get(entry.email) || null;
+    if (apiMatch?.isBot) continue;
+    const login = apiMatch?.login || entry.login || null;
+    const avatarUrl = apiMatch?.avatarUrl || entry.avatarUrl || null;
+    const key = login ? 'github:' + login.toLowerCase() : entry.email || entry.name.toLowerCase();
+    if (!deduped.has(key)) {
+      deduped.set(key, { name: entry.name, login, avatarUrl });
+    }
+  }
+
+  return [...deduped.values()].sort((a, b) =>
     (a.login || a.name).localeCompare(b.login || b.name, 'en', { sensitivity: 'base' }),
   );
 }
 
+function escapeAttr(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
+function formatAvatarUrl(login, avatarUrl, size = 80) {
+  if (avatarUrl) {
+    const url = new URL(avatarUrl);
+    url.searchParams.set('s', String(size));
+    return url.toString();
+  }
+  return `https://github.com/${login}.png?size=${size}`;
+}
+
 export function formatContributors(contributors) {
   const escapeName = (name) => name.replace(/([\\[\]()*_<>])/g, '\\$1');
-  const entries = contributors.map(({ name, login }) =>
-    login ? '- [@' + login + '](https://github.com/' + login + ')' : '- ' + escapeName(name),
-  );
-  return (
-    '### Contributors\n\n' +
-    (entries.length
-      ? entries.join('\n')
-      : '_No individual contributors identified for this release._')
-  );
+  const linked = [];
+  const plain = [];
+
+  for (const { name, login, avatarUrl } of contributors) {
+    if (login) {
+      const safeLogin = escapeAttr(login);
+      const profileUrl = `https://github.com/${encodeURIComponent(login)}`;
+      const src = escapeAttr(formatAvatarUrl(login, avatarUrl));
+      linked.push(
+        `<a href="${profileUrl}"><img src="${src}" width="40" height="40" alt="@${safeLogin}" title="@${safeLogin}" /></a>`,
+      );
+    } else {
+      plain.push('- ' + escapeName(name));
+    }
+  }
+
+  if (linked.length === 0 && plain.length === 0) {
+    return '### Contributors\n\n_No individual contributors identified for this release._';
+  }
+
+  const sections = [];
+  if (linked.length > 0) sections.push(linked.join(' '));
+  if (plain.length > 0) sections.push(plain.join('\n'));
+  return '### Contributors\n\n' + sections.join('\n\n');
 }
 
 export function buildReleaseBody({ tagName, changelogNotes, contributors = [] }) {
@@ -210,7 +362,7 @@ ${formatContributors(contributors)}
 `;
 }
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   const tagName = args[0] || process.env.GITHUB_REF_NAME || 'v1.4.0';
   const outputPath = args[1] || 'release-notes.md';
@@ -219,7 +371,7 @@ function main() {
   const changelogText = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
   const changelogNotes = resolveReleaseChangelog({ tagName, changelogText });
 
-  const contributors = collectReleaseContributors(tagName);
+  const contributors = await resolveGitHubContributors(tagName);
   const body = buildReleaseBody({ tagName, changelogNotes, contributors });
   fs.writeFileSync(outputPath, body, 'utf8');
   console.log(`Generated release notes for ${tagName} at ${outputPath}`);

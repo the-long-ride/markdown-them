@@ -5,7 +5,7 @@ All notable changes to the "markdown-them" extension will be documented in this 
 ## [Unreleased]
 
 - **GitHub Pages Release Deploy**: Split `build-web` and `deploy-web` into separate jobs so `actions/deploy-pages` never races against same-job artifact indexing.
-- **Release Notes Changelog**: Fall back cleanly from exact version sections in `CHANGELOG.md` to release-scoped `[Unreleased]` entries or tag commit history instead of a placeholder link.
+- **Release Notes Changelog & Contributor Avatars**: Fall back cleanly from exact version sections in `CHANGELOG.md` to release-scoped `[Unreleased]` entries or tag commit history, resolve commit authors via GitHub API, and render clickable contributor avatars linked to their GitHub profiles.
 
 ## [1.4.2] - 2026-11-23
 

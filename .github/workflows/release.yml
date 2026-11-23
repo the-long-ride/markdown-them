@@ -518,6 +518,8 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Generate Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/generate-release-notes.mjs "${{ github.ref_name }}" release-notes.md
 
       - name: Download VSIX artifact
