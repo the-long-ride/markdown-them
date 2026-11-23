@@ -11,6 +11,7 @@ const fixtures = path.join(root, 'tests', 'fixtures', 'legacy');
 const bundleDir = path.join(root, '.test-dist', 'legacy-office');
 const require = createRequire(import.meta.url);
 const { generateMarkdown } = require('../out/core/converters.js');
+const { renderWordDocument } = require('../out/core/legacy/doc.js');
 const { readDocLists, DocListFormatter } = require('../out/core/legacy/doc-lists.js');
 
 const cases = {
@@ -97,6 +98,33 @@ test('preserves DOC hyperlink targets with unmatched parentheses', async () => {
 
   const markdown = await convertBufferToMarkdown('parenthesized-link.doc', data);
   assert.ok(markdown.includes(`[provisastpet@mfa.gov.cy](<${target}>)`));
+});
+
+function renderDocParagraphs(paragraphs, lists = new Map()) {
+  let text = '';
+  const props = new Map();
+  for (const [paragraph, properties, mark = '\r'] of paragraphs) {
+    text += paragraph + mark;
+    props.set(text.length - 1, { sti: -1, outlineLevel: -1, ...properties });
+  }
+  return renderWordDocument({ text, lists, propsAt: (cp) => props.get(cp) });
+}
+
+test('keeps a DOC nested table as the first content of its enclosing cell', () => {
+  const cell = { tableDepth: 2, innerCell: true };
+  const row = { tableDepth: 2, innerRowEnd: true };
+  const markdown = renderDocParagraphs([
+    ['A', cell],
+    ['B', cell],
+    ['', row],
+    ['C', cell],
+    ['D', cell],
+    ['', row],
+    ['', {}, '\x07'],
+    ['Neighbor', {}, '\x07'],
+    ['', { tableRowEnd: true }, '\x07'],
+  ]);
+  assert.equal(markdown, '| A \\| B<br>C \\| D | Neighbor |\n| --- | --- |');
 });
 
 test('preserves an explicit DOC list start number override', () => {

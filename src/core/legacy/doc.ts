@@ -1,5 +1,5 @@
 import { appendMarkdownTable, normalizeMarkdown } from '../markdown-utils';
-import { ParagraphProps, readWordBinary } from './doc-binary';
+import { ParagraphProps, readWordBinary, WordBinaryDocument } from './doc-binary';
 import { DocListFormatter, DocLists } from './doc-lists';
 
 const FIELD_BEGIN = '\x13';
@@ -35,7 +35,10 @@ interface DocTable {
  * story are kept; character formatting, headers, footers and embedded objects are not.
  */
 export function convertDocData(data: Uint8Array): string {
-  const document = readWordBinary(data);
+  return renderWordDocument(readWordBinary(data));
+}
+
+export function renderWordDocument(document: WordBinaryDocument): string {
   const builder = new DocMarkdownBuilder(document.lists);
   const fields: Field[] = [];
 
@@ -103,14 +106,17 @@ class DocMarkdownBuilder {
       ? props.tableRowEnd || props.innerRowEnd
       : outerMark && this.lastMarkWasCell && !text;
     this.lastMarkWasCell = outerMark;
-    this.flushTables(depth);
 
     if (depth > 0) {
-      let table = this.tables.at(-1);
+      let index = this.tables.length - 1;
+      while (index >= 0 && this.tables[index].depth > depth) index--;
+      let table = this.tables[index];
       if (table?.depth !== depth) {
         table = { depth, rows: [], row: [], cell: [] };
-        this.tables.push(table);
+        // A parent cell can start with a nested table and have no earlier paragraph.
+        this.tables.splice(index + 1, 0, table);
       }
+      this.flushTables(depth);
       if (rowEnd) {
         this.finishRow(table);
       } else if (outerMark || innerMark) {
@@ -121,6 +127,7 @@ class DocMarkdownBuilder {
       }
       return;
     }
+    this.flushTables(0);
     if (text) {
       this.blocks.push(formatParagraph(text, props, this.listFormatter));
     } else {
