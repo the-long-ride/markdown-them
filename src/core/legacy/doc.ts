@@ -1,5 +1,6 @@
 import { appendMarkdownTable, normalizeMarkdown } from '../markdown-utils';
-import { headingLevel, ParagraphProps, readWordBinary } from './doc-binary';
+import { ParagraphProps, readWordBinary } from './doc-binary';
+import { DocListFormatter, DocLists } from './doc-lists';
 
 const FIELD_BEGIN = '\x13';
 const FIELD_SEPARATOR = '\x14';
@@ -35,7 +36,7 @@ interface DocTable {
  */
 export function convertDocData(data: Uint8Array): string {
   const document = readWordBinary(data);
-  const builder = new DocMarkdownBuilder();
+  const builder = new DocMarkdownBuilder(document.lists);
   const fields: Field[] = [];
 
   for (let cp = 0; cp < document.text.length; cp++) {
@@ -73,6 +74,11 @@ class DocMarkdownBuilder {
   private blocks: Block[] = [];
   private tables: DocTable[] = [];
   private lastMarkWasCell = false;
+  private readonly listFormatter: DocListFormatter;
+
+  constructor(lists: DocLists) {
+    this.listFormatter = new DocListFormatter(lists);
+  }
 
   wrapLink(start: number, url: string): void {
     const label = this.current.slice(start).trim();
@@ -116,7 +122,9 @@ class DocMarkdownBuilder {
       return;
     }
     if (text) {
-      this.blocks.push(formatParagraph(text, props));
+      this.blocks.push(formatParagraph(text, props, this.listFormatter));
+    } else {
+      this.listFormatter.resetIndent();
     }
   }
 
@@ -156,7 +164,10 @@ class DocMarkdownBuilder {
       } else {
         const lines: string[] = [];
         appendMarkdownTable(lines, table.rows);
-        if (lines.length) this.blocks.push({ kind: 'table', text: lines.join('\n') });
+        if (lines.length) {
+          this.listFormatter.resetIndent();
+          this.blocks.push({ kind: 'table', text: lines.join('\n') });
+        }
       }
       table = parent;
     }
@@ -174,15 +185,27 @@ function cleanText(text: string): string {
     .join('\n');
 }
 
-function formatParagraph(text: string, props: ParagraphProps | undefined): Block {
+function headingLevel(props: ParagraphProps | undefined): number {
+  if (!props) return 0;
+  if (props.sti >= 1 && props.sti <= 9) return props.sti;
+  if (props.sti === 62) return 1;
+  return props.outlineLevel >= 0 ? props.outlineLevel + 1 : 0;
+}
+
+function formatParagraph(
+  text: string,
+  props: ParagraphProps | undefined,
+  lists: DocListFormatter,
+): Block {
   const level = headingLevel(props);
   if (level > 0 && !text.includes('\n')) {
+    lists.resetIndent();
     return { kind: 'paragraph', text: `${'#'.repeat(Math.min(level, 6))} ${text}` };
   }
   const lines = text.split('\n').map((line) => (BLOCK_SYNTAX.test(line) ? `\\${line}` : line));
-  if (props && props.listLevel >= 0) {
-    const indent = '  '.repeat(props.listLevel);
-    return { kind: 'list', text: `${indent}- ${lines.join(`  \n${indent}  `)}` };
+  if (props?.listId && props.listLevel <= 8) {
+    return { kind: 'list', text: lists.formatItem(lines, props.listId, props.listLevel) };
   }
+  lists.resetIndent();
   return { kind: 'paragraph', text: lines.join('  \n') };
 }

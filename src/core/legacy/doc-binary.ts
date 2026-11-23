@@ -1,7 +1,7 @@
+import { DocLists, readDocLists } from './doc-lists';
 import { readOleStreams } from './ole';
 
-// Readers for the Word 97-2003 binary format, following [MS-DOC] "Retrieving Text"
-// (piece table in the CLX) and the paragraph property FKPs used to find tables.
+// Word 97-2003 text pieces and paragraph properties, per [MS-DOC] "Retrieving Text".
 
 export interface ParagraphProps {
   sti: number;
@@ -10,12 +10,14 @@ export interface ParagraphProps {
   tableRowEnd: boolean;
   innerCell: boolean;
   innerRowEnd: boolean;
+  listId: number;
   listLevel: number;
   outlineLevel: number;
 }
 
 export interface WordBinaryDocument {
   text: string;
+  lists: DocLists;
   propsAt(cp: number): ParagraphProps | undefined;
 }
 
@@ -39,7 +41,8 @@ const FIB_FLAG_TABLE1 = 0x0200;
 const FC_STSHF = 1;
 const FC_PLCF_BTE_PAPX = 13;
 const FC_CLX = 33;
-const ISTD_HEADING_STI_MAX = 9;
+const FC_PLF_LST = 73;
+const FC_PLF_LFO = 74;
 const SPRM_P_HUGE_PAPX = 0x6646;
 
 const cp1252 = new TextDecoder('windows-1252');
@@ -73,10 +76,13 @@ export function readWordBinary(data: Uint8Array): WordBinaryDocument {
   const cslw = view.getUint16(lwStart - 2, true);
   const ccpText = view.getUint32(lwStart + 3 * 4, true);
   const fcLcbStart = lwStart + cslw * 4 + 2;
-  const fcLcb = (index: number) => ({
-    fc: view.getUint32(fcLcbStart + index * 8, true),
-    lcb: view.getUint32(fcLcbStart + index * 8 + 4, true),
-  });
+  const fcLcb = (index: number) => {
+    const offset = fcLcbStart + index * 8;
+    if (offset + 8 > view.byteLength || index >= view.getUint16(fcLcbStart - 2, true)) {
+      return { fc: 0, lcb: 0 };
+    }
+    return { fc: view.getUint32(offset, true), lcb: view.getUint32(offset + 4, true) };
+  };
 
   const pieces = readPieces(tableView, fcLcb(FC_CLX));
   const text = readText(word, pieces, ccpText);
@@ -89,6 +95,7 @@ export function readWordBinary(data: Uint8Array): WordBinaryDocument {
 
   return {
     text,
+    lists: readDocLists(tableView, fcLcb(FC_PLF_LST), fcLcb(FC_PLF_LFO)),
     propsAt(cp: number) {
       const fc = cpToFc(pieces, cp);
       return fc === undefined ? undefined : findRun(runs, fc)?.props;
@@ -198,7 +205,8 @@ function defaultProps(styles: number[], istd: number): ParagraphProps {
     tableRowEnd: false,
     innerCell: false,
     innerRowEnd: false,
-    listLevel: -1,
+    listId: 0,
+    listLevel: 0,
     outlineLevel: -1,
   };
 }
@@ -213,9 +221,7 @@ function readPapx(
   const start = cb === 0 ? offset + 2 : offset + 1;
   const end = start + (cb === 0 ? word.getUint8(offset + 1) * 2 : cb * 2 - 1);
   const props = defaultProps(styles, word.getUint16(start, true));
-  const list = { has: false, level: 0 };
-  applySprms(word, start + 2, end, props, list, data);
-  props.listLevel = list.has ? list.level : -1;
+  applySprms(word, start + 2, end, props, data);
   return props;
 }
 
@@ -224,7 +230,6 @@ function applySprms(
   pos: number,
   end: number,
   props: ParagraphProps,
-  list: { has: boolean; level: number },
   data?: DataView,
 ): void {
   while (pos + 2 <= end) {
@@ -241,15 +246,17 @@ function applySprms(
     else if (sprm === 0x244c) props.innerRowEnd = operand !== 0;
     else if (sprm === 0x6649) props.tableDepth = view.getInt32(pos, true);
     else if (sprm === 0x664a) props.tableDepth += view.getInt32(pos, true);
-    else if (sprm === 0x460b) list.has = view.getUint16(pos, true) > 0;
-    else if (sprm === 0x260a) list.level = operand;
+    else if (sprm === 0x460b) {
+      const id = Math.abs(view.getInt16(pos, true));
+      props.listId = id <= 0x7fe ? id : 0;
+    } else if (sprm === 0x260a) props.listLevel = operand;
     else if (sprm === 0x2640) props.outlineLevel = operand < 9 ? operand : -1;
     else if (sprm === SPRM_P_HUGE_PAPX && data) {
       // Oversized paragraph properties live in the Data stream as cbGrpprl + grpprl.
       const at = view.getUint32(pos, true);
       if (at + 2 <= data.byteLength) {
         const hugeEnd = Math.min(at + 2 + data.getUint16(at, true), data.byteLength);
-        applySprms(data, at + 2, hugeEnd, props, list);
+        applySprms(data, at + 2, hugeEnd, props);
       }
     }
     pos += size;
@@ -290,11 +297,4 @@ function findRun(runs: PapxRun[], fc: number): PapxRun | undefined {
     else return runs[mid];
   }
   return undefined;
-}
-
-export function headingLevel(props: ParagraphProps | undefined): number {
-  if (!props) return 0;
-  if (props.sti >= 1 && props.sti <= ISTD_HEADING_STI_MAX) return props.sti;
-  if (props.sti === 62) return 1;
-  return props.outlineLevel >= 0 ? props.outlineLevel + 1 : 0;
 }

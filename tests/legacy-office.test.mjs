@@ -11,6 +11,7 @@ const fixtures = path.join(root, 'tests', 'fixtures', 'legacy');
 const bundleDir = path.join(root, '.test-dist', 'legacy-office');
 const require = createRequire(import.meta.url);
 const { generateMarkdown } = require('../out/core/converters.js');
+const { readDocLists, DocListFormatter } = require('../out/core/legacy/doc-lists.js');
 
 const cases = {
   'SampleDoc.doc': ['I am a test document', 'This is page 1', 'It’s Arial Black in 16 point'],
@@ -21,6 +22,11 @@ const cases = {
   ],
   'innertable.doc': [
     '| A | B | C |\n| --- | --- | --- |\n| D | E<br>1 \\| 2<br>3 \\| 4<br>F | G |\n| H | I | J |',
+  ],
+  'Lists.doc': [
+    '- Unordered list 1\n- UL 2\n- UL 3',
+    '1. Ordered list 1\n2. OL 2\n3. OL 3',
+    '1. OL 1\n2. OL 2\n   1. OL 2.1\n   2. OL 2.2\n      1. OL 2.2.1',
   ],
   'Bug47286.doc': [
     'АНКЕТА ДЛЯ ПОЛУЧЕНИЯ',
@@ -91,6 +97,23 @@ test('preserves DOC hyperlink targets with unmatched parentheses', async () => {
 
   const markdown = await convertBufferToMarkdown('parenthesized-link.doc', data);
   assert.ok(markdown.includes(`[provisastpet@mfa.gov.cy](<${target}>)`));
+});
+
+test('preserves an explicit DOC list start number override', () => {
+  const table = new DataView(new ArrayBuffer(92));
+  table.setUint16(0, 1, true); // One simple LSTF (id 42).
+  table.setUint32(2, 42, true);
+  table.setUint8(28, 1);
+  table.setUint32(30, 1, true); // LVL: decimal starting at 1.
+  table.setUint32(60, 1, true); // One LFO referencing list 42.
+  table.setUint32(64, 42, true);
+  table.setUint8(76, 1);
+  table.setUint32(84, 12, true); // LFOLVL: override level 0 to start at 12.
+  table.setUint8(88, 0x10);
+  const lists = readDocLists(table, { fc: 0, lcb: 30 }, { fc: 60, lcb: 32 });
+  const formatter = new DocListFormatter(lists);
+  assert.equal(formatter.formatItem(['First', 'continued'], 1, 0), '12. First  \n    continued');
+  assert.equal(formatter.formatItem(['Second'], 1, 0), '13. Second');
 });
 
 test('rejects an OLE file without a Word stream with a DOC error', async () => {
