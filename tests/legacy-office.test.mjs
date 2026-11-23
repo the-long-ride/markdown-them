@@ -127,21 +127,76 @@ test('keeps a DOC nested table as the first content of its enclosing cell', () =
   assert.equal(markdown, '| A \\| B<br>C \\| D | Neighbor |\n| --- | --- |');
 });
 
-test('preserves an explicit DOC list start number override', () => {
-  const table = new DataView(new ArrayBuffer(92));
+test('reads DOC list start overrides and continues across override IDs for the same list', () => {
+  const table = new DataView(new ArrayBuffer(112));
   table.setUint16(0, 1, true); // One simple LSTF (id 42).
   table.setUint32(2, 42, true);
   table.setUint8(28, 1);
   table.setUint32(30, 1, true); // LVL: decimal starting at 1.
-  table.setUint32(60, 1, true); // One LFO referencing list 42.
+  table.setUint32(60, 2, true); // Both LFOs reference list 42.
   table.setUint32(64, 42, true);
   table.setUint8(76, 1);
-  table.setUint32(84, 12, true); // LFOLVL: override level 0 to start at 12.
-  table.setUint8(88, 0x10);
-  const lists = readDocLists(table, { fc: 0, lcb: 30 }, { fc: 60, lcb: 32 });
+  table.setUint32(80, 42, true);
+  table.setUint32(100, 12, true); // First LFO overrides level 0 to start at 12.
+  table.setUint8(104, 0x10);
+  const lists = readDocLists(table, { fc: 0, lcb: 30 }, { fc: 60, lcb: 52 });
   const formatter = new DocListFormatter(lists);
   assert.equal(formatter.formatItem(['First', 'continued'], 1, 0), '12. First  \n    continued');
   assert.equal(formatter.formatItem(['Second'], 1, 0), '13. Second');
+  assert.equal(formatter.formatItem(['Third'], 2, 0), '14. Third');
+});
+
+test('renders adjacent DOC numbered lists with their separate starting numbers', () => {
+  const level = { ordered: true, start: 1 };
+  const lists = new Map([
+    [1, { lsid: 42, levels: [level] }],
+    [2, { lsid: 42, levels: [{ ...level, startOverride: 8 }] }],
+  ]);
+  const markdown = renderDocParagraphs(
+    [
+      ['First', { listId: 1, listLevel: 0 }],
+      ['Restarted', { listId: 2, listLevel: 0 }],
+    ],
+    lists,
+  );
+  assert.equal(markdown, '1. First\n\n<!-- -->\n\n8. Restarted');
+});
+
+test('renders nested DOC lists with non-1 starts inside their parent item', () => {
+  const lists = new Map([
+    [
+      1,
+      {
+        lsid: 42,
+        levels: [
+          { ordered: true, start: 1 },
+          { ordered: true, start: 4 },
+        ],
+      },
+    ],
+  ]);
+  const markdown = renderDocParagraphs(
+    [
+      ['Parent', { listId: 1, listLevel: 0 }],
+      ['Nested', { listId: 1, listLevel: 1 }],
+    ],
+    lists,
+  );
+  assert.equal(markdown, '1. Parent\n\n   4. Nested');
+});
+
+test('keeps blank DOC numbered list items without renumbering later items', () => {
+  const lists = new Map([[1, { lsid: 42, levels: [{ ordered: true, start: 1 }] }]]);
+  const item = { listId: 1, listLevel: 0 };
+  const markdown = renderDocParagraphs(
+    [
+      ['First', item],
+      ['', item],
+      ['Third', item],
+    ],
+    lists,
+  );
+  assert.equal(markdown, '1. First\n2.\n3. Third');
 });
 
 test('rejects an OLE file without a Word stream with a DOC error', async () => {

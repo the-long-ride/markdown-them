@@ -128,11 +128,8 @@ class DocMarkdownBuilder {
       return;
     }
     this.flushTables(0);
-    if (text) {
-      this.blocks.push(formatParagraph(text, props, this.listFormatter));
-    } else {
-      this.listFormatter.resetIndent();
-    }
+    const block = formatParagraph(text, props, this.listFormatter);
+    if (block) this.blocks.push(block);
   }
 
   toMarkdown(): string {
@@ -203,9 +200,9 @@ function formatParagraph(
   text: string,
   props: ParagraphProps | undefined,
   lists: DocListFormatter,
-): Block {
+): Block | undefined {
   const level = headingLevel(props);
-  if (level > 0 && !text.includes('\n')) {
+  if (level > 0 && text && !text.includes('\n')) {
     lists.resetIndent();
     return { kind: 'paragraph', text: `${'#'.repeat(Math.min(level, 6))} ${text}` };
   }
@@ -213,6 +210,7 @@ function formatParagraph(
   if (props?.listId && props.listLevel <= 8) {
     return { kind: 'list', text: lists.formatItem(lines, props.listId, props.listLevel) };
   }
+  if (!text) return undefined;
   lists.resetIndent();
   return { kind: 'paragraph', text: lines.join('  \n') };
 }

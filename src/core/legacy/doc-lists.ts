@@ -6,10 +6,16 @@ interface TableRange {
 interface ListLevel {
   ordered: boolean;
   start: number;
+  startOverride?: number;
   restartLimit?: number;
 }
 
-export type DocLists = Map<number, ListLevel[]>;
+interface ListInstance {
+  lsid: number;
+  levels: ListLevel[];
+}
+
+export type DocLists = Map<number, ListInstance>;
 
 const LSTF_SIZE = 28;
 const LVLF_SIZE = 28;
@@ -39,8 +45,8 @@ function readLevel(view: DataView, offset: number, end: number) {
 }
 
 // [MS-DOC]: PlfLst headers are followed by the LVLs (outside lcbPlfLst).
-function readDefinitions(view: DataView, { fc, lcb }: TableRange): DocLists {
-  const definitions: DocLists = new Map();
+function readDefinitions(view: DataView, { fc, lcb }: TableRange): Map<number, ListLevel[]> {
+  const definitions = new Map<number, ListLevel[]>();
   if (lcb < 2 || fc + lcb > view.byteLength) return definitions;
   const count = view.getUint16(fc, true);
   if (2 + count * LSTF_SIZE > lcb) return definitions;
@@ -74,7 +80,8 @@ export function readDocLists(
   let cursor = fc + 4 + count * LFO_SIZE;
   for (let id = 1; id <= count && cursor + 4 <= end; id++) {
     const header = fc + 4 + (id - 1) * LFO_SIZE;
-    const levels = [...(definitions.get(view.getUint32(header, true)) ?? [])];
+    const lsid = view.getUint32(header, true);
+    const levels = [...(definitions.get(lsid) ?? [])];
     cursor += 4; // LFOData begins with the character position.
     for (let remaining = view.getUint8(header + 12); remaining > 0; remaining--) {
       if (cursor + LFOLVL_SIZE > end) return lists;
@@ -87,53 +94,75 @@ export function readDocLists(
         if (!result) return lists;
         levels[index] = {
           ...result.level,
-          start: flags & 0x10 ? result.level.start : (levels[index]?.start ?? 1),
+          startOverride: flags & 0x10 ? result.level.start : undefined,
         };
         cursor = result.next;
       } else if (flags & 0x10 && levels[index]) {
-        levels[index] = { ...levels[index], start };
+        levels[index] = { ...levels[index], startOverride: start };
       }
     }
-    lists.set(id, levels);
+    lists.set(id, { lsid, levels });
   }
   return lists;
 }
 
+interface ListItem {
+  key: number;
+  number?: number;
+  contentColumn: number;
+}
+
 export class DocListFormatter {
   private counters = new Map<number, number[]>();
-  private columns: number[] = [];
-  private lastId = 0;
+  private usedOverrides = new Set<number>();
+  private items: ListItem[] = [];
 
   constructor(private lists: DocLists) {}
 
   resetIndent(): void {
-    this.columns = [];
-    this.lastId = 0;
+    this.items = [];
   }
 
   formatItem(lines: string[], id: number, depth: number): string {
-    if (this.lastId !== id) this.resetIndent();
-    this.lastId = id;
-    const levels = this.lists.get(id);
+    const list = this.lists.get(id);
+    const key = list?.lsid ?? -id;
+    const levels = list?.levels;
     const level = levels?.[depth];
-    let marker = '- ';
+    let number: number | undefined;
     if (levels) {
-      const counters = this.counters.get(id) ?? [];
+      const counters = this.counters.get(key) ?? [];
       for (let i = depth + 1; i < levels.length; i++) {
         if (depth < (levels[i]?.restartLimit ?? i)) delete counters[i];
       }
       if (level?.ordered) {
-        const number = counters[depth] ?? level.start;
-        marker = `${number}. `;
+        const override = id * 9 + depth;
+        number = counters[depth] ?? level.start;
+        if (level.startOverride !== undefined && !this.usedOverrides.has(override)) {
+          number = level.startOverride;
+          this.usedOverrides.add(override);
+        }
         counters[depth] = number + 1;
       }
-      this.counters.set(id, counters);
+      this.counters.set(key, counters);
     }
 
-    const indent = this.columns[depth - 1] ?? 0;
-    const contentColumn = indent + marker.length;
-    this.columns[depth] = contentColumn;
-    this.columns.length = depth + 1;
-    return `${' '.repeat(indent)}${marker}${lines.join(`  \n${' '.repeat(contentColumn)}`)}`;
+    const parent = this.items[depth - 1];
+    const previous = this.items[depth];
+    const indent = ' '.repeat(parent?.contentColumn ?? 0);
+    const marker = number === undefined ? '- ' : `${number}. `;
+    const contentColumn = indent.length + marker.length;
+    this.items[depth] = { key, number, contentColumn };
+    this.items.length = depth + 1;
+
+    let separator = '';
+    if (previous?.number !== undefined && number !== undefined) {
+      if (previous.key !== key || previous.number + 1 !== number) {
+        // Blank lines alone don't split adjacent CommonMark lists of the same kind.
+        separator = `\n${indent}<!-- -->\n\n`;
+      }
+    } else if ((parent || previous) && (!previous || number !== previous.number)) {
+      if ((number !== undefined && number !== 1) || !lines[0]) separator = '\n';
+    }
+    return `${separator}${indent}${marker}${lines.join(`  \n${' '.repeat(contentColumn)}`)}`;
   }
 }
