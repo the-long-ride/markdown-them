@@ -1,7 +1,7 @@
 export const ko: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    'DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 및 텍스트 파일을 읽기 쉬운 markdown으로 변환합니다.\n참고: 레거시 형식(.doc, .xls, .xlm)은 이름 변경 에뮬레이션을 사용하므로 가끔 올바르게 변환되지 않을 수 있습니다.',
+    'DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 및 텍스트 파일을 읽기 쉬운 markdown으로 변환합니다.',
   files: '파일',
   text: '텍스트',
   privacyFirst: '개인정보 보호 우선',

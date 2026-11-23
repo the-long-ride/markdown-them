@@ -117,6 +117,7 @@
     "c8": "12.0.0",
     "esbuild": "^0.28.1",
     "fast-xml-parser": "^5.12.0",
+    "jsdom": "^29.1.1",
     "jszip": "^3.10.1",
     "lucide-react": "^1.17.0",
     "mammoth": "^1.12.0",
@@ -124,7 +125,8 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "turndown": "^7.2.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "resolutions": {
     "fast-uri": "^3.1.2",

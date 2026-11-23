@@ -1328,6 +1328,7 @@ export function registerTier5(harness) {
             'mammoth',
             'officeparser',
             'turndown',
+            'xlsx',
           ]);
 
           for (const dep of deps) {

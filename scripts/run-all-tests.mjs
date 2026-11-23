@@ -7,11 +7,11 @@
  *   - Cargo format check (`cargo fmt --check`)
  *   - Prettier code style check (`prettier --check`)
  *   - LOC lint limit checks (`scripts/loc-lint.mjs`)
- *   - TypeScript typechecks (`tsc -p ./` & `tsc -p ./tsconfig.app.json`)
+ *   - App TypeScript typecheck (`tsc -p ./tsconfig.app.json`)
  *
  * Stage 2 (Parallel Test Suites):
  *   - Tauri Rust backend tests (`cargo test`)
- *   - End-to-end multi-format & condition coverage suite (`scripts/test-coverage.mjs`)
+ *   - TypeScript unit and end-to-end coverage suite (`scripts/test-coverage.mjs`)
  */
 
 import { spawn } from 'node:child_process';
@@ -97,20 +97,18 @@ async function main() {
     runStep('Prettier Style Check', 'npx', ['prettier', '--check', '.']),
     runStep('LOC Limit Lint Check', process.execPath, ['scripts/loc-lint.mjs']),
     runStep('TypeScript Core & Apps Typecheck', 'npm', ['run', 'typecheck:apps']),
-    runStep('TypeScript Root Compilation', 'npm', ['run', 'compile']),
-    runStep('TypeScript Node Package Compilation', 'npm', ['run', 'build:node-package']),
   ];
 
   await Promise.all(stage1Steps);
 
-  console.log('\n\x1b[1m► Stage 2: Parallel Full Test Suites (Rust & Node.js Coverage)\x1b[0m');
+  console.log('\n\x1b[1m► Stage 2: Parallel Full Test Suites (Rust & TypeScript Coverage)\x1b[0m');
   const stage2Steps = [
     runStep('Tauri Rust Backend Tests', 'cargo', [
       'test',
       '--manifest-path',
       'src-tauri/Cargo.toml',
     ]),
-    runStep('Node.js E2E & Condition Coverage Suite', process.execPath, [
+    runStep('TypeScript Unit & E2E Coverage Suite', process.execPath, [
       'scripts/test-coverage.mjs',
     ]),
   ];

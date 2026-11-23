@@ -1,11 +1,19 @@
 import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
+import { readZipText } from './shared/zip';
+import { isBlankTable } from './markdown/tables';
 import {
   appendMarkdownTable,
   decodeXmlEntities,
   normalizeMarkdown,
   normalizeMarkdownHeading,
 } from './markdown-utils';
+import {
+  cellAddress,
+  columnIndexFromCellRef,
+  formatCellHyperlink,
+  indexCellHyperlinks,
+} from './xlsx/hyperlinks';
 
 function localTagName(tagName: string): string {
   const colonIndex = tagName.indexOf(':');
@@ -52,14 +60,28 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
       continue;
     }
 
-    const worksheet = xmlParser.parse(worksheetXml);
-    const rows = toArray(worksheet?.worksheet?.sheetData?.row);
-    const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings));
+    const worksheet = xmlParser.parse(worksheetXml)?.worksheet;
+    const hyperlinks = toArray(worksheet?.hyperlinks?.hyperlink);
+    const hyperlinkIndex = hyperlinks.length
+      ? indexCellHyperlinks(hyperlinks, await readWorksheetRelationships(zip, sheetPath))
+      : undefined;
+    const rows = toArray(worksheet?.sheetData?.row);
+    let nextRow = 1;
+    const tableRows = new Map<number, string[]>();
+    for (const row of rows) {
+      const cells = toArray(row?.c);
+      const rowNumber = Number(row?.['@_r'] || row?.['@_R']) || inferRowFromCells(cells) || nextRow;
+      tableRows.set(rowNumber, readXlsxRow(cells, rowNumber, sharedStrings, hyperlinkIndex));
+      nextRow = rowNumber + 1;
+    }
+    for (const rowNumber of hyperlinkIndex?.anchors.keys() ?? []) {
+      if (!tableRows.has(rowNumber)) {
+        tableRows.set(rowNumber, readXlsxRow([], rowNumber, sharedStrings, hyperlinkIndex));
+      }
+    }
+    const orderedRows = [...tableRows].sort(([a], [b]) => a - b).map(([, row]) => row);
 
-    const isAllEmpty = tableRows.every((row) =>
-      row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
-    );
-    if (tableRows.length === 0 || isAllEmpty) {
+    if (isBlankTable(orderedRows)) {
       continue;
     }
 
@@ -68,10 +90,18 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
     }
 
     markdown.push(`## ${sheetName}`, '');
-    appendMarkdownTable(markdown, tableRows);
+    appendMarkdownTable(markdown, orderedRows);
   }
 
   return normalizeMarkdown(markdown.join('\n'));
+}
+
+async function readWorksheetRelationships(zip: JSZip, sheetPath: string): Promise<any[]> {
+  const basenameIndex = sheetPath.lastIndexOf('/') + 1;
+  const directory = sheetPath.slice(0, basenameIndex);
+  const basename = sheetPath.slice(basenameIndex);
+  const xml = await readZipText(zip, `${directory}_rels/${basename}.rels`);
+  return xml ? toArray(xmlParser.parse(xml)?.Relationships?.Relationship) : [];
 }
 
 async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string>> {
@@ -106,16 +136,23 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
   return toArray(sharedStrings?.sst?.si).map(readRichText);
 }
 
-async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
-  const file = zip.file(filePath);
-  return file ? file.async('text') : undefined;
+function inferRowFromCells(cells: any[]): number | undefined {
+  for (const cell of cells) {
+    const address = cellAddress(String(cell?.['@_r'] || cell?.['@_R'] || ''));
+    if (address) return address.row;
+  }
 }
 
-function readXlsxRow(row: any, sharedStrings: string[]): string[] {
+function readXlsxRow(
+  cells: any[],
+  rowNumber: number,
+  sharedStrings: string[],
+  hyperlinks?: ReturnType<typeof indexCellHyperlinks>,
+): string[] {
   const values: string[] = [];
   let nextColumn = 1;
 
-  for (const cell of toArray(row?.c)) {
+  for (const cell of cells) {
     const cellRef = cell?.['@_r'] || cell?.['@_R'];
     const column = cellRef ? columnIndexFromCellRef(String(cellRef)) : nextColumn;
 
@@ -123,8 +160,23 @@ function readXlsxRow(row: any, sharedStrings: string[]): string[] {
       values.push('');
     }
 
-    values.push(readXlsxCell(cell, sharedStrings));
+    const value = readXlsxCell(cell, sharedStrings);
+    const link = hyperlinks?.find(rowNumber, column);
+    values.push(link ? formatCellHyperlink(value, link) : value);
     nextColumn = column + 1;
+  }
+
+  for (const column of hyperlinks?.anchors.get(rowNumber) ?? []) {
+    if (!values[column - 1]) {
+      const link = hyperlinks?.find(rowNumber, column);
+      if (!link) {
+        continue;
+      }
+      while (values.length < column) {
+        values.push('');
+      }
+      values[column - 1] = formatCellHyperlink('', link);
+    }
   }
 
   return values;
@@ -209,14 +261,6 @@ function resolveWorkbookTarget(target: string): string {
     throw new Error(`Invalid workbook relationship target outside xl/: ${target}`);
   }
   return result;
-}
-
-function columnIndexFromCellRef(cellRef: string): number {
-  const columnLetters = cellRef.match(/^[A-Z]+/i)?.[0]?.toUpperCase() || 'A';
-
-  return columnLetters.split('').reduce((index, char) => {
-    return index * 26 + char.charCodeAt(0) - 64;
-  }, 0);
 }
 
 function toArray<T>(value: T | T[] | undefined): T[] {

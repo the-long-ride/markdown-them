@@ -1,8 +1,10 @@
 use crate::commands::dialogs::file_path_to_path_buf;
 use crate::path_resolver;
 use std::path::Path;
-use tauri_plugin_dialog::DialogExt;
-use tokio::io::AsyncWriteExt;
+use tauri_plugin_dialog::FilePath;
+use tokio::io::{AsyncWrite, AsyncWriteExt};
+
+pub use super::native_dialogs::save_markdown_dialog;
 
 const TRUSTED_PREFIXES: &[&str] = &[
     "https://github.com/the-long-ride",
@@ -83,21 +85,7 @@ pub async fn save_converted_file(
             .await
         {
             Ok(mut file) => {
-                file.write_all(markdown.as_bytes()).await.map_err(|e| {
-                    format!(
-                        "Failed to write content to '{}': {}",
-                        candidate_path.display(),
-                        e
-                    )
-                })?;
-                file.flush().await.map_err(|e| {
-                    format!(
-                        "Failed to flush content to '{}': {}",
-                        candidate_path.display(),
-                        e
-                    )
-                })?;
-
+                write_markdown(&mut file, &candidate_path, &markdown).await?;
                 return Ok(candidate_path.to_string_lossy().to_string());
             }
             Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
@@ -121,26 +109,23 @@ pub async fn save_converted_file(
     }
 }
 
-/// Native save dialog for single markdown exports
-#[tauri::command]
-pub async fn save_markdown_dialog(
-    app: tauri::AppHandle,
-    default_name: String,
-    markdown: String,
+async fn write_markdown(
+    file: &mut (impl AsyncWrite + Unpin),
+    path: &Path,
+    markdown: &str,
+) -> Result<(), String> {
+    file.write_all(markdown.as_bytes())
+        .await
+        .map_err(|e| format!("Failed to write content to '{}': {}", path.display(), e))?;
+    file.flush()
+        .await
+        .map_err(|e| format!("Failed to flush content to '{}': {}", path.display(), e))
+}
+
+pub(super) async fn save_selected_markdown(
+    selected: Option<FilePath>,
+    markdown: &str,
 ) -> Result<Option<String>, String> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-
-    app.dialog()
-        .file()
-        .set_title("Save Converted Markdown")
-        .set_file_name(&default_name)
-        .add_filter("Markdown", &["md"])
-        .save_file(move |file_path| {
-            let _ = tx.send(file_path);
-        });
-
-    let selected = rx.await.map_err(|e| e.to_string())?;
-
     if let Some(fp) = selected {
         let path_buf = file_path_to_path_buf(fp)
             .ok_or_else(|| "Invalid destination path selected".to_string())?;
@@ -238,3 +223,7 @@ pub fn open_path(path: String) -> Result<(), String> {
 
     open::that(target).map_err(|e| format!("Failed to open path '{}': {}", target.display(), e))
 }
+
+#[cfg(test)]
+#[path = "fs_tests.rs"]
+mod tests;

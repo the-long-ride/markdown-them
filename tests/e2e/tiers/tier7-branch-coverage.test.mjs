@@ -324,5 +324,58 @@ export function registerTier7Tests(harness) {
         'Must reject unsupported extension',
       );
     });
+
+    harness.test('PPTX: overflowed group transforms keep document order for sections', async () => {
+      const pptxPath = path.join(tmpDir, 'overflowed-groups.pptx');
+      await fs.writeFile(pptxPath, await generateOverflowedGroupPptx(23));
+      const markdown = await generateMarkdown(pptxPath);
+
+      assertEqual(
+        markdown.trim(),
+        '### **Deck Heading**\n\nBody text here\n\n### **Title**\n\n**Closer**',
+      );
+    });
   });
+}
+
+const PPTX_NS =
+  'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"';
+
+function pptxTextShape(id, name, x, y, text, size, bold) {
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="80" cy="10"/></a:xfrm></p:spPr><p:txBody><a:bodyPr/><a:p><a:r><a:rPr sz="${size}"${bold ? ' b="1"' : ''}/><a:t>${text}</a:t></a:r></a:p></p:txBody></p:sp>`;
+}
+
+/** Nests shapes in `depth` groups that each scale Y by 1e14, so Y overflows to Infinity. */
+async function generateOverflowedGroupPptx(depth) {
+  let tree =
+    pptxTextShape(9, 'Head', 10, 1, 'Deck Heading', 4400, true) +
+    pptxTextShape(10, 'Title', 10, 10, 'Title', 3200, true) +
+    pptxTextShape(11, 'Body', 40, 25, 'Body text here', 1400, false) +
+    pptxTextShape(12, 'Closer', 40, 40, 'Closer', 1400, true);
+  for (let i = 0; i < depth; i++) {
+    tree = `<p:grpSp><p:nvGrpSpPr><p:cNvPr id="${100 + i}" name="Group ${i}"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="100" cy="100000000000000"/><a:chOff x="0" y="0"/><a:chExt cx="100" cy="1"/></a:xfrm></p:grpSpPr>${tree}</p:grpSp>`;
+  }
+
+  const zip = new JSZip();
+  zip.file(
+    '[Content_Types].xml',
+    '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/><Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/></Types>',
+  );
+  zip.file(
+    '_rels/.rels',
+    '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/></Relationships>',
+  );
+  zip.file(
+    'ppt/presentation.xml',
+    '<?xml version="1.0"?><p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:sldSz cx="9144000" cy="5143500"/><p:sldIdLst><p:sldId id="256" r:id="rIdS1"/></p:sldIdLst></p:presentation>',
+  );
+  zip.file(
+    'ppt/_rels/presentation.xml.rels',
+    '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdS1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/></Relationships>',
+  );
+  zip.file(
+    'ppt/slides/slide1.xml',
+    `<?xml version="1.0"?><p:sld ${PPTX_NS}><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/>${tree}</p:spTree></p:cSld></p:sld>`,
+  );
+  return zip.generateAsync({ type: 'nodebuffer' });
 }

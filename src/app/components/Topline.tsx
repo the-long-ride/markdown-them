@@ -101,7 +101,7 @@ export function Topline({ isDesktop, mode, setMode, setTheme, theme }: ToplinePr
 
       {!isDesktop ? (
         <div className="topline-actions">
-          <VariantsMenu isDesktop={isDesktop} />
+          <VariantsMenu />
           <div className="segmented" role="tablist" aria-label="Mode">
             <div className={`segmented-indicator ${mode}`} />
             <Tooltip content={t('files')}>

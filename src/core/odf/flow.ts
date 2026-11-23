@@ -2,7 +2,6 @@ import type { OrderedXmlNode, RenderContext, StyleInfo } from './types';
 import {
   childrenOf,
   decodePredefinedXmlEntities,
-  directChildren,
   findFirst,
   nodeName,
   readAttr,
@@ -87,7 +86,16 @@ export async function renderList(
   const ordered = Boolean(findFirst(childrenOf(node), 'list-level-style-number'));
   let index = 1;
 
-  for (const item of directChildren(childrenOf(node), 'list-item')) {
+  for (const item of childrenOf(node)) {
+    const name = nodeName(item);
+    if (name === 'list-header') {
+      lines.push(...(await renderFlowNodes(childrenOf(item), context, depth)));
+      continue;
+    }
+    if (name !== 'list-item') {
+      continue;
+    }
+
     const itemParts = await renderFlowNodes(childrenOf(item), context, depth + 1);
     const firstLine = itemParts.shift();
     if (!firstLine) {

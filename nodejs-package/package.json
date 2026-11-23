@@ -62,7 +62,8 @@
     "jszip": "^3.10.1",
     "mammoth": "^1.12.0",
     "officeparser": "^8.0.0",
-    "turndown": "^7.2.4"
+    "turndown": "^7.2.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "overrides": {
     "pdfjs-dist": "6.2.108"

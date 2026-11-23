@@ -21,10 +21,22 @@ import {
   generateComplexRtf,
   generateComplexPdf,
 } from '../fixtures/complex-fixtures.mjs';
+import {
+  generateListHeaderTableOdp,
+  generateSmartArtPptx,
+  generateWorksheetHyperlinksXlsx,
+} from '../fixtures/content-loss-fixtures.mjs';
 import { generateMarkdown } from '../framework/conversion-adapter.mjs';
-import { assert, assertContains } from '../framework/assertions.mjs';
+import { registerRealFileTests } from './real-files.mjs';
+import {
+  assert,
+  assertContains,
+  assertEqual,
+  assertNotContains,
+} from '../framework/assertions.mjs';
 
 export function registerTier6Tests(harness) {
+  registerRealFileTests(harness);
   harness.suite('Tier 6: Complex Multi-Feature Document Coverage', () => {
     let tmpDir;
 
@@ -36,6 +48,130 @@ export function registerTier6Tests(harness) {
       if (tmpDir) {
         await fs.rm(tmpDir, { recursive: true, force: true });
       }
+    });
+
+    async function convertFixture(name, data) {
+      const filePath = path.join(tmpDir, name);
+      await fs.writeFile(filePath, data);
+      return generateMarkdown(filePath);
+    }
+
+    harness.test('PPTX: Recovers related SmartArt nodes on the slide that owns them', async () => {
+      const markdown = await convertFixture('smartart.pptx', await generateSmartArtPptx());
+      const [firstSlide, nextSlide] = markdown.split('\n\n---\n\n');
+      assertContains(firstSlide, 'Flow diagram');
+      assertContains(firstSlide, 'Collect input\n\nReview output');
+      assertContains(nextSlide, 'Next slide');
+      assertNotContains(nextSlide, 'Collect input');
+      assertNotContains(markdown, 'Layout placeholder');
+    });
+
+    harness.test('ODP: Preserves editable table cells wrapped in list headers', async () => {
+      const markdown = await convertFixture(
+        'list-header-table.odp',
+        await generateListHeaderTableOdp(),
+      );
+      const [tableOnly, withFootnote, withNearbyHeading] = markdown.split('\n\n---\n\n');
+      assertEqual(
+        tableOnly,
+        '| Format | Extension |\n| --- | --- |\n| Text | ODT |\n| Drawing | ODG |',
+      );
+      assertEqual(
+        withFootnote,
+        '## Report\n\n### Section\n\n| Items | Count |\n| --- | --- |\n| Widgets | 8 |\n\nCount excludes spares.',
+      );
+      assertContains(withNearbyHeading, '## Nearby heading\n\n| Type | Code |');
+      const imageSlide = async (column) =>
+        (
+          await convertFixture(
+            `table-with-${column}-image.odp`,
+            await generateListHeaderTableOdp(column),
+          )
+        )
+          .split('\n\n---\n\n')[1]
+          .replace(/\(data:image\/svg\+xml;base64,[^)]+\)/, '(image)');
+      assertEqual(
+        await imageSlide('left'),
+        withFootnote.replace('### Section\n\n', '### Section\n\n![diagram.svg](image)\n\n'),
+      );
+      assertEqual(
+        await imageSlide('right'),
+        withFootnote + '\n\n### Right section\n\n![diagram.svg](image)',
+      );
+    });
+
+    harness.test('ODP: Keeps captions after their images on slides without tables', async () => {
+      const markdown = await convertFixture(
+        'slide-with-caption.odp',
+        await generateListHeaderTableOdp('left'),
+      );
+      const captionSlide = markdown
+        .split('\n\n---\n\n')[3]
+        .replace(/\(data:image\/svg\+xml;base64,[^)]+\)/, '(image)');
+      assertEqual(
+        captionSlide,
+        '## Figures\n\n### Diagram\n\n![diagram.svg](image)\n\nDiagram caption.',
+      );
+    });
+
+    harness.test(
+      'ODP: Reads staggered tables and text in the same order regardless of XML order',
+      async () => {
+        const markdown = await convertFixture(
+          'staggered-table.odp',
+          await generateListHeaderTableOdp(),
+        );
+        const [first, second] = markdown.split('\n\n---\n\n').slice(-2);
+        assertEqual(first, second);
+        assertEqual(first, '### Right heading\n\n| Side table |\n| --- |\n\nCenter note.');
+      },
+    );
+
+    harness.test('ODP: Distinguishes inset headings from side-by-side frames', async () => {
+      const markdown = await convertFixture(
+        'inset-heading.odp',
+        await generateListHeaderTableOdp(),
+      );
+      const [inset, columns, titleless] = markdown.split('\n\n---\n\n').slice(-5, -2);
+      assertEqual(inset, '## Overview\n\n### Inset heading\n\nBody in the same column.');
+      assertEqual(columns, '## Columns\n\nLeft column.\n\nRight column.');
+      assertEqual(
+        titleless,
+        '### Left section\n\nLeft section body.\n\n### Wider right section\n\nRight section body.',
+      );
+    });
+
+    harness.test(
+      'RTF: Preserves smart quotes and ignores source wrapping inside words',
+      async () => {
+        const rtf =
+          '{\\rtf1\\ansi Govern\r\nment\\rquote \ns Res{\\lang2057 pon}se\\par ' +
+          'A dis\\-\r\ncount named \\ldblquote Test\\rdblquote\\line \\lquote Next line\\rquote\\cell ' +
+          'New cell{\\*\\ignored \\par hidden} text\\row}';
+        const markdown = await convertFixture('wrapped-source.rtf', rtf);
+        assertEqual(
+          markdown,
+          'Government’s Response\n\nA discount named “Test”\n‘Next line’\n\nNew cell text',
+        );
+      },
+    );
+
+    harness.test('XLSX: Preserves external and workbook targets in the linked cells', async () => {
+      const markdown = await convertFixture(
+        'cell-links.xlsx',
+        await generateWorksheetHyperlinksXlsx(),
+      );
+      assertContains(
+        markdown,
+        '[Read &#91;details&#93; \\| here](https://example.org/a%28b%29?x=1&y=2#part-1)',
+      );
+      assertContains(markdown, "Other sheet (target: 'Source Data'!B3)");
+      assertContains(markdown, '[First](https://example.org/range) | Keep the label');
+      assertContains(
+        markdown,
+        '| Not linked |  | [Second](https://example.org/range) | [Email support](mailto:support@example.org) |',
+      );
+      assertContains(markdown, '|  | [Missing row](mailto:support@example.org) |  |  |');
     });
 
     harness.test(

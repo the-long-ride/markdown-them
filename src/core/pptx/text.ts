@@ -1,3 +1,4 @@
+import { applyInlineMarks, hasLetter } from '../shared/inline';
 import type { TextBodyInfo, TextParagraph, TextRun } from './types';
 import {
   clampInteger,
@@ -31,15 +32,6 @@ export function readBulletKind(paragraphProperties: any): 'ordered' | 'unordered
   return undefined;
 }
 
-export function wrapMarkdown(value: string, marker: string): string {
-  const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(value);
-  if (!match || !match[2]) {
-    return value;
-  }
-
-  return `${match[1]}${marker}${match[2]}${marker}${match[3]}`;
-}
-
 export function normalizeInlineText(value: string): string {
   return value.replace(/\r\n|\r/g, '\n').replace(/\u000b/g, '\n');
 }
@@ -48,10 +40,6 @@ export function normalizeParagraphText(value: string): string {
   return normalizeInlineText(value)
     .replace(/\n{3,}/g, '\n\n')
     .trimEnd();
-}
-
-export function hasLetter(value: string): boolean {
-  return /\p{L}/u.test(value);
 }
 
 export function hasLetterOrNumber(value: string): boolean {
@@ -73,18 +61,7 @@ export function formatRun(run: TextRun): string {
     return '\n';
   }
 
-  let markdown = run.text;
-  if (run.bold) {
-    markdown = wrapMarkdown(markdown, '**');
-  }
-  if (run.italic) {
-    markdown = wrapMarkdown(markdown, '*');
-  }
-  if (run.strikethrough) {
-    markdown = wrapMarkdown(markdown, '~~');
-  }
-
-  return markdown;
+  return applyInlineMarks(run.text, run);
 }
 
 export function mergeAdjacentRuns(runs: TextRun[]): TextRun[] {
@@ -129,7 +106,8 @@ export function readParagraph(paragraph: any): TextParagraph | undefined {
 
   const runs: TextRun[] = [];
 
-  for (const [tagName, value] of Object.entries(paragraph)) {
+  const children: [string, unknown][] = paragraph.paragraphChildren ?? Object.entries(paragraph);
+  for (const [tagName, value] of children) {
     switch (tagName) {
       case 'r':
         toArray(value).forEach((run) => runs.push(readRun(run)));

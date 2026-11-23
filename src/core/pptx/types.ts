@@ -42,7 +42,7 @@ export interface PositionedItem extends Box {
 }
 
 export interface TextItem extends PositionedItem {
-  kind: 'text' | 'table';
+  kind: 'text' | 'table' | 'diagram';
   markdown: string;
   plainText?: string;
   maxFontSize?: number;

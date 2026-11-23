@@ -1,3 +1,9 @@
+import {
+  base64ByteLength,
+  escapeImageAlt,
+  fallbackMimeType,
+  isImageFilePath,
+} from '../shared/images';
 import type { Box, OrderedXmlNode, RenderContext } from './types';
 import { findAll, readAttr } from './xml';
 import { normalizeOdfHref } from './styles';
@@ -14,72 +20,26 @@ export function extensionName(filePath: string): string {
   return dotIndex >= 0 ? name.slice(dotIndex + 1).toLowerCase() : '';
 }
 
-export function isImagePath(filePath: string): boolean {
-  return /\.(avif|bmp|emf|gif|heic|jpe?g|png|svg|tiff?|webp|wmf)$/i.test(filePath);
-}
-
-export function escapeImageAlt(value: string): string {
-  return (
-    value
-      .replace(/\r\n|\r|\n/g, ' ')
-      .replace(/]/g, '\\]')
-      .trim() || 'Image'
-  );
-}
-
-export function fallbackMimeType(extension: string): string {
-  switch (extension) {
-    case 'avif':
-      return 'image/avif';
-    case 'bmp':
-      return 'image/bmp';
-    case 'emf':
-      return 'image/x-emf';
-    case 'gif':
-      return 'image/gif';
-    case 'heic':
-      return 'image/heic';
-    case 'jpg':
-    case 'jpeg':
-      return 'image/jpeg';
-    case 'png':
-      return 'image/png';
-    case 'svg':
-      return 'image/svg+xml';
-    case 'tif':
-    case 'tiff':
-      return 'image/tiff';
-    case 'webp':
-      return 'image/webp';
-    case 'wmf':
-      return 'image/wmf';
-    default:
-      return 'application/octet-stream';
-  }
-}
-
 export function imageByteLengthFromMarkdown(markdown: string): number {
   const match = markdown.match(/;base64,([^)]*)\)/);
   if (!match) {
     return 0;
   }
 
-  const base64 = match[1];
-  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
-  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
+  return base64ByteLength(match[1]);
 }
 
 export async function renderImageMarkdown(href: string, context: RenderContext): Promise<string> {
   const filePath = normalizeOdfHref(href);
   const file = context.zip.file(filePath);
 
-  if (!file || !isImagePath(filePath)) {
+  if (!file || !isImageFilePath(filePath)) {
     return '';
   }
 
   const base64 = await file.async('base64');
   const mimeType = context.manifest.get(filePath) || fallbackMimeType(extensionName(filePath));
-  return `![${escapeImageAlt(basename(filePath))}](data:${mimeType};base64,${base64})`;
+  return `![${escapeImageAlt(basename(filePath), 'Image')}](data:${mimeType};base64,${base64})`;
 }
 
 export function shouldIncludePresentationImage(
