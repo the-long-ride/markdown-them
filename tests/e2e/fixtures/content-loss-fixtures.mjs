@@ -97,8 +97,15 @@ export async function generateWorksheetHyperlinksXlsx() {
     <hyperlink ref="C2:C3" r:id="rId8"/>
     <hyperlink ref="D2" r:id="missing"/>
     <hyperlink ref="D3" r:id="rId9" display="Email support"/>
+    <hyperlink ref="B4" r:id="rId9" display="Missing row"/>
   </hyperlinks>`;
-  zip.file(sheetPath, sheet.replace('</worksheet>', hyperlinks + '</worksheet>'));
+  zip.file(
+    sheetPath,
+    sheet
+      .replace(' r="A2"', '')
+      .replace(/<c r="D3"[^>]*>.*?<\/c>/s, '')
+      .replace('</worksheet>', hyperlinks + '</worksheet>'),
+  );
   zip.file(
     'xl/worksheets/_rels/sheet1.xml.rels',
     `<Relationships xmlns="${relsNamespace}">

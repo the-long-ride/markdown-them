@@ -107,6 +107,7 @@ export function registerTier6Tests(harness) {
         markdown,
         '| Not linked |  | [Second](https://example.org/range) | [Email support](mailto:support@example.org) |',
       );
+      assertContains(markdown, '|  | [Missing row](mailto:support@example.org) |  |  |');
     });
 
     harness.test(

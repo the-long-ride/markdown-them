@@ -7,6 +7,7 @@ import {
   normalizeMarkdownHeading,
 } from './markdown-utils';
 import {
+  cellAddress,
   columnIndexFromCellRef,
   formatCellHyperlink,
   indexCellHyperlinks,
@@ -59,16 +60,31 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
 
     const worksheet = xmlParser.parse(worksheetXml)?.worksheet;
     const hyperlinks = toArray(worksheet?.hyperlinks?.hyperlink);
-    const findHyperlink = hyperlinks.length
+    const hyperlinkIndex = hyperlinks.length
       ? indexCellHyperlinks(hyperlinks, await readWorksheetRelationships(zip, sheetPath))
       : undefined;
     const rows = toArray(worksheet?.sheetData?.row);
-    const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings, findHyperlink));
+    let nextRow = 1;
+    const tableRows = new Map<number, string[]>();
+    for (const row of rows) {
+      const firstCell = toArray(row?.c)[0];
+      const firstRef = String(firstCell?.['@_r'] || firstCell?.['@_R'] || '');
+      const rowNumber =
+        Number(row?.['@_r'] || row?.['@_R']) || cellAddress(firstRef)?.row || nextRow;
+      tableRows.set(rowNumber, readXlsxRow(row, rowNumber, sharedStrings, hyperlinkIndex));
+      nextRow = rowNumber + 1;
+    }
+    for (const rowNumber of hyperlinkIndex?.anchors.keys() ?? []) {
+      if (!tableRows.has(rowNumber)) {
+        tableRows.set(rowNumber, readXlsxRow(undefined, rowNumber, sharedStrings, hyperlinkIndex));
+      }
+    }
+    const orderedRows = [...tableRows].sort(([a], [b]) => a - b).map(([, row]) => row);
 
-    const isAllEmpty = tableRows.every((row) =>
+    const isAllEmpty = orderedRows.every((row) =>
       row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
     );
-    if (tableRows.length === 0 || isAllEmpty) {
+    if (isAllEmpty) {
       continue;
     }
 
@@ -77,7 +93,7 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
     }
 
     markdown.push(`## ${sheetName}`, '');
-    appendMarkdownTable(markdown, tableRows);
+    appendMarkdownTable(markdown, orderedRows);
   }
 
   return normalizeMarkdown(markdown.join('\n'));
@@ -130,8 +146,9 @@ async function readZipText(zip: JSZip, filePath: string): Promise<string | undef
 
 function readXlsxRow(
   row: any,
+  rowNumber: number,
   sharedStrings: string[],
-  findHyperlink?: ReturnType<typeof indexCellHyperlinks>,
+  hyperlinks?: ReturnType<typeof indexCellHyperlinks>,
 ): string[] {
   const values: string[] = [];
   let nextColumn = 1;
@@ -145,9 +162,22 @@ function readXlsxRow(
     }
 
     const value = readXlsxCell(cell, sharedStrings);
-    const link = cellRef ? findHyperlink?.(String(cellRef)) : undefined;
+    const link = hyperlinks?.find(rowNumber, column);
     values.push(link ? formatCellHyperlink(value, link) : value);
     nextColumn = column + 1;
+  }
+
+  for (const column of hyperlinks?.anchors.get(rowNumber) ?? []) {
+    if (!values[column - 1]) {
+      const link = hyperlinks?.find(rowNumber, column);
+      if (!link) {
+        continue;
+      }
+      while (values.length < column) {
+        values.push('');
+      }
+      values[column - 1] = formatCellHyperlink('', link);
+    }
   }
 
   return values;

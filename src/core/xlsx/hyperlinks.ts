@@ -14,10 +14,14 @@ export function columnIndexFromCellRef(cellRef: string): number {
   return [...letters].reduce((index, letter) => index * 26 + letter.charCodeAt(0) - 64, 0);
 }
 
-function cellAddress(ref: string): CellAddress | undefined {
-  const match = /^([A-Z]{1,3})[1-9][0-9]{0,6}$/.exec(ref);
+export function cellAddress(ref: string): CellAddress | undefined {
+  const match = /^\$?([A-Z]{1,3})\$?([1-9][0-9]{0,6})$/i.exec(ref);
   if (match) {
-    return { column: columnIndexFromCellRef(ref), row: Number(ref.slice(match[1].length)) };
+    const column = columnIndexFromCellRef(match[1]);
+    const row = Number(match[2]);
+    if (column <= 16384 && row <= 1048576) {
+      return { column, row };
+    }
   }
 }
 
@@ -48,47 +52,41 @@ export function indexCellHyperlinks(nodes: any[], relationships: any[]) {
     }
   }
 
-  const singleCells = new Map<string, CellHyperlink>();
+  const singleCells = new Map<number, Map<number, CellHyperlink>>();
+  const anchors = new Map<number, Set<number>>();
   const ranges: { start: CellAddress; end: CellAddress; link: CellHyperlink }[] = [];
   for (const node of nodes) {
     const link = hyperlinkFromNode(node, targets);
     if (!link) {
       continue;
     }
-    const [first, last] = String(node?.['@_ref'] ?? '')
-      .replace(/\$/g, '')
-      .toUpperCase()
-      .split(':');
+    const [first, last] = String(node?.['@_ref'] ?? '').split(':');
     const start = cellAddress(first);
-    if (!start) {
+    const end = last ? cellAddress(last) : undefined;
+    if (!start || (last && !end)) {
       continue;
     }
-    if (!last) {
-      singleCells.set(first, link);
-      continue;
-    }
-    const end = cellAddress(last);
     if (end) {
       ranges.push({ start, end, link });
+    } else {
+      const row = singleCells.get(start.row) ?? new Map();
+      row.set(start.column, link);
+      singleCells.set(start.row, row);
     }
+    // Anchor the range without materializing potentially millions of blank cells.
+    const columns = anchors.get(start.row) ?? new Set();
+    columns.add(start.column);
+    anchors.set(start.row, columns);
   }
 
-  return (cellRef: string): CellHyperlink | undefined => {
-    const ref = cellRef.replace(/\$/g, '').toUpperCase();
-    const direct = singleCells.get(ref);
-    if (direct || ranges.length === 0) {
-      return direct;
-    }
-    const cell = cellAddress(ref);
-    if (cell) {
-      return ranges.find(
+  return {
+    anchors,
+    find: (row: number, column: number): CellHyperlink | undefined =>
+      singleCells.get(row)?.get(column) ??
+      ranges.find(
         ({ start, end }) =>
-          cell.column >= start.column &&
-          cell.column <= end.column &&
-          cell.row >= start.row &&
-          cell.row <= end.row,
-      )?.link;
-    }
+          column >= start.column && column <= end.column && row >= start.row && row <= end.row,
+      )?.link,
   };
 }
 
