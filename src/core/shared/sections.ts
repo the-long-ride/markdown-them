@@ -29,10 +29,33 @@ export function isBodyBelowTitle<T extends PositionedBox>(
   );
 }
 
+export interface TitleCandidate<T> {
+  title: T;
+  centerDistance: number;
+  verticalGap: number;
+}
+
+export type CandidateComparator = <T>(a: TitleCandidate<T>, b: TitleCandidate<T>) => number;
+
+/** A NaN gap falls through to center distance. */
+export const compareByGapThenCenter: CandidateComparator = (a, b) =>
+  a.verticalGap - b.verticalGap || a.centerDistance - b.centerDistance;
+
+/** A NaN gap (overflowed coordinates) returns NaN, so sort keeps document order. */
+export const compareByGapStrict: CandidateComparator = (a, b) => {
+  const gapDiff = a.verticalGap - b.verticalGap;
+  if (gapDiff !== 0) {
+    return gapDiff;
+  }
+
+  return a.centerDistance - b.centerDistance;
+};
+
 export function findNearestTitle<T extends PositionedBox>(
   body: T,
   titles: T[],
   size: Size,
+  compareCandidates: CandidateComparator = compareByGapThenCenter,
 ): T | undefined {
   const candidates = titles
     .filter((title) => isBodyBelowTitle(body, title, titles, size))
@@ -42,7 +65,7 @@ export function findNearestTitle<T extends PositionedBox>(
       verticalGap: Math.max(0, body.y - (title.y + title.height)),
     }));
 
-  candidates.sort((a, b) => a.verticalGap - b.verticalGap || a.centerDistance - b.centerDistance);
+  candidates.sort(compareCandidates);
   return candidates[0]?.title;
 }
 
@@ -72,6 +95,7 @@ export function groupSections<T extends SectionItem>(
   size: Size,
   compare: (a: T, b: T) => number,
   heading?: T,
+  compareCandidates?: CandidateComparator,
 ): T[] {
   const titleSet = new Set(titles);
   const assignments = new Map<T, T[]>();
@@ -81,7 +105,7 @@ export function groupSections<T extends SectionItem>(
       continue;
     }
 
-    const title = findNearestTitle(body, titles, size);
+    const title = findNearestTitle(body, titles, size, compareCandidates);
     if (!title) {
       continue;
     }

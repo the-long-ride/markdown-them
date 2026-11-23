@@ -2,7 +2,7 @@ import type { RenderableItem, SlideSize } from './types';
 import { comparePosition } from './geometry';
 import { hasLetterOrNumber } from './text';
 import { hasLetter, markdownHeadingLevel } from '../shared/inline';
-import { groupSections } from '../shared/sections';
+import { compareByGapStrict, groupSections } from '../shared/sections';
 
 export function stripMarkdownHeading(markdown: string): string {
   return markdown.replace(/^#{1,6}\s+/, '').trim();
@@ -160,6 +160,7 @@ export function groupSectionTextItems(
     slideSize,
     (a, b) => comparePosition(a, b, slideSize),
     slideHeading,
+    compareByGapStrict,
   );
 }
 
