@@ -16,7 +16,18 @@ const __dirname = path.dirname(__filename);
 const root = path.resolve(__dirname, '..');
 const require = createRequire(import.meta.url);
 
+const COVERAGE_THRESHOLD = 0;
+
 const c8Args = [
+  '--check-coverage',
+  '--lines',
+  String(COVERAGE_THRESHOLD),
+  '--functions',
+  String(COVERAGE_THRESHOLD),
+  '--branches',
+  String(COVERAGE_THRESHOLD),
+  '--statements',
+  String(COVERAGE_THRESHOLD),
   '--include',
   'out/core/**',
   '--include',
@@ -39,6 +50,8 @@ const c8Args = [
   'text',
   '--reporter',
   'json-summary',
+  '--reporter',
+  'lcov',
   process.execPath,
   'tests/e2e/run-e2e.mjs',
 ];
