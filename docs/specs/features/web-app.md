@@ -24,7 +24,8 @@ Provides a standalone browser deployment of Markdown Them that can be hosted sta
 ## Observable behavior
 - **Local Dev Server**: `npm run start:web` starts a development HTTP server with Server-Sent Events (SSE) live reloads on file changes.
 - **CSP Compliance**: Emits an external `dev-reload.js` script to satisfy strict Content Security Policies (`script-src 'self'`) without inline script hashes.
-- **Client Conversion**: Uses the browser runtime to execute in-memory conversion across DOCX, XLSX, PPTX, ODF, RTF, HTML, and PDF.
+- **Client Conversion**: Uses the browser runtime to convert binary DOC and XLS/XLM alongside DOCX, XLSX, PPTX, ODF, RTF, HTML, and PDF in memory.
+- **Install Menu**: Links to desktop downloads, Open VSX, Visual Studio Marketplace, and the npm package. This menu is shown only in the web app.
 - **Dynamic PDF.js Worker Resolution**: Dynamically resolves and copies `pdf.worker.min.mjs` across `pnpm`, `npm`, and `yarn` virtual-store layouts.
 
 ## Workflow

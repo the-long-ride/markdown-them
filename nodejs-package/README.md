@@ -202,16 +202,16 @@ const mdFromText = convertTextToMarkdown('<h1>Hello World</h1>');
 
 `@the-long-ride/markdown-them` supports **17 document formats**:
 
-| Format Category           | Extensions                          | Details                                                                                        |
-| ------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Word Processing**       | `.docx`, `.doc`                     | Structured headings, tables, formatted text. _(Note: Legacy `.doc` uses renaming emulation)_   |
-| **PDF Documents**         | `.pdf`                              | Structured text extraction with paragraph reconstruction.                                      |
-| **Presentations**         | `.pptx`                             | Slides, text blocks, tables, and inline Base64 images with noise filtering.                    |
-| **Spreadsheets**          | `.xlsx`, `.xls`, `.xlm`             | Worksheets converted into clean Markdown tables. _(Note: Legacy `.xls`, `.xlm` use emulation)_ |
-| **OpenDocument**          | `.odt`, `.odp`, `.ods`              | OpenDocument text, presentation slides, and spreadsheet tables.                                |
-| **Rich Text**             | `.rtf`                              | Rich text formatting, bold/italics, bulleted lists, and headings.                              |
-| **Web & Markup**          | `.html`, `.htm`                     | HTML parsing into clean Markdown (strips scripts, styles, metadata).                           |
-| **Plain Text & Markdown** | `.txt`, `.text`, `.md`, `.markdown` | Direct text reading with normalized line endings.                                              |
+| Format Category           | Extensions                          | Details                                                                                                      |
+| ------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Word Processing**       | `.docx`, `.doc`                     | Structured headings, tables, and formatted text, with direct support for binary Word 97–2003 files.          |
+| **PDF Documents**         | `.pdf`                              | Structured text extraction with paragraph reconstruction.                                                    |
+| **Presentations**         | `.pptx`                             | Slides, text blocks, tables, and inline Base64 images with noise filtering.                                  |
+| **Spreadsheets**          | `.xlsx`, `.xls`, `.xlm`             | One Markdown table per sheet, with direct support for legacy Excel files and hyperlink preservation in XLSX. |
+| **OpenDocument**          | `.odt`, `.odp`, `.ods`              | OpenDocument text, presentation slides, and spreadsheet tables.                                              |
+| **Rich Text**             | `.rtf`                              | Rich text formatting, bold/italics, bulleted lists, and headings.                                            |
+| **Web & Markup**          | `.html`, `.htm`                     | HTML parsing into clean Markdown (strips scripts, styles, metadata).                                         |
+| **Plain Text & Markdown** | `.txt`, `.text`, `.md`, `.markdown` | Direct text reading with normalized line endings.                                                            |
 
 ---
 

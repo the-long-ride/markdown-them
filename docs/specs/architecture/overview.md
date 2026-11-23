@@ -56,7 +56,7 @@ The workspace architecture provides a shared core parsing library mapped to four
 - **Data Models**: `ConversionFileItem`, `ConversionResult`, `ConversionProgress`, `CliOptions`.
 
 ## Verification
-- Unified orchestrator: `pnpm run test` executes cargo formatting, TypeScript compilation, LOC linter, Prettier style check, 51 Rust backend tests, and 84 Node.js E2E tests.
+- Unified orchestrator: `pnpm run test` runs static checks, Rust backend tests, and TypeScript coverage over unit, legacy Office, and E2E tests. See the [test pipeline](../workflows/test-pipeline.md) for the local and CI gates.
 - Build verification: `npm run build:web`, `npm run compile`, `npm run typecheck:apps`.
 
 ## Related documentation
@@ -68,4 +68,4 @@ The workspace architecture provides a shared core parsing library mapped to four
 - [Test Orchestration & LOC Lint Policy](../workflows/test-pipeline.md)
 
 ## Known limitations and open questions
-- Binary `.doc` and `.xls` files use Compound File Binary (CFB) format; they fall back to `officeparser` when OOXML renaming emulation cannot parse them.
+- Legacy Excel conversion uses formatted cell values; it does not recalculate formulas.

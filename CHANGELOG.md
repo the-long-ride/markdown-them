@@ -2,6 +2,13 @@
 
 All notable changes to the "markdown-them" extension will be documented in this file.
 
+## [Unreleased]
+
+- **Legacy Office Support**: Convert binary Word 97–2003 (`.doc`) and legacy Excel (`.xls`, `.xlm`) files directly across all variants. Preserve nested Word tables, list numbering, and hyperlinks, and decode legacy Excel code pages.
+- **Office Content Preservation**: Retain PowerPoint SmartArt text, editable OpenDocument presentation tables and images in slide reading order, Rich Text smart quotes and wrapped words, and Excel worksheet hyperlinks even on implicit or blank cells.
+- **Markdown Normalization**: Preserve whitespace inside fenced code blocks, including fences in lists and block quotes.
+- **Testing & CI**: Add graded cases for all supported formats and offline tests for bundled originals. Run lint, typechecking, Rust and TypeScript coverage, and package builds in parallel behind a single CI Gate, with 90% coverage minimums.
+
 ## [1.4.0] - 2026-11-02
 
 ### General Architecture & Source Variants

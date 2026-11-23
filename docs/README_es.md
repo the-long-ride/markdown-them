@@ -11,7 +11,7 @@ Convierte varios archivos de documentos a Markdown (.md) desde una aplicación w
 - **Extensión de VS Code:** Menús contextuales con clic derecho en el explorador de archivos y vistas previas de Markdown de doble panel para flujos de trabajo de desarrollo.
 - **Paquete de Node.js:** Integra el mismo motor de conversión en tus scripts, CLIs y automatizaciones personalizadas.
 
-- **Formatos compatibles:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Nota: Los formatos heredados `.doc`, `.xls`, `.xlm` usan emulación de cambio de nombre y a veces no se convertirán correctamente).
+- **Formatos compatibles:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
 - **Procesamiento concurrente por lotes:** Convierte docenas de archivos a la vez con un rendimiento optimizado.
 
 ## Variantes de Markdown Them
