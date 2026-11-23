@@ -92,9 +92,11 @@ export function readDocLists(
       if (flags & 0x20) {
         const result = readLevel(view, cursor, end);
         if (!result) return lists;
+        const startOverride = flags & 0x10 ? result.level.start : undefined;
         levels[index] = {
           ...result.level,
-          startOverride: flags & 0x10 ? result.level.start : undefined,
+          start: startOverride ?? levels[index]?.start ?? 1,
+          startOverride,
         };
         cursor = result.next;
       } else if (flags & 0x10 && levels[index]) {
@@ -110,6 +112,7 @@ interface ListItem {
   key: number;
   number?: number;
   contentColumn: number;
+  hasText: boolean;
 }
 
 export class DocListFormatter {
@@ -151,7 +154,7 @@ export class DocListFormatter {
     const indent = ' '.repeat(parent?.contentColumn ?? 0);
     const marker = number === undefined ? '- ' : `${number}. `;
     const contentColumn = indent.length + marker.length;
-    this.items[depth] = { key, number, contentColumn };
+    this.items[depth] = { key, number, contentColumn, hasText: Boolean(lines[0]) };
     this.items.length = depth + 1;
 
     let separator = '';
@@ -160,7 +163,7 @@ export class DocListFormatter {
         // Blank lines alone don't split adjacent CommonMark lists of the same kind.
         separator = `\n${indent}<!-- -->\n\n`;
       }
-    } else if ((parent || previous) && (!previous || number !== previous.number)) {
+    } else if (previous ? number !== previous.number : parent?.hasText) {
       if ((number !== undefined && number !== 1) || !lines[0]) separator = '\n';
     }
     return `${separator}${indent}${marker}${lines.join(`  \n${' '.repeat(contentColumn)}`)}`;

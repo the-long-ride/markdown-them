@@ -146,6 +146,23 @@ test('reads DOC list start overrides and continues across override IDs for the s
   assert.equal(formatter.formatItem(['Third'], 2, 0), '14. Third');
 });
 
+test('keeps the DOC list starting number when an LFO overrides only formatting', () => {
+  const table = new DataView(new ArrayBuffer(122));
+  table.setUint16(0, 1, true);
+  table.setUint32(2, 42, true);
+  table.setUint8(28, 1);
+  table.setUint32(30, 7, true); // Base LVL starts at 7.
+  table.setUint32(60, 1, true);
+  table.setUint32(64, 42, true);
+  table.setUint8(76, 1);
+  table.setUint8(88, 0x20); // Formatting override, without a start override.
+  table.setUint32(92, 31, true); // The formatting LVL's start must be ignored.
+  table.setUint8(96, 1); // Uppercase Roman digits, rendered as an ordered list.
+  const lists = readDocLists(table, { fc: 0, lcb: 30 }, { fc: 60, lcb: 62 });
+  const formatter = new DocListFormatter(lists);
+  assert.equal(formatter.formatItem(['First'], 1, 0), '7. First');
+});
+
 test('renders adjacent DOC numbered lists with their separate starting numbers', () => {
   const level = { ordered: true, start: 1 };
   const lists = new Map([
@@ -183,6 +200,29 @@ test('renders nested DOC lists with non-1 starts inside their parent item', () =
     lists,
   );
   assert.equal(markdown, '1. Parent\n\n   4. Nested');
+});
+
+test('keeps a DOC numbered sublist inside its empty parent', () => {
+  const lists = new Map([
+    [
+      1,
+      {
+        lsid: 42,
+        levels: [
+          { ordered: true, start: 12 },
+          { ordered: true, start: 4 },
+        ],
+      },
+    ],
+  ]);
+  const markdown = renderDocParagraphs(
+    [
+      ['', { listId: 1, listLevel: 0 }],
+      ['Nested', { listId: 1, listLevel: 1 }],
+    ],
+    lists,
+  );
+  assert.equal(markdown, '12.\n    4. Nested');
 });
 
 test('keeps blank DOC numbered list items without renumbering later items', () => {
