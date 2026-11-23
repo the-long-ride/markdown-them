@@ -9,6 +9,9 @@ import {
   normalizeMarkdown,
   officeAstToMarkdown,
 } from './markdown-utils';
+import { convertDocData } from './legacy/doc';
+import { isOleCompoundFile, isZipFile } from './legacy/ole';
+import { convertXlsData } from './legacy/xls';
 import { convertOdfData } from './odf';
 import { convertPptxData } from './pptx';
 import { convertRtfToMarkdown } from './rtf';
@@ -49,6 +52,10 @@ export async function generateMarkdown(filePath: string): Promise<string> {
 async function convertByExtension(filePath: string, ext: string): Promise<string> {
   switch (ext) {
     case '.doc': {
+      const data = await fs.readFile(filePath);
+      if (isOleCompoundFile(data)) {
+        return convertDocData(data);
+      }
       try {
         const md = await runWithRenamedExtension(filePath, '.docx');
         if (md.trim()) {
@@ -73,6 +80,10 @@ async function convertByExtension(filePath: string, ext: string): Promise<string
     }
     case '.xls':
     case '.xlm': {
+      const data = await fs.readFile(filePath);
+      if (!isZipFile(data)) {
+        return convertXlsData(data);
+      }
       try {
         const md = await runWithRenamedExtension(filePath, '.xlsx');
         if (md.trim()) {
@@ -211,7 +222,11 @@ async function convertRtf(filePath: string): Promise<string> {
 }
 
 async function convertOfficeFallback(filePath: string): Promise<string> {
-  const officeResult: unknown = await officeParser.parseOffice(filePath);
+  const officeResult: unknown = await officeParser.parseOffice(filePath, {
+    ocr: false,
+    extractAttachments: false,
+    allowRemoteAssets: false,
+  });
   return officeAstToMarkdown(officeResult as any);
 }
 

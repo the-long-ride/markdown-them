@@ -1,5 +1,8 @@
 import { parseOffice, terminateOcr } from 'officeparser';
 import { convertTextToMarkdown, htmlToMarkdown, officeAstToMarkdown } from '../core/markdown-utils';
+import { convertDocData } from '../core/legacy/doc';
+import { isOleCompoundFile, isZipFile } from '../core/legacy/ole';
+import { convertXlsData } from '../core/legacy/xls';
 import { convertOdfData } from '../core/odf';
 import { convertPptxData } from '../core/pptx';
 import { convertRtfToMarkdown } from '../core/rtf';
@@ -24,10 +27,10 @@ const TEXT_FILE_EXTENSIONS = new Set([
   '.text',
 ]);
 
-function resolvePdfWorkerSrc(): string | undefined {
+function resolveAssetUrl(asset: string): string | undefined {
   if (typeof window !== 'undefined' && window.location?.href) {
     try {
-      return new URL('assets/pdf.worker.min.mjs', window.location.href).toString();
+      return new URL(`assets/${asset}`, window.location.href).toString();
     } catch {
       return undefined;
     }
@@ -36,11 +39,14 @@ function resolvePdfWorkerSrc(): string | undefined {
 }
 
 async function parseOfficeWithAst(buffer: Uint8Array, fileType?: string): Promise<string> {
-  const workerSrc = resolvePdfWorkerSrc();
+  const workerSrc = resolveAssetUrl('pdf.worker.min.mjs');
   const config: Record<string, any> = {
     extractAttachments: false,
     includeRawContent: false,
     ocr: false,
+    allowRemoteAssets: false,
+    pdfCMapUrl: resolveAssetUrl('cmaps/') ?? '',
+    pdfDecoderUrl: resolveAssetUrl('wasm/') ?? '',
     outputErrorToConsole: false,
   };
   if (fileType) {
@@ -64,11 +70,13 @@ async function parseOfficeWithAst(buffer: Uint8Array, fileType?: string): Promis
  * Supported formats:
  * - HTML / HTM: TextDecoder + htmlToMarkdown
  * - Text / MD / Markdown: TextDecoder + convertTextToMarkdown
- * - XLSX / XLS / XLM: convertXlsxData with officeparser fallback
+ * - XLS / XLM (binary): convertXlsData via SheetJS
+ * - XLSX: convertXlsxData with officeparser fallback
  * - PPTX: convertPptxData with officeparser fallback
  * - ODF (ODT / ODP / ODS): convertOdfData with officeparser fallback
  * - RTF: convertRtfToMarkdown with officeparser fallback
- * - DOCX / DOC / PDF: officeparser with pdfWorkerSrc
+ * - DOC (Word 97-2003 binary): convertDocData
+ * - DOCX / PDF: officeparser with pdfWorkerSrc
  *
  * Zero-byte text files resolve to "".
  * Zero-byte binary files reject gracefully with descriptive error.
@@ -100,9 +108,13 @@ export async function convertBufferToMarkdown(name: string, buffer: Uint8Array):
       const text = new TextDecoder('utf-8').decode(buffer);
       return convertTextToMarkdown(text);
     }
-    case '.xlsx':
     case '.xls':
-    case '.xlm': {
+    case '.xlm':
+      if (!isZipFile(buffer)) {
+        return convertXlsData(buffer);
+      }
+    // falls through
+    case '.xlsx': {
       try {
         const md = await convertXlsxData(buffer);
         if (md.trim()) {
@@ -145,8 +157,12 @@ export async function convertBufferToMarkdown(name: string, buffer: Uint8Array):
       }
       return await parseOfficeWithAst(buffer, 'rtf');
     }
-    case '.docx':
-    case '.doc': {
+    case '.doc':
+      if (isOleCompoundFile(buffer)) {
+        return convertDocData(buffer);
+      }
+    // falls through
+    case '.docx': {
       return await parseOfficeWithAst(buffer, 'docx');
     }
     case '.pdf': {
