@@ -69,7 +69,7 @@ export function registerTier6Tests(harness) {
         'list-header-table.odp',
         await generateListHeaderTableOdp(),
       );
-      const [tableOnly, withFootnote] = markdown.split('\n\n---\n\n');
+      const [tableOnly, withFootnote, withNearbyHeading] = markdown.split('\n\n---\n\n');
       assertEqual(
         tableOnly,
         '| Format | Extension |\n| --- | --- |\n| Text | ODT |\n| Drawing | ODG |',
@@ -78,15 +78,23 @@ export function registerTier6Tests(harness) {
         withFootnote,
         '## Report\n\n### Section\n\n| Items | Count |\n| --- | --- |\n| Widgets | 8 |\n\nCount excludes spares.',
       );
-      const withImage = await convertFixture(
-        'list-header-table-with-image.odp',
-        await generateListHeaderTableOdp(true),
+      assertContains(withNearbyHeading, '## Nearby heading\n\n| Type | Code |');
+      const imageSlide = async (column) =>
+        (
+          await convertFixture(
+            `table-with-${column}-image.odp`,
+            await generateListHeaderTableOdp(column),
+          )
+        )
+          .split('\n\n---\n\n')[1]
+          .replace(/\(data:image\/svg\+xml;base64,[^)]+\)/, '(image)');
+      assertEqual(
+        await imageSlide('left'),
+        withFootnote.replace('### Section\n\n', '### Section\n\n![diagram.svg](image)\n\n'),
       );
       assertEqual(
-        withImage
-          .split('\n\n---\n\n')[1]
-          .replace(/\(data:image\/svg\+xml;base64,[^)]+\)/, '(image)'),
-        withFootnote.replace('### Section\n\n', '### Section\n\n![diagram.svg](image)\n\n'),
+        await imageSlide('right'),
+        withFootnote + '\n\n### Right section\n\n![diagram.svg](image)',
       );
     });
 

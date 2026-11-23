@@ -40,7 +40,7 @@ export async function generateSmartArtPptx() {
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 
-export async function generateListHeaderTableOdp(withImage = false) {
+export async function generateListHeaderTableOdp(imageColumn) {
   const zip = new JSZip();
   const ns = 'urn:oasis:names:tc:opendocument:xmlns:';
   const tableRow = (...cells) =>
@@ -50,7 +50,7 @@ export async function generateListHeaderTableOdp(withImage = false) {
           </text:list-header></text:list></table:table-cell>`,
       )
       .join('')}</table:table-row>`;
-  if (withImage) {
+  if (imageColumn) {
     zip.file(
       'Pictures/diagram.svg',
       '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="80" height="40"/></svg>',
@@ -79,9 +79,17 @@ export async function generateListHeaderTableOdp(withImage = false) {
         <draw:frame svg:x="2cm" svg:y="8cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:h text:outline-level="3">Section</text:h></draw:text-box>
         </draw:frame>
-        ${withImage ? '<draw:frame svg:x="2cm" svg:y="9cm" svg:width="8cm" svg:height="2cm"><draw:image xlink:href="Pictures/diagram.svg"/></draw:frame>' : ''}
+        ${imageColumn === 'right' ? '<draw:frame svg:x="19cm" svg:y="8.4cm" svg:width="5cm" svg:height="1cm"><draw:text-box><text:h text:outline-level="3">Right section</text:h></draw:text-box></draw:frame>' : ''}
+        ${imageColumn ? `<draw:frame svg:x="${imageColumn === 'right' ? '19cm' : '2cm'}" svg:y="9cm" svg:width="5cm" svg:height="2cm"><draw:image xlink:href="Pictures/diagram.svg"/></draw:frame>` : ''}
         <draw:frame svg:x="2cm" svg:y="12cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:p>Count excludes spares.</text:p></draw:text-box>
+        </draw:frame>
+      </draw:page><draw:page>
+        <draw:frame svg:x="2cm" svg:y="3.35cm" svg:width="16cm" svg:height="1cm">
+          <table:table>${tableRow('Type', 'Code')}${tableRow('One', '1')}</table:table>
+        </draw:frame>
+        <draw:frame svg:x="8cm" svg:y="3cm" svg:width="10cm" svg:height="0.3cm">
+          <draw:text-box><text:h text:outline-level="2">Nearby heading</text:h></draw:text-box>
         </draw:frame>
       </draw:page></office:presentation></office:body>
     </office:document-content>`,

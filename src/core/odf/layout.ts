@@ -137,13 +137,18 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const textItems = items.filter((item) => hasLetter(itemText(item)));
-  const titles = textItems.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
+  const hasTable = items.some((item) => item.kind === 'table');
+  const sectionItems = items.filter((item) =>
+    item.kind === 'text' ? hasLetter(itemText(item)) : hasTable,
+  );
+  const titles = sectionItems.filter(
+    (item) => item !== pageHeading && isSectionTitleCandidate(item),
+  );
   const titleSet = new Set(titles);
   const assignments = new Map<PositionedItem, PositionedItem[]>();
   const consumed = new Set<PositionedItem>();
 
-  for (const body of textItems) {
+  for (const body of sectionItems) {
     if (body === pageHeading || titleSet.has(body)) {
       continue;
     }
@@ -172,7 +177,7 @@ export function groupPositionedSections(
 
     const bodies = assignments.get(item);
     if (bodies?.length) {
-      bodies.sort((a, b) => comparePosition(a, b, pageSize));
+      bodies.sort((a, b) => compareSlidePosition(a, b, pageSize));
       grouped.push(combineSection(item, bodies));
       continue;
     }
@@ -186,19 +191,16 @@ export function groupPositionedSections(
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
   const structuredItems = items.map((item) => ({ ...item }));
   const heading = promotePageHeading(structuredItems, pageSize);
-  structuredItems.sort((a, b) => comparePosition(a, b, pageSize));
+  return groupPositionedSections(structuredItems, pageSize, heading).sort((a, b) =>
+    compareSlidePosition(a, b, pageSize),
+  );
+}
 
-  // Keep section grouping from pulling text across a table or image.
-  const grouped: PositionedItem[] = [];
-  let text: PositionedItem[] = [];
-  for (const item of structuredItems) {
-    if (item.kind === 'text') {
-      text.push(item);
-    } else {
-      grouped.push(...groupPositionedSections(text, pageSize, heading), item);
-      text = [];
+function compareSlidePosition(a: PositionedItem, b: PositionedItem, pageSize: Box): number {
+  if (a.kind === 'table' || b.kind === 'table') {
+    if ((a.y < b.y && a.y + a.height <= b.y) || (b.y < a.y && b.y + b.height <= a.y)) {
+      return a.y - b.y;
     }
   }
-  grouped.push(...groupPositionedSections(text, pageSize, heading));
-  return grouped;
+  return comparePosition(a, b, pageSize);
 }
