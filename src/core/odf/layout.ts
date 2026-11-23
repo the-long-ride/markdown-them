@@ -137,9 +137,7 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const textItems = items.filter(
-    (item) => item.kind === 'table' || (item.kind === 'text' && hasLetter(itemText(item))),
-  );
+  const textItems = items.filter((item) => hasLetter(itemText(item)));
   const titles = textItems.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
   const titleSet = new Set(titles);
   const assignments = new Map<PositionedItem, PositionedItem[]>();
@@ -188,5 +186,19 @@ export function groupPositionedSections(
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
   const structuredItems = items.map((item) => ({ ...item }));
   const heading = promotePageHeading(structuredItems, pageSize);
-  return groupPositionedSections(structuredItems, pageSize, heading);
+  structuredItems.sort((a, b) => comparePosition(a, b, pageSize));
+
+  // Keep section grouping from pulling text across a table or image.
+  const grouped: PositionedItem[] = [];
+  let text: PositionedItem[] = [];
+  for (const item of structuredItems) {
+    if (item.kind === 'text') {
+      text.push(item);
+    } else {
+      grouped.push(...groupPositionedSections(text, pageSize, heading), item);
+      text = [];
+    }
+  }
+  grouped.push(...groupPositionedSections(text, pageSize, heading));
+  return grouped;
 }

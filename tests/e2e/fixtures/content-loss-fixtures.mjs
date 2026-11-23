@@ -40,7 +40,7 @@ export async function generateSmartArtPptx() {
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 
-export async function generateListHeaderTableOdp() {
+export async function generateListHeaderTableOdp(withImage = false) {
   const zip = new JSZip();
   const ns = 'urn:oasis:names:tc:opendocument:xmlns:';
   const tableRow = (...cells) =>
@@ -50,10 +50,17 @@ export async function generateListHeaderTableOdp() {
           </text:list-header></text:list></table:table-cell>`,
       )
       .join('')}</table:table-row>`;
+  if (withImage) {
+    zip.file(
+      'Pictures/diagram.svg',
+      '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="80" height="40"/></svg>',
+    );
+  }
   zip.file(
     'content.xml',
     `<office:document-content xmlns:office="${ns}office:1.0" xmlns:draw="${ns}drawing:1.0"
-      xmlns:svg="${ns}svg-compatible:1.0" xmlns:table="${ns}table:1.0" xmlns:text="${ns}text:1.0">
+      xmlns:svg="${ns}svg-compatible:1.0" xmlns:table="${ns}table:1.0" xmlns:text="${ns}text:1.0"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
       <office:body><office:presentation><draw:page>
         <draw:frame svg:x="2cm" svg:y="5cm">
           <table:table>
@@ -66,13 +73,14 @@ export async function generateListHeaderTableOdp() {
         <draw:frame svg:x="2cm" svg:y="1cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:h text:outline-level="2">Report</text:h></draw:text-box>
         </draw:frame>
-        <draw:frame svg:x="2cm" svg:y="9cm" svg:width="16cm" svg:height="2cm">
+        <draw:frame svg:x="2cm" svg:y="10cm" svg:width="16cm" svg:height="2cm">
           <table:table>${tableRow('Items', 'Count')}${tableRow('Widgets', '8')}</table:table>
         </draw:frame>
         <draw:frame svg:x="2cm" svg:y="8cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:h text:outline-level="3">Section</text:h></draw:text-box>
         </draw:frame>
-        <draw:frame svg:x="2cm" svg:y="11cm" svg:width="16cm" svg:height="1cm">
+        ${withImage ? '<draw:frame svg:x="2cm" svg:y="9cm" svg:width="8cm" svg:height="2cm"><draw:image xlink:href="Pictures/diagram.svg"/></draw:frame>' : ''}
+        <draw:frame svg:x="2cm" svg:y="12cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:p>Count excludes spares.</text:p></draw:text-box>
         </draw:frame>
       </draw:page></office:presentation></office:body>

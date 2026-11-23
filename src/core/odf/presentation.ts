@@ -1,7 +1,7 @@
 import type { Box, OrderedXmlNode, PositionedItem, RenderContext } from './types';
 import { DEFAULT_PAGE_SIZE } from './types';
 import { childrenOf, directChildren, findFirst, nodeName, readAttr } from './xml';
-import { comparePosition, readFrameBox, readPageBox } from './geometry';
+import { readFrameBox, readPageBox } from './geometry';
 import { normalizeOdfHref } from './styles';
 import {
   collectPresentationImageCounts,
@@ -133,7 +133,6 @@ export async function renderPresentation(
     const pageContext = { ...context, pageSize, presentationMode: true };
     const items = await collectPresentationItems(page, pageContext);
     const structuredItems = structurePositionedText(items, pageSize);
-    structuredItems.sort((a, b) => comparePosition(a, b, pageSize));
 
     const markdown = structuredItems
       .map((item) => item.markdown)
