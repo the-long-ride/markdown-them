@@ -69,10 +69,12 @@ export function registerTier6Tests(harness) {
         'list-header-table.odp',
         await generateListHeaderTableOdp(),
       );
+      const [tableOnly, withFootnote] = markdown.split('\n\n---\n\n');
       assertEqual(
-        markdown,
+        tableOnly,
         '| Format | Extension |\n| --- | --- |\n| Text | ODT |\n| Drawing | ODG |',
       );
+      assertContains(withFootnote, '| Widgets | 8 |\n\nCount excludes spares.');
     });
 
     harness.test(

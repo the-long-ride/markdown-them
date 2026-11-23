@@ -137,7 +137,9 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const textItems = items.filter((item) => item.kind === 'text' && hasLetter(itemText(item)));
+  const textItems = items.filter(
+    (item) => item.kind === 'table' || (item.kind === 'text' && hasLetter(itemText(item))),
+  );
   const titles = textItems.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
   const titleSet = new Set(titles);
   const assignments = new Map<PositionedItem, PositionedItem[]>();
