@@ -110,6 +110,14 @@ function renderDocParagraphs(paragraphs, lists = new Map()) {
   return renderWordDocument({ text, lists, propsAt: (cp) => props.get(cp) });
 }
 
+test('escapes literal ordered-list markers without adding a visible backslash', () => {
+  const markdown = renderDocParagraphs([
+    ['1. Not a list', {}],
+    ['2) Also not a list', {}],
+  ]);
+  assert.equal(markdown, '1\\. Not a list\n\n2\\) Also not a list');
+});
+
 test('keeps a DOC nested table as the first content of its enclosing cell', () => {
   const cell = { tableDepth: 2, innerCell: true };
   const row = { tableDepth: 2, innerRowEnd: true };

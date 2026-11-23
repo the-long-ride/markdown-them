@@ -8,7 +8,7 @@ const FIELD_END = '\x15';
 const CELL_MARK = '\x07';
 const PARAGRAPH_BREAKS = new Set(['\r', '\x0c', '\x0e']);
 const DROPPED_CHARACTERS = /[\x00-\x06\x08\x10-\x12\x16-\x1d\x1f]/g;
-const BLOCK_SYNTAX = /^(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|([-*_])\s*(\2\s*){2,}$)/;
+const BLOCK_SYNTAX = /^(#{1,6}\s|[-*+]\s|>|([-*_])\s*(\2\s*){2,}$)/;
 const HYPERLINK_FIELD = /^\s*HYPERLINK\s+"([^"]+)"/;
 
 interface Field {
@@ -206,7 +206,11 @@ function formatParagraph(
     lists.resetIndent();
     return { kind: 'paragraph', text: `${'#'.repeat(Math.min(level, 6))} ${text}` };
   }
-  const lines = text.split('\n').map((line) => (BLOCK_SYNTAX.test(line) ? `\\${line}` : line));
+  const lines = text
+    .split('\n')
+    .map((line) =>
+      BLOCK_SYNTAX.test(line) ? `\\${line}` : line.replace(/^(\d{1,9})([.)])(?=\s)/, '$1\\$2'),
+    );
   if (props?.listId && props.listLevel <= 8) {
     return { kind: 'list', text: lists.formatItem(lines, props.listId, props.listLevel) };
   }
