@@ -202,6 +202,29 @@ test('renders nested DOC lists with non-1 starts inside their parent item', () =
   assert.equal(markdown, '1. Parent\n\n   4. Nested');
 });
 
+test('keeps a DOC numbered sublist inside its empty parent', () => {
+  const lists = new Map([
+    [
+      1,
+      {
+        lsid: 42,
+        levels: [
+          { ordered: true, start: 12 },
+          { ordered: true, start: 4 },
+        ],
+      },
+    ],
+  ]);
+  const markdown = renderDocParagraphs(
+    [
+      ['', { listId: 1, listLevel: 0 }],
+      ['Nested', { listId: 1, listLevel: 1 }],
+    ],
+    lists,
+  );
+  assert.equal(markdown, '12.\n    4. Nested');
+});
+
 test('keeps blank DOC numbered list items without renumbering later items', () => {
   const lists = new Map([[1, { lsid: 42, levels: [{ ordered: true, start: 1 }] }]]);
   const item = { listId: 1, listLevel: 0 };
