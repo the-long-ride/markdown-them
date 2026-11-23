@@ -280,6 +280,7 @@ ${presentationRels}</Relationships>`,
     (slide.items || []).forEach((item) => {
       bodyItemsXml += `
           <a:p>
+            ${slide.bulleted ? '<a:pPr><a:buChar char="•"/></a:pPr>' : ''}
             <a:r>
               <a:rPr sz="1800"/>
               <a:t>${escapeXml(item)}</a:t>

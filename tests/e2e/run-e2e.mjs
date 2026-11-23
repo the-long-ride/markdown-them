@@ -3,8 +3,8 @@
  * Markdown Them — E2E Test Suite Runner
  *
  * Usage:
- *   node tests/e2e/run-e2e.mjs              # Run all test tiers (Tiers 1 to 6)
- *   node tests/e2e/run-e2e.mjs --tier=1     # Run specific tier (1, 2, 3, 4, 5, or 6)
+ *   node tests/e2e/run-e2e.mjs              # Run all test tiers (Tiers 1 to 8)
+ *   node tests/e2e/run-e2e.mjs --tier=8     # Run graded input tests only
  *   node tests/e2e/run-e2e.mjs --verbose    # Enable verbose stack traces
  */
 
@@ -16,6 +16,8 @@ import { registerTier4Tests } from './tiers/tier4-scenarios-stress.test.mjs';
 import { registerTier5Tests } from './tiers/tier5-cli.test.mjs';
 import { registerTier6Tests } from './tiers/tier6-complex-documents.test.mjs';
 import { registerTier7Tests } from './tiers/tier7-branch-coverage.test.mjs';
+import { registerTier8Tests } from './tiers/tier8-graded-inputs.test.mjs';
+import { registerGradedFormatTests } from './tiers/tier8-graded-formats.test.mjs';
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -27,9 +29,9 @@ function parseArgs() {
   for (const arg of args) {
     if (arg.startsWith('--tier=')) {
       const parsedTier = parseInt(arg.split('=')[1], 10);
-      if (isNaN(parsedTier) || parsedTier < 1 || parsedTier > 7) {
+      if (isNaN(parsedTier) || parsedTier < 1 || parsedTier > 8) {
         console.error(
-          `\x1b[31mError: Invalid tier "${arg.split('=')[1]}". Expected integer between 1 and 7.\x1b[0m`,
+          `\x1b[31mError: Invalid tier "${arg.split('=')[1]}". Expected integer between 1 and 8.\x1b[0m`,
         );
         process.exit(1);
       }
@@ -41,7 +43,7 @@ function parseArgs() {
 Markdown Them — E2E Test Suite Runner
 
 Options:
-  --tier=<1|2|3|4|5|6|7> Run tests from a specific tier only
+  --tier=<1|2|3|4|5|6|7|8> Run tests from a specific tier only
   --verbose, -v          Print verbose error traces
   --help, -h             Show this help screen
       `);
@@ -65,7 +67,7 @@ async function main() {
     '\x1b[1m\x1b[36m================================================================\x1b[0m',
   );
   console.log(
-    `Execution Mode : ${options.tier ? `Tier ${options.tier} Only` : 'Full Suite (Tiers 1 to 7)'}`,
+    `Execution Mode : ${options.tier ? `Tier ${options.tier} Only` : 'Full Suite (Tiers 1 to 8)'}`,
   );
   console.log(`Node Runtime   : ${process.version} on ${process.platform} (${process.arch})`);
   console.log(`Timestamp      : ${new Date().toISOString()}`);
@@ -92,6 +94,10 @@ async function main() {
   }
   if (!options.tier || options.tier === 7) {
     registerTier7Tests(harness);
+  }
+  if (!options.tier || options.tier === 8) {
+    registerTier8Tests(harness);
+    registerGradedFormatTests(harness);
   }
 
   const stats = await harness.run();
