@@ -17,6 +17,7 @@ import { registerTier5Tests } from './tiers/tier5-cli.test.mjs';
 import { registerTier6Tests } from './tiers/tier6-complex-documents.test.mjs';
 import { registerTier7Tests } from './tiers/tier7-branch-coverage.test.mjs';
 import { registerTier8Tests } from './tiers/tier8-graded-inputs.test.mjs';
+import { registerGradedFormatTests } from './tiers/tier8-graded-formats.test.mjs';
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -96,6 +97,7 @@ async function main() {
   }
   if (!options.tier || options.tier === 8) {
     registerTier8Tests(harness);
+    registerGradedFormatTests(harness);
   }
 
   const stats = await harness.run();
