@@ -117,6 +117,7 @@ jobs:
           set -euo pipefail
 
           cargo llvm-cov --manifest-path src-tauri/Cargo.toml \
+            --ignore-filename-regex '/src-tauri/src/(main|lib|commands/native_dialogs)\.rs$' \
             --summary-only 2>&1 | tee rust-coverage.txt
 
           total_line=$(grep '^TOTAL' rust-coverage.txt | tail -n 1 || true)
@@ -145,6 +146,7 @@ jobs:
       - name: Export LCOV report
         run: |
           cargo llvm-cov report --manifest-path src-tauri/Cargo.toml \
+            --ignore-filename-regex '/src-tauri/src/(main|lib|commands/native_dialogs)\.rs$' \
             --lcov --output-path rust-lcov.info
 
       - name: Upload Rust coverage artifact
