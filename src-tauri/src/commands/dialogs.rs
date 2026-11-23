@@ -1,6 +1,9 @@
-use crate::scanner::{self, DesktopFileEntry, SUPPORTED_EXTENSIONS};
+use crate::scanner::{self, DesktopFileEntry};
 use std::path::PathBuf;
-use tauri_plugin_dialog::{DialogExt, FilePath};
+use tauri_plugin_dialog::FilePath;
+use tokio::sync::oneshot;
+
+pub use super::native_dialogs::{choose_files, choose_folders, choose_output_folder};
 
 /// Helper to convert Tauri FilePath to a standard PathBuf
 pub fn file_path_to_path_buf(file_path: FilePath) -> Option<PathBuf> {
@@ -10,20 +13,16 @@ pub fn file_path_to_path_buf(file_path: FilePath) -> Option<PathBuf> {
     }
 }
 
-/// Native file picker allowing selection of multiple documents
-#[tauri::command]
-pub async fn choose_files(app: tauri::AppHandle) -> Result<Vec<DesktopFileEntry>, String> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
+pub(super) async fn receive_selection<T>(
+    start: impl FnOnce(oneshot::Sender<T>),
+) -> Result<T, String> {
+    let (tx, rx) = oneshot::channel();
+    start(tx);
+    rx.await.map_err(|e| e.to_string())
+}
 
-    app.dialog()
-        .file()
-        .set_title("Select Documents to Convert")
-        .add_filter("Supported Documents", SUPPORTED_EXTENSIONS)
-        .pick_files(move |paths| {
-            let _ = tx.send(paths);
-        });
-
-    let paths = rx.await.map_err(|e| e.to_string())?.unwrap_or_default();
+pub(super) async fn files_from_selection(paths: Option<Vec<FilePath>>) -> Vec<DesktopFileEntry> {
+    let paths = paths.unwrap_or_default();
     let mut entries = Vec::with_capacity(paths.len());
 
     for fp in paths {
@@ -41,22 +40,13 @@ pub async fn choose_files(app: tauri::AppHandle) -> Result<Vec<DesktopFileEntry>
         }
     }
 
-    Ok(entries)
+    entries
 }
 
-/// Native directory picker with recursive scanning via walkdir on Tokio blocking pool
-#[tauri::command]
-pub async fn choose_folders(app: tauri::AppHandle) -> Result<Vec<DesktopFileEntry>, String> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-
-    app.dialog()
-        .file()
-        .set_title("Select Folders to Scan for Documents")
-        .pick_folders(move |dirs| {
-            let _ = tx.send(dirs);
-        });
-
-    let dirs = rx.await.map_err(|e| e.to_string())?.unwrap_or_default();
+pub(super) async fn files_from_folders(
+    dirs: Option<Vec<FilePath>>,
+) -> Result<Vec<DesktopFileEntry>, String> {
+    let dirs = dirs.unwrap_or_default();
     if dirs.is_empty() {
         return Ok(Vec::new());
     }
@@ -83,20 +73,11 @@ pub async fn choose_folders(app: tauri::AppHandle) -> Result<Vec<DesktopFileEntr
     .map_err(|e| format!("Directory scan task failed: {}", e))?
 }
 
-/// Native folder picker returning the selected directory path string
-#[tauri::command]
-pub async fn choose_output_folder(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    let (tx, rx) = tokio::sync::oneshot::channel();
-
-    app.dialog()
-        .file()
-        .set_title("Choose Markdown Output Folder")
-        .pick_folder(move |dir| {
-            let _ = tx.send(dir);
-        });
-
-    let dir = rx.await.map_err(|e| e.to_string())?;
-    Ok(dir
-        .and_then(file_path_to_path_buf)
-        .map(|p| p.to_string_lossy().to_string()))
+pub(super) fn output_folder_from_selection(dir: Option<FilePath>) -> Option<String> {
+    dir.and_then(file_path_to_path_buf)
+        .map(|p| p.to_string_lossy().to_string())
 }
+
+#[cfg(test)]
+#[path = "dialogs_tests.rs"]
+mod tests;
