@@ -1,4 +1,6 @@
 import type JSZip from 'jszip';
+import { applyInlineMarks } from '../shared/inline';
+import { readZipText } from '../shared/zip';
 import type { OrderedXmlNode, StyleInfo } from './types';
 import {
   attrsOf,
@@ -14,17 +16,8 @@ export function isBold(value: string | undefined): boolean {
   return value === 'bold' || value === '700' || value === '800' || value === '900';
 }
 
-export function hasLetter(value: string): boolean {
-  return /\p{L}/u.test(value);
-}
-
 export function normalizeOdfHref(href: string): string {
   return href.replace(/\\/g, '/').replace(/^\.?\//, '');
-}
-
-export async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
-  const file = zip.file(filePath);
-  return file ? file.async('text') : undefined;
 }
 
 export function readStyles(documentChildren: OrderedXmlNode[]): Map<string, StyleInfo> {
@@ -76,32 +69,12 @@ export async function readManifest(zip: JSZip): Promise<Map<string, string>> {
   return manifest;
 }
 
-export function wrapMarkdown(value: string, marker: string): string {
-  const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(value);
-  if (!match || !match[2]) {
-    return value;
-  }
-
-  return `${match[1]}${marker}${match[2]}${marker}${match[3]}`;
-}
-
 export function applyInlineStyle(text: string, style?: StyleInfo): string {
   if (!text || !style) {
     return text;
   }
 
-  let markdown = text;
-  if (style.bold) {
-    markdown = wrapMarkdown(markdown, '**');
-  }
-  if (style.italic) {
-    markdown = wrapMarkdown(markdown, '*');
-  }
-  if (style.strikethrough) {
-    markdown = wrapMarkdown(markdown, '~~');
-  }
-
-  return markdown;
+  return applyInlineMarks(text, style);
 }
 
 export function mergeStyles(

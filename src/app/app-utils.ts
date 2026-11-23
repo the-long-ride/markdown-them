@@ -39,24 +39,6 @@ export function mergeFileItems(current: FileItem[], incoming: FileItem[]): FileI
   return merged;
 }
 
-export async function runLimited<T>(
-  items: T[],
-  limit: number,
-  worker: (item: T) => Promise<void>,
-): Promise<void> {
-  let index = 0;
-  const workerCount = Math.min(limit, items.length);
-
-  await Promise.all(
-    Array.from({ length: workerCount }, async () => {
-      while (index < items.length) {
-        const item = items[index++];
-        await worker(item);
-      }
-    }),
-  );
-}
-
 export async function copyToClipboard(text: string): Promise<void> {
   if (desktopApi) {
     await desktopApi.copyText(text);

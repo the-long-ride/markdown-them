@@ -13,6 +13,12 @@ export function escapeMarkdownTableCell(value: unknown): string {
     .trim();
 }
 
+export function isBlankTable(rows: unknown[][]): boolean {
+  return rows.every((row) =>
+    row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
+  );
+}
+
 export function normalizeMarkdownTableRow(
   row: (string | unknown)[],
   columnCount: number,
@@ -23,14 +29,7 @@ export function normalizeMarkdownTableRow(
 }
 
 export function appendMarkdownTable(markdown: string[], rows: (string | unknown)[][]): void {
-  if (rows.length === 0) {
-    return;
-  }
-
-  const isAllEmpty = rows.every((row) =>
-    row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
-  );
-  if (isAllEmpty) {
+  if (isBlankTable(rows)) {
     return;
   }
 

@@ -6,7 +6,8 @@ import { dirname, readRelationships, readZipText, relationshipsPathForPart } fro
 import { applyTransform, composeGroupTransform, readElementBox } from './geometry';
 import { formatTextBody, inferHeadingLevel, normalizeInlineText, readTextBody } from './text';
 import { readTableMarkdown } from './table';
-import { isImagePart, mimeTypeForPart, preferredAltText } from './image';
+import { mimeTypeForPart, preferredAltText } from './image';
+import { isImageFilePath } from '../shared/images';
 
 export function collectPicture(
   picture: any,
@@ -16,7 +17,7 @@ export function collectPicture(
   const relId = readAnyAttr(picture?.blipFill?.blip, ['r:embed', 'embed']);
   const relationship = relId ? context.relationships.get(relId) : undefined;
 
-  if (!relationship || relationship.external || !isImagePart(relationship.target)) {
+  if (!relationship || relationship.external || !isImageFilePath(relationship.target)) {
     return;
   }
 

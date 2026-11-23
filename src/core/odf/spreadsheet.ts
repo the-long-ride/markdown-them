@@ -1,4 +1,5 @@
 import { appendMarkdownTable, decodeXmlEntities } from '../markdown-utils';
+import { isBlankTable } from '../markdown/tables';
 import type { OrderedXmlNode, RenderContext } from './types';
 import { childrenOf, clampRepeat, directChildren, nodeName, readAttr, readRepeat } from './xml';
 import { normalizeHeading } from './styles';
@@ -85,10 +86,7 @@ export async function renderSpreadsheet(
   for (const [index, table] of tables.entries()) {
     const sheetName = normalizeHeading(readAttr(table, 'name') || `Sheet ${index + 1}`);
     const rows = await readOdsRows(table, context);
-    const isAllEmpty = rows.every((row) =>
-      row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
-    );
-    if (rows.length === 0 || isAllEmpty) {
+    if (isBlankTable(rows)) {
       continue;
     }
 
