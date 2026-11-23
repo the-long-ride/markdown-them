@@ -4,9 +4,15 @@ All notable changes to the "markdown-them" extension will be documented in this 
 
 ## [Unreleased]
 
+- **GitHub Pages Release Deploy**: Split `build-web` and `deploy-web` into separate jobs so `actions/deploy-pages` never races against same-job artifact indexing.
+- **Release Notes Changelog**: Fall back cleanly from exact version sections in `CHANGELOG.md` to release-scoped `[Unreleased]` entries or tag commit history instead of a placeholder link.
+
+## [1.4.2] - 2026-11-23
+
 - **Legacy Office Support**: Convert binary Word 97–2003 (`.doc`) and legacy Excel (`.xls`, `.xlm`) files directly across all variants. Preserve nested Word tables, list numbering, and hyperlinks, and decode legacy Excel code pages.
 - **Office Content Preservation**: Retain PowerPoint SmartArt text, editable OpenDocument presentation tables and images in slide reading order, Rich Text smart quotes and wrapped words, and Excel worksheet hyperlinks even on implicit or blank cells.
 - **Markdown Normalization**: Preserve whitespace inside fenced code blocks, including fences in lists and block quotes.
+- **GitHub Packages Publishing**: Publish `@the-long-ride/markdown-them` to GitHub Packages alongside npm on `v*` tag releases.
 - **Testing & CI**: Add graded cases for all supported formats and offline tests for bundled originals. Run lint, typechecking, Rust and TypeScript coverage, and package builds in parallel behind a single CI Gate, with 90% coverage minimums.
 
 ## [1.4.0] - 2026-11-02

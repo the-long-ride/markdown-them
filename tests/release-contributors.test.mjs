@@ -6,9 +6,12 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildReleaseBody,
+  collectReleaseCommits,
   collectReleaseContributors,
   extractChangelogForVersion,
+  extractUnreleasedChangelog,
   formatContributors,
+  resolveReleaseChangelog,
 } from '../scripts/generate-release-notes.mjs';
 
 function fixture() {
@@ -86,6 +89,42 @@ test('malformed or missing tags are rejected', () => {
   try {
     assert.throws(() => collectReleaseContributors('--all', repo.cwd), /Expected a version tag/);
     assert.throws(() => collectReleaseContributors('v9.0.0', repo.cwd));
+  } finally {
+    repo.close();
+  }
+});
+
+test('release changelog uses version section, unreleased notes, or commits', () => {
+  const repo = fixture();
+  try {
+    repo.commit('Alice', 'alice@example.com', 'feat: initial');
+    repo.git('tag', 'v1.0.0');
+
+    writeFileSync(path.join(repo.cwd, 'CHANGELOG.md'), '## [Unreleased]\n\n- Added feature X\n');
+    repo.git('add', 'CHANGELOG.md');
+    repo.git('commit', '--quiet', '-m', 'docs: update changelog');
+    repo.commit('Alice', 'alice@example.com', 'feat: ship X');
+    repo.git('tag', 'v1.0.1');
+
+    const withUnreleased = resolveReleaseChangelog({
+      tagName: 'v1.0.1',
+      changelogText: '## [Unreleased]\n\n- Added feature X\n\n## [1.0.0]\n\n- Initial',
+      cwd: repo.cwd,
+    });
+    assert.equal(withUnreleased, '- Added feature X');
+
+    repo.commit('Alice', 'alice@example.com', 'fix: hotfix without changelog');
+    repo.git('tag', 'v1.0.2');
+
+    const fromCommits = resolveReleaseChangelog({
+      tagName: 'v1.0.2',
+      changelogText: '## [Unreleased]\n\n- Added feature X\n\n## [1.0.0]\n\n- Initial',
+      cwd: repo.cwd,
+    });
+    assert.match(fromCommits, /^- fix: hotfix without changelog \(`[0-9a-f]+`\)/m);
+    assert.match(fromCommits, /compare\/v1\.0\.1\.\.\.v1\.0\.2$/);
+    assert.equal(extractUnreleasedChangelog('## [Unreleased]\n\n- A\n\n## [1.0.0]\n\n- B'), '- A');
+    assert.equal(collectReleaseCommits('v1.0.2', repo.cwd).commits.length, 1);
   } finally {
     repo.close();
   }

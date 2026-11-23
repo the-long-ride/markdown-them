@@ -338,21 +338,14 @@ jobs:
             fi
           fi
 
-  deploy-web:
-    name: Deploy Web App to GitHub Pages
+  build-web:
+    name: Build Web App
     runs-on: ubuntu-latest
     needs: detect-changes
     if: needs.detect-changes.outputs.web == 'true'
     permissions:
       contents: read
       pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    concurrency:
-      group: github-pages
-      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
@@ -388,6 +381,25 @@ jobs:
         with:
           path: dist/web
 
+  deploy-web:
+    name: Deploy Web App to GitHub Pages
+    runs-on: ubuntu-latest
+    needs:
+      - detect-changes
+      - build-web
+    if: needs.detect-changes.outputs.web == 'true' && needs.build-web.result == 'success'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

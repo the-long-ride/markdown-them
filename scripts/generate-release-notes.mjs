@@ -28,16 +28,35 @@ export function extractChangelogForVersion(changelogText, tagOrVersion) {
   return result.length > 0 ? result : null;
 }
 
-/**
- * List the human commit authors and co-authors between adjacent version tags.
- * For the first version tag, include all reachable history instead.
- */
-export function collectReleaseContributors(tagName, cwd = process.cwd()) {
+export function extractUnreleasedChangelog(changelogText) {
+  const lines = changelogText.split(/\r?\n/);
+  let capturing = false;
+  const capturedLines = [];
+
+  for (const line of lines) {
+    if (/^##\s*\[?Unreleased\]?/i.test(line)) {
+      capturing = true;
+      continue;
+    }
+    if (capturing && /^##\s+/.test(line)) {
+      break;
+    }
+    if (capturing) {
+      capturedLines.push(line);
+    }
+  }
+
+  const result = capturedLines.join('\n').trim();
+  return result.length > 0 ? result : null;
+}
+
+function resolveReleaseRange(tagName, cwd = process.cwd()) {
   if (!/^v[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$/.test(tagName)) {
     throw new Error('Expected a version tag such as v1.4.0.');
   }
 
-  const git = (args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+  const git = (args) =>
+    execFileSync('git', args, { cwd, encoding: 'utf8', stdio: 'pipe' }).trim();
   git(['rev-parse', '--verify', 'refs/tags/' + tagName + '^{commit}']);
 
   const versions = git([
@@ -48,8 +67,72 @@ export function collectReleaseContributors(tagName, cwd = process.cwd()) {
     'v[0-9]*',
     '--sort=-version:refname',
   ]);
-  const previous = versions.split('\n').find((tag) => tag && tag !== tagName);
-  const range = previous ? previous + '..' + tagName : tagName;
+  const previousTag = versions.split(/\r?\n/).find((tag) => tag && tag !== tagName) || null;
+  const range = previousTag ? previousTag + '..' + tagName : tagName;
+  return { git, previousTag, range };
+}
+
+export function collectReleaseCommits(tagName, cwd = process.cwd()) {
+  const { git, previousTag, range } = resolveReleaseRange(tagName, cwd);
+  const parseCommits = (args) =>
+    git(args)
+      .split('\x1e')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+      .map((entry) => {
+        const [subject, shortSha] = entry.split('\x1f');
+        return { subject: (subject || '').trim(), shortSha: (shortSha || '').trim() };
+      })
+      .filter((item) => item.subject.length > 0);
+
+  let commits = parseCommits(['log', '--no-merges', '--format=%s%x1f%h%x1e', range]);
+  if (commits.length === 0) {
+    commits = parseCommits(['log', '--format=%s%x1f%h%x1e', range]);
+  }
+  return { commits, previousTag, range };
+}
+
+export function resolveReleaseChangelog({ tagName, changelogText = '', cwd = process.cwd() }) {
+  if (changelogText) {
+    const versionNotes = extractChangelogForVersion(changelogText, tagName);
+    if (versionNotes) {
+      return versionNotes;
+    }
+  }
+
+  const { git, previousTag, range } = resolveReleaseRange(tagName, cwd);
+  const unreleased = changelogText ? extractUnreleasedChangelog(changelogText) : null;
+  const changelogUpdated =
+    Boolean(unreleased) &&
+    (!previousTag || git(['diff', '--name-only', range, '--', 'CHANGELOG.md']).length > 0);
+
+  if (changelogUpdated) {
+    return unreleased;
+  }
+
+  const { commits } = collectReleaseCommits(tagName, cwd);
+  if (commits.length === 0) {
+    return null;
+  }
+
+  const lines = commits.map(({ subject, shortSha }) =>
+    shortSha ? `- ${subject} (\`${shortSha}\`)` : `- ${subject}`,
+  );
+  if (previousTag) {
+    lines.push(
+      '',
+      `**Full Changelog**: https://github.com/the-long-ride/markdown-them/compare/${previousTag}...${tagName}`,
+    );
+  }
+  return lines.join('\n');
+}
+
+/**
+ * List the human commit authors and co-authors between adjacent version tags.
+ * For the first version tag, include all reachable history instead.
+ */
+export function collectReleaseContributors(tagName, cwd = process.cwd()) {
+  const { git, range } = resolveReleaseRange(tagName, cwd);
   const history = git(['log', '--no-merges', '--format=%aN%x1f%aE%x1f%B%x1e', range]);
   const contributors = new Map();
 
@@ -99,9 +182,8 @@ export function formatContributors(contributors) {
 
 export function buildReleaseBody({ tagName, changelogNotes, contributors = [] }) {
   const version = tagName.replace(/^v/, '');
-  const changelogSection = changelogNotes
-    ? `<details>\n<summary><b>Changelog for ${tagName}</b></summary>\n\n${changelogNotes}\n\n</details>`
-    : `<details>\n<summary><b>Changelog for ${tagName}</b></summary>\n\n_See [CHANGELOG.md](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md) for detailed changes._\n\n</details>`;
+  const notesContent = changelogNotes || `_No commits recorded for ${tagName}._`;
+  const changelogSection = `<details>\n<summary><b>Changelog for ${tagName}</b></summary>\n\n${notesContent}\n\n</details>`;
 
   return `## Markdown Them Release [${tagName}](https://github.com/the-long-ride/markdown-them/blob/main/CHANGELOG.md)
 
@@ -134,11 +216,8 @@ function main() {
   const outputPath = args[1] || 'release-notes.md';
 
   const changelogPath = path.resolve('CHANGELOG.md');
-  let changelogNotes = null;
-  if (fs.existsSync(changelogPath)) {
-    const changelogText = fs.readFileSync(changelogPath, 'utf8');
-    changelogNotes = extractChangelogForVersion(changelogText, tagName);
-  }
+  const changelogText = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
+  const changelogNotes = resolveReleaseChangelog({ tagName, changelogText });
 
   const contributors = collectReleaseContributors(tagName);
   const body = buildReleaseBody({ tagName, changelogNotes, contributors });
