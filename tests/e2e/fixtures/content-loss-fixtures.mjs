@@ -56,6 +56,15 @@ export async function generateListHeaderTableOdp(imageColumn) {
       '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="40"><rect width="80" height="40"/></svg>',
     );
   }
+  const sideTable = `<draw:frame svg:x="2cm" svg:y="10.25cm" svg:width="4cm" svg:height="0.1cm">
+    <table:table>${tableRow('Side table')}</table:table>
+  </draw:frame>`;
+  const centerNote = `<draw:frame svg:x="10cm" svg:y="10.4cm" svg:width="4cm" svg:height="0.15cm">
+    <draw:text-box><text:p>Center note.</text:p></draw:text-box>
+  </draw:frame>`;
+  const rightHeading = `<draw:frame svg:x="19cm" svg:y="10.09cm" svg:width="4cm" svg:height="0.13cm">
+    <draw:text-box><text:h text:outline-level="3">Right heading</text:h></draw:text-box>
+  </draw:frame>`;
   zip.file(
     'content.xml',
     `<office:document-content xmlns:office="${ns}office:1.0" xmlns:draw="${ns}drawing:1.0"
@@ -91,7 +100,28 @@ export async function generateListHeaderTableOdp(imageColumn) {
         <draw:frame svg:x="8cm" svg:y="3cm" svg:width="10cm" svg:height="0.3cm">
           <draw:text-box><text:h text:outline-level="2">Nearby heading</text:h></draw:text-box>
         </draw:frame>
-      </draw:page></office:presentation></office:body>
+      </draw:page>
+      ${
+        imageColumn
+          ? `<draw:page>
+        <draw:frame svg:x="2cm" svg:y="1cm" svg:width="16cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="2">Figures</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="8cm" svg:width="5cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="3">Diagram</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="9cm" svg:width="5cm" svg:height="1.4cm">
+          <draw:image xlink:href="Pictures/diagram.svg"/>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="10.6cm" svg:width="5cm" svg:height="1cm">
+          <draw:text-box><text:p>Diagram caption.</text:p></draw:text-box>
+        </draw:frame>
+      </draw:page>`
+          : ''
+      }
+      <draw:page>${sideTable}${centerNote}${rightHeading}</draw:page>
+      <draw:page>${rightHeading}${centerNote}${sideTable}</draw:page>
+      </office:presentation></office:body>
     </office:document-content>`,
   );
   return zip.generateAsync({ type: 'nodebuffer' });

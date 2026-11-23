@@ -100,6 +100,33 @@ export function registerTier6Tests(harness) {
       );
     });
 
+    harness.test('ODP: Keeps captions after their images on slides without tables', async () => {
+      const markdown = await convertFixture(
+        'slide-with-caption.odp',
+        await generateListHeaderTableOdp('left'),
+      );
+      const captionSlide = markdown
+        .split('\n\n---\n\n')[3]
+        .replace(/\(data:image\/svg\+xml;base64,[^)]+\)/, '(image)');
+      assertEqual(
+        captionSlide,
+        '## Figures\n\n### Diagram\n\n![diagram.svg](image)\n\nDiagram caption.',
+      );
+    });
+
+    harness.test(
+      'ODP: Reads staggered tables and text in the same order regardless of XML order',
+      async () => {
+        const markdown = await convertFixture(
+          'staggered-table.odp',
+          await generateListHeaderTableOdp(),
+        );
+        const [first, second] = markdown.split('\n\n---\n\n').slice(-2);
+        assertEqual(first, second);
+        assertEqual(first, '### Right heading\n\n| Side table |\n| --- |\n\nCenter note.');
+      },
+    );
+
     harness.test(
       'RTF: Preserves smart quotes and ignores source wrapping inside words',
       async () => {

@@ -137,10 +137,7 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const hasTable = items.some((item) => item.kind === 'table');
-  const sectionItems = items.filter((item) =>
-    item.kind === 'text' ? hasLetter(itemText(item)) : hasTable,
-  );
+  const sectionItems = items.filter((item) => item.kind !== 'text' || hasLetter(itemText(item)));
   const titles = sectionItems.filter(
     (item) => item !== pageHeading && isSectionTitleCandidate(item),
   );
@@ -177,8 +174,7 @@ export function groupPositionedSections(
 
     const bodies = assignments.get(item);
     if (bodies?.length) {
-      bodies.sort((a, b) => compareSlidePosition(a, b, pageSize));
-      grouped.push(combineSection(item, bodies));
+      grouped.push(combineSection(item, orderSlideItems(bodies, pageSize)));
       continue;
     }
 
@@ -191,16 +187,28 @@ export function groupPositionedSections(
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
   const structuredItems = items.map((item) => ({ ...item }));
   const heading = promotePageHeading(structuredItems, pageSize);
-  return groupPositionedSections(structuredItems, pageSize, heading).sort((a, b) =>
-    compareSlidePosition(a, b, pageSize),
-  );
+  return orderSlideItems(groupPositionedSections(structuredItems, pageSize, heading), pageSize);
 }
 
-function compareSlidePosition(a: PositionedItem, b: PositionedItem, pageSize: Box): number {
-  if (a.kind === 'table' || b.kind === 'table') {
-    if ((a.y < b.y && a.y + a.height <= b.y) || (b.y < a.y && b.y + b.height <= a.y)) {
-      return a.y - b.y;
+function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem[] {
+  const tolerance = Math.max(0.01, pageSize.height * 0.025);
+  const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x || a.order - b.order);
+  const ordered: PositionedItem[] = [];
+  let row: PositionedItem[] = [];
+  let bottom = Infinity;
+
+  // Decide row membership before sorting left-to-right; pairwise tolerances can create cycles.
+  for (const item of sorted) {
+    const rowStart = row[0]?.y ?? item.y;
+    if (item.y - rowStart > tolerance || (item.y > rowStart && item.y >= bottom)) {
+      ordered.push(...row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
+      row = [];
+      bottom = Infinity;
+    }
+    row.push(item);
+    if (item.height > 0) {
+      bottom = Math.min(bottom, item.y + item.height);
     }
   }
-  return comparePosition(a, b, pageSize);
+  return ordered.concat(row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
 }
