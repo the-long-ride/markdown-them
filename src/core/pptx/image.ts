@@ -1,50 +1,13 @@
 import type JSZip from 'jszip';
+import { escapeImageAlt, fallbackMimeType, IMAGE_EXTENSIONS } from '../shared/images';
 import type { ContentTypes, ImageItem, ParsedSlide, SlideSize } from './types';
 import { extensionName, normalizePartPath } from './package';
 
-export function isImagePart(partPath: string): boolean {
-  return /\.(avif|bmp|emf|gif|heic|jpe?g|png|svg|tiff?|webp|wmf)$/i.test(partPath);
-}
-
-export function escapeImageAlt(value: string): string {
-  return (
-    value
-      .replace(/\r\n|\r|\n/g, ' ')
-      .replace(/]/g, '\\]')
-      .trim() || 'Slide image'
-  );
-}
-
-export function fallbackMimeType(extension: string): string {
-  switch (extension) {
-    case 'avif':
-      return 'image/avif';
-    case 'bmp':
-      return 'image/bmp';
-    case 'emf':
-      return 'image/x-emf';
-    case 'gif':
-      return 'image/gif';
-    case 'heic':
-      return 'image/heic';
-    case 'jpg':
-    case 'jpeg':
-      return 'image/jpeg';
-    case 'png':
-      return 'image/png';
-    case 'svg':
-      return 'image/svg+xml';
-    case 'tif':
-    case 'tiff':
-      return 'image/tiff';
-    case 'webp':
-      return 'image/webp';
-    case 'wmf':
-      return 'image/wmf';
-    default:
-      return 'application/octet-stream';
-  }
-}
+const GENERIC_IMAGE_FILE_LABEL = new RegExp(`^image\\d*\\.(${IMAGE_EXTENSIONS})$`, 'i');
+const GOOGLE_SHAPE_IMAGE_LABEL = new RegExp(
+  `^google shape;\\d+;p\\d+\\s+image\\d*\\.(${IMAGE_EXTENSIONS})$`,
+  'i',
+);
 
 export function mimeTypeForPart(contentTypes: ContentTypes, partPath: string): string {
   const normalized = normalizePartPath(partPath);
@@ -57,20 +20,13 @@ export function mimeTypeForPart(contentTypes: ContentTypes, partPath: string): s
   return contentTypes.defaults.get(extension) || fallbackMimeType(extension);
 }
 
-export function base64ByteLength(base64: string): number {
-  const padding = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0;
-  return Math.max(0, Math.floor((base64.length * 3) / 4) - padding);
-}
-
 export function isGenericImageLabel(value: string): boolean {
   const normalized = value.trim();
   return (
     /^(picture|image|graphic|object|shape|slide image)\s*\d*$/i.test(normalized) ||
-    /^image\d*\.(avif|bmp|emf|gif|heic|jpe?g|png|svg|tiff?|webp|wmf)$/i.test(normalized) ||
+    GENERIC_IMAGE_FILE_LABEL.test(normalized) ||
     /^google shape;\d+;p\d+$/i.test(normalized) ||
-    /^google shape;\d+;p\d+\s+image\d*\.(avif|bmp|emf|gif|heic|jpe?g|png|svg|tiff?|webp|wmf)$/i.test(
-      normalized,
-    )
+    GOOGLE_SHAPE_IMAGE_LABEL.test(normalized)
   );
 }
 
@@ -215,5 +171,5 @@ export async function readImageBase64(zip: JSZip, image: ImageItem): Promise<str
 }
 
 export function renderImageMarkdown(image: ImageItem, base64: string): string {
-  return `![${escapeImageAlt(image.altText)}](data:${image.mimeType};base64,${base64})`;
+  return `![${escapeImageAlt(image.altText, 'Slide image')}](data:${image.mimeType};base64,${base64})`;
 }

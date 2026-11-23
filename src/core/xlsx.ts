@@ -1,5 +1,7 @@
 import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
+import { readZipText } from './shared/zip';
+import { isBlankTable } from './markdown/tables';
 import {
   appendMarkdownTable,
   decodeXmlEntities,
@@ -81,10 +83,7 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
     }
     const orderedRows = [...tableRows].sort(([a], [b]) => a - b).map(([, row]) => row);
 
-    const isAllEmpty = orderedRows.every((row) =>
-      row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
-    );
-    if (isAllEmpty) {
+    if (isBlankTable(orderedRows)) {
       continue;
     }
 
@@ -137,11 +136,6 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
 
   const sharedStrings = xmlParser.parse(sharedStringsXml);
   return toArray(sharedStrings?.sst?.si).map(readRichText);
-}
-
-async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
-  const file = zip.file(filePath);
-  return file ? file.async('text') : undefined;
 }
 
 function readXlsxRow(

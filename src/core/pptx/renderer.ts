@@ -1,8 +1,8 @@
 import type JSZip from 'jszip';
 import type { ParsedSlide, RenderableItem } from './types';
 import { comparePosition } from './geometry';
+import { base64ByteLength } from '../shared/images';
 import {
-  base64ByteLength,
   collectImageSlideCounts,
   readImageBase64,
   renderImageMarkdown,

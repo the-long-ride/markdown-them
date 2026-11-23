@@ -1,6 +1,8 @@
 import type { Box, PositionedItem } from './types';
-import { centerX, comparePosition, isSameVisualColumn, unionBoxes } from './geometry';
-import { hasLetter } from './styles';
+import { comparePosition } from './geometry';
+import { centerX } from '../shared/geometry';
+import { hasLetter, markdownHeadingLevel } from '../shared/inline';
+import { groupSections } from '../shared/sections';
 
 export function stripMarkdown(markdown: string): string {
   return markdown
@@ -25,11 +27,6 @@ export function boldRatio(markdown: string): number {
   return boldText.length / stripped.length;
 }
 
-export function markdownHeadingLevel(markdown: string): number | undefined {
-  const match = markdown.match(/^(#{1,6})\s+/);
-  return match ? match[1].length : undefined;
-}
-
 export function isSectionTitleCandidate(item: PositionedItem): boolean {
   const text = itemText(item);
   return (
@@ -39,58 +36,6 @@ export function isSectionTitleCandidate(item: PositionedItem): boolean {
     !/^[\d\s%.,:/-]+$/.test(text) &&
     (markdownHeadingLevel(item.markdown) !== undefined || boldRatio(item.markdown) > 0.4)
   );
-}
-
-export function findNearestTitle(
-  body: PositionedItem,
-  titles: PositionedItem[],
-  pageSize: Box,
-): PositionedItem | undefined {
-  const candidates = titles
-    .filter((title) => {
-      if (body.y < title.y + Math.min(title.height * 0.45, pageSize.height * 0.035)) {
-        return false;
-      }
-
-      const verticalGap = Math.max(0, body.y - (title.y + title.height));
-      if (verticalGap > pageSize.height * 0.16 || !isSameVisualColumn(title, body)) {
-        return false;
-      }
-
-      return !titles.some(
-        (otherTitle) =>
-          otherTitle !== title &&
-          otherTitle.y > title.y &&
-          otherTitle.y < body.y &&
-          isSameVisualColumn(otherTitle, body),
-      );
-    })
-    .map((title) => ({
-      title,
-      centerDistance: Math.abs(centerX(title) - centerX(body)),
-      verticalGap: Math.max(0, body.y - (title.y + title.height)),
-    }));
-
-  candidates.sort((a, b) => a.verticalGap - b.verticalGap || a.centerDistance - b.centerDistance);
-  return candidates[0]?.title;
-}
-
-export function combineSection(title: PositionedItem, bodies: PositionedItem[]): PositionedItem {
-  const allItems = [title, ...bodies];
-  const bounds = unionBoxes(allItems);
-
-  return {
-    ...title,
-    markdown: allItems
-      .map((item) => item.markdown)
-      .filter(Boolean)
-      .join('\n\n'),
-    x: bounds.x,
-    y: title.y,
-    width: bounds.width,
-    height: Math.max(title.height, bounds.y + bounds.height - title.y),
-    order: Math.min(...allItems.map((item) => item.order)),
-  };
 }
 
 export function promotePageHeading(
@@ -137,51 +82,16 @@ export function groupPositionedSections(
   pageSize: Box,
   pageHeading?: PositionedItem,
 ): PositionedItem[] {
-  const sectionItems = items.filter((item) => item.kind !== 'text' || hasLetter(itemText(item)));
-  const titles = sectionItems.filter(
-    (item) => item !== pageHeading && isSectionTitleCandidate(item),
+  const bodies = items.filter((item) => item.kind !== 'text' || hasLetter(itemText(item)));
+  const titles = bodies.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
+  return groupSections(
+    items,
+    bodies,
+    titles,
+    pageSize,
+    (sectionBodies) => orderSlideItems(sectionBodies, pageSize),
+    pageHeading,
   );
-  const titleSet = new Set(titles);
-  const assignments = new Map<PositionedItem, PositionedItem[]>();
-  const consumed = new Set<PositionedItem>();
-
-  for (const body of sectionItems) {
-    if (body === pageHeading || titleSet.has(body)) {
-      continue;
-    }
-
-    const title = findNearestTitle(body, titles, pageSize);
-    if (!title) {
-      continue;
-    }
-
-    const bodies = assignments.get(title) || [];
-    bodies.push(body);
-    assignments.set(title, bodies);
-    consumed.add(body);
-  }
-
-  if (assignments.size === 0) {
-    return items;
-  }
-
-  const grouped: PositionedItem[] = [];
-
-  for (const item of items) {
-    if (consumed.has(item)) {
-      continue;
-    }
-
-    const bodies = assignments.get(item);
-    if (bodies?.length) {
-      grouped.push(combineSection(item, orderSlideItems(bodies, pageSize)));
-      continue;
-    }
-
-    grouped.push(item);
-  }
-
-  return grouped;
 }
 
 export function structurePositionedText(items: PositionedItem[], pageSize: Box): PositionedItem[] {
