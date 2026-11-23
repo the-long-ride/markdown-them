@@ -14,8 +14,26 @@ export function normalizeMarkdown(markdown: string): string {
   const lines = normalized.split('\n');
   const output: string[] = [];
   let blankLines = 0;
+  let fence: string | undefined;
 
   for (const line of lines) {
+    const delimiter = /^ {0,3}(`{3,}|~{3,})(.*)$/s.exec(line);
+    if (fence) {
+      if (
+        delimiter &&
+        delimiter[1][0] === fence[0] &&
+        delimiter[1].length >= fence.length &&
+        /^[ \t]*$/.test(delimiter[2])
+      ) {
+        fence = undefined;
+      } else {
+        output.push(line);
+        continue;
+      }
+    } else if (delimiter && (delimiter[1][0] === '~' || !delimiter[2].includes('`'))) {
+      fence = delimiter[1];
+    }
+
     const clean = cleanLine(line);
     if (clean.length === 0) {
       blankLines += 1;
@@ -28,7 +46,8 @@ export function normalizeMarkdown(markdown: string): string {
     }
   }
 
-  return output.join('\n').trim();
+  const result = output.join('\n');
+  return fence ? result.trimStart() : result.trim();
 }
 
 export function normalizeMarkdownHeading(value: string): string {

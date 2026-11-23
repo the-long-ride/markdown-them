@@ -86,8 +86,7 @@ export function registerTier8Tests(harness) {
         assertEqual(htmlToMarkdown(input), '> '.repeat(depth) + 'Deep quote');
       });
 
-      // TODO: normalizeMarkdown applies whitespace cleanup inside code fences.
-      harness.skip(
+      harness.test(
         'Preserves significant trailing spaces and blank lines inside a code fence',
         () => {
           const input = ['```text', 'keep three spaces   ', '', '', '', 'next line', '```'].join(
@@ -96,6 +95,33 @@ export function registerTier8Tests(harness) {
           assertEqual(convertTextToMarkdown(input), input);
         },
       );
+
+      harness.test('Ignores shorter and mismatched delimiters inside a tilde fence', () => {
+        const input = [
+          '   ~~~~text',
+          '~~~',
+          '```',
+          '~~~~ not a closer',
+          '  keep spaces   ',
+          '  ~~~~~',
+          'Clean up outside\t',
+        ];
+        const expected = [
+          '~~~~text',
+          '~~~',
+          '```',
+          '~~~~ not a closer',
+          '  keep spaces   ',
+          '  ~~~~~',
+          'Clean up outside',
+        ];
+        assertEqual(convertTextToMarkdown(input.join('\r\n')), expected.join('\n'));
+      });
+
+      harness.test('Keeps trailing whitespace at EOF when a fence is unclosed', () => {
+        const input = '```text\n  keep spaces   \n\n\n';
+        assertEqual(convertTextToMarkdown(input), input);
+      });
 
       harness.test(
         'Converts a large Markdown file without dropping or reordering lines',
