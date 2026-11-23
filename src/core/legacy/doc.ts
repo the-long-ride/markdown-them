@@ -72,7 +72,9 @@ class DocMarkdownBuilder {
   wrapLink(start: number, url: string): void {
     const label = this.current.slice(start).trim();
     if (label) {
-      this.current = `${this.current.slice(0, start)}[${label.replace(/[[\]]/g, '\\$&')}](${url})`;
+      const destination = url.replace(/[<>\r\n\\|]/g, (ch) => encodeURIComponent(ch));
+      const target = /[\s()]/.test(destination) ? `<${destination}>` : destination;
+      this.current = `${this.current.slice(0, start)}[${label.replace(/[[\]]/g, '\\$&')}](${target})`;
     }
   }
 

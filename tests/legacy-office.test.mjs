@@ -72,6 +72,24 @@ for (const [name, expected] of Object.entries(cases)) {
   });
 }
 
+test('preserves DOC hyperlink targets with unmatched parentheses', async () => {
+  const data = await readFile(path.join(fixtures, 'Bug47286.doc'));
+  const from = Buffer.from('mailto:provisastpet@mfa.gov.cy', 'utf16le');
+  const target = 'https://example.test/folder(xy';
+  const to = Buffer.from(target, 'utf16le');
+  assert.equal(to.length, from.length);
+  for (
+    let offset = data.indexOf(from);
+    offset >= 0;
+    offset = data.indexOf(from, offset + to.length)
+  ) {
+    to.copy(data, offset);
+  }
+
+  const markdown = await convertBufferToMarkdown('parenthesized-link.doc', data);
+  assert.ok(markdown.includes(`[provisastpet@mfa.gov.cy](<${target}>)`));
+});
+
 test('rejects an OLE file without a Word stream with a DOC error', async () => {
   const data = await readFile(path.join(fixtures, 'SampleSS.xls'));
   await assert.rejects(
