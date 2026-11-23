@@ -157,6 +157,43 @@ export function registerTier8Tests(harness) {
       });
 
       harness.test(
+        'Collapses blank lines outside a fence without changing the blank lines inside',
+        () => {
+          const fence = '```\nfirst\n\n\n\nlast\n```';
+          assertEqual(
+            convertTextToMarkdown(`Before\n\n\n\n${fence}\n\n\n\nAfter`),
+            `Before\n\n\n${fence}\n\n\nAfter`,
+          );
+        },
+      );
+
+      harness.test(
+        'Does not mistake a fence marker in four-space indented code for a fence',
+        () => {
+          const input = 'Example\n\n    ```\n    indented code\n\n\n\nProse\t';
+          assertEqual(
+            convertTextToMarkdown(input),
+            'Example\n\n    ```\n    indented code\n\n\nProse',
+          );
+        },
+      );
+
+      harness.test('Closes an unclosed blockquote fence when its quote prefix drops', () => {
+        const input = '> ```\n> code   \n>\n>\n>\nProse\t\n\n\n\nEnd';
+        assertEqual(convertTextToMarkdown(input), '> ```\n> code   \n>\n>\n>\nProse\n\n\nEnd');
+      });
+
+      harness.test('Does not start a list at a tab-padded quoted setext underline', () => {
+        const input = '> Title\n> -\t\n>    ```\n> code   \n>\n>\n>\n>    ```';
+        assertEqual(convertTextToMarkdown(input), input.replace('-\t', '-'));
+      });
+
+      harness.test('Does not start a list at a tab-padded 2. inside a quoted paragraph', () => {
+        const input = '> Paragraph\n>2.\tcontinues here\n>    ```\n> code   \n>\n>\n>\n>    ```';
+        assertEqual(convertTextToMarkdown(input), input);
+      });
+
+      harness.test(
         'Converts a large Markdown file without dropping or reordering lines',
         async () => {
           const dir = await mkdtemp(path.join(tmpdir(), 'markdown-them-graded-'));
