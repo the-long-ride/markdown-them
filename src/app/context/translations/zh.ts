@@ -1,7 +1,7 @@
 export const zh: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    '将 DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 和文本文件转换为易读的 markdown 格式。\n注意：旧版格式（.doc, .xls, .xlm）使用重命名模拟，有时可能无法正确转换。',
+    '将 DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF 和文本文件转换为易读的 markdown 格式。',
   files: '文件',
   text: '文本',
   privacyFirst: '隐私第一',

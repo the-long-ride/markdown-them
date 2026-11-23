@@ -1,7 +1,7 @@
 export const vi: Record<string, string> = {
   appName: 'Markdown Them',
   tagline:
-    'Chuyển đổi các tệp DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF và văn bản sang định dạng markdown dễ đọc.\nLưu ý: Các định dạng cũ (.doc, .xls, .xlm) sử dụng giả lập đổi tên và đôi khi hoạt động không chính xác.',
+    'Chuyển đổi các tệp DOCX, DOC, PDF, HTML, XLSX, XLS, XLM, PPTX, ODT, ODP, ODS, RTF và văn bản sang định dạng markdown dễ đọc.',
   files: 'Tệp tin',
   text: 'Văn bản',
   privacyFirst: 'Quyền riêng tư hàng đầu',

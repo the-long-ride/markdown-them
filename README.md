@@ -18,7 +18,7 @@ Convert various document files into Markdown (.md) from a web application, a Tau
 - **VS Code Extension:** Right-click context menus in the file explorer and side-by-side Markdown previews for developer workflows.
 - **Node.js Package:** Integrate the same converter engine in your custom scripts, CLIs, and automations.
 
-- **Supported formats:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf` (Note: Legacy formats `.doc`, `.xls`, `.xlm` use renaming emulation and sometimes will not work correctly).
+- **Supported formats:** `.docx`, `.doc`, `.pdf`, `.html`, `.xlsx`, `.xls`, `.xlm`, `.pptx`, `.odt`, `.odp`, `.ods`, `.rtf`.
 - **Concurrent batch processing:** Convert dozens of files at once with optimized performance.
 
 ## Markdown Them Variants
