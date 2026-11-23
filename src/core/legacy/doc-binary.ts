@@ -6,6 +6,7 @@ import { readOleStreams } from './ole';
 export interface ParagraphProps {
   sti: number;
   inTable: boolean;
+  tableDepth: number;
   tableRowEnd: boolean;
   innerCell: boolean;
   innerRowEnd: boolean;
@@ -193,6 +194,7 @@ function defaultProps(styles: number[], istd: number): ParagraphProps {
   return {
     sti: styles[istd] ?? -1,
     inTable: false,
+    tableDepth: 0,
     tableRowEnd: false,
     innerCell: false,
     innerRowEnd: false,
@@ -237,7 +239,8 @@ function applySprms(
     else if (sprm === 0x2417) props.tableRowEnd = operand !== 0;
     else if (sprm === 0x244b) props.innerCell = operand !== 0;
     else if (sprm === 0x244c) props.innerRowEnd = operand !== 0;
-    else if (sprm === 0x6649) props.inTable ||= view.getUint32(pos, true) > 0;
+    else if (sprm === 0x6649) props.tableDepth = view.getInt32(pos, true);
+    else if (sprm === 0x664a) props.tableDepth += view.getInt32(pos, true);
     else if (sprm === 0x460b) list.has = view.getUint16(pos, true) > 0;
     else if (sprm === 0x260a) list.level = operand;
     else if (sprm === 0x2640) props.outlineLevel = operand < 9 ? operand : -1;

@@ -19,6 +19,9 @@ const cases = {
     '| Cell 1,1 | Cell 1,2 | Cell 1,3 |\n| --- | --- | --- |\n| Cell 2,1 | Cell 2,2 | Cell 2,3 |',
     'This text is below the table.',
   ],
+  'innertable.doc': [
+    '| A | B | C |\n| --- | --- | --- |\n| D | E<br>1 \\| 2<br>3 \\| 4<br>F | G |\n| H | I | J |',
+  ],
   'Bug47286.doc': [
     'АНКЕТА ДЛЯ ПОЛУЧЕНИЯ',
     '| Фамилия<br>Surname |  |',

@@ -21,6 +21,13 @@ interface Block {
   text: string;
 }
 
+interface DocTable {
+  depth: number;
+  rows: string[][];
+  row: string[];
+  cell: string[];
+}
+
 /**
  * Converts a Word 97-2003 binary (.doc, OLE compound file) document to Markdown.
  * Paragraphs, headings, list items, tables and hyperlinks of the main document
@@ -64,9 +71,7 @@ class DocMarkdownBuilder {
   current = '';
   paragraphCount = 0;
   private blocks: Block[] = [];
-  private rows: string[][] = [];
-  private row: string[] = [];
-  private cell: string[] = [];
+  private tables: DocTable[] = [];
   private lastMarkWasCell = false;
 
   wrapLink(start: number, url: string): void {
@@ -83,36 +88,40 @@ class DocMarkdownBuilder {
     this.current = '';
     this.paragraphCount++;
 
-    if (mark === CELL_MARK) {
-      const rowEnd = props ? props.tableRowEnd : this.lastMarkWasCell && !text;
-      this.lastMarkWasCell = true;
+    const outerMark = mark === CELL_MARK;
+    const innerMark = props?.innerCell || props?.innerRowEnd;
+    const depth = outerMark
+      ? 1
+      : Math.max(props?.tableDepth ?? 0, innerMark ? 2 : Number(props?.inTable ?? false));
+    const rowEnd = props
+      ? props.tableRowEnd || props.innerRowEnd
+      : outerMark && this.lastMarkWasCell && !text;
+    this.lastMarkWasCell = outerMark;
+    this.flushTables(depth);
+
+    if (depth > 0) {
+      let table = this.tables.at(-1);
+      if (table?.depth !== depth) {
+        table = { depth, rows: [], row: [], cell: [] };
+        this.tables.push(table);
+      }
       if (rowEnd) {
-        this.rows.push(this.row);
-        this.row = [];
-      } else {
-        this.cell.push(text);
-        this.row.push(this.cell.filter(Boolean).join('\n'));
-        this.cell = [];
+        this.finishRow(table);
+      } else if (outerMark || innerMark) {
+        table.cell.push(text);
+        this.finishCell(table);
+      } else if (text) {
+        table.cell.push(text);
       }
       return;
     }
-    this.lastMarkWasCell = false;
-
-    if (props?.innerRowEnd) {
-      return;
-    }
-    if (props?.inTable || props?.innerCell) {
-      this.cell.push(text);
-      return;
-    }
-    this.flushTable();
     if (text) {
       this.blocks.push(formatParagraph(text, props));
     }
   }
 
   toMarkdown(): string {
-    this.flushTable();
+    this.flushTables(0);
     const lines: string[] = [];
     this.blocks.forEach((block, index) => {
       const previous = this.blocks[index - 1];
@@ -124,21 +133,32 @@ class DocMarkdownBuilder {
     return normalizeMarkdown(lines.join('\n'));
   }
 
-  private flushTable(): void {
-    if (this.row.length > 0 || this.cell.length > 0) {
-      if (this.cell.length > 0) this.row.push(this.cell.filter(Boolean).join('\n'));
-      this.rows.push(this.row);
-      this.row = [];
-      this.cell = [];
-    }
-    if (this.rows.length === 0) {
-      return;
-    }
-    const table: string[] = [];
-    appendMarkdownTable(table, this.rows);
-    this.rows = [];
-    if (table.length > 0) {
-      this.blocks.push({ kind: 'table', text: table.join('\n') });
+  private finishCell(table: DocTable): void {
+    table.row.push(table.cell.filter(Boolean).join('\n'));
+    table.cell = [];
+  }
+
+  private finishRow(table: DocTable): void {
+    if (table.cell.length) this.finishCell(table);
+    if (table.row.length) table.rows.push(table.row);
+    table.row = [];
+  }
+
+  private flushTables(depth: number): void {
+    let table = this.tables.at(-1);
+    while (table && table.depth > depth) {
+      this.tables.pop();
+      this.finishRow(table);
+      const parent = this.tables.at(-1);
+      if (parent) {
+        // Markdown tables cannot nest; keep inner columns visible and put each row on its own line.
+        for (const row of table.rows) parent.cell.push(row.join(' | '));
+      } else {
+        const lines: string[] = [];
+        appendMarkdownTable(lines, table.rows);
+        if (lines.length) this.blocks.push({ kind: 'table', text: lines.join('\n') });
+      }
+      table = parent;
     }
   }
 }
