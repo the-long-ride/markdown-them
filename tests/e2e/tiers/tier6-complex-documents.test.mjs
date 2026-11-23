@@ -74,7 +74,10 @@ export function registerTier6Tests(harness) {
         tableOnly,
         '| Format | Extension |\n| --- | --- |\n| Text | ODT |\n| Drawing | ODG |',
       );
-      assertContains(withFootnote, '| Widgets | 8 |\n\nCount excludes spares.');
+      assertEqual(
+        withFootnote,
+        '## Report\n\n### Section\n\n| Items | Count |\n| --- | --- |\n| Widgets | 8 |\n\nCount excludes spares.',
+      );
     });
 
     harness.test(

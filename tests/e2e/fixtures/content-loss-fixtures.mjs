@@ -66,11 +66,11 @@ export async function generateListHeaderTableOdp() {
         <draw:frame svg:x="2cm" svg:y="1cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:h text:outline-level="2">Report</text:h></draw:text-box>
         </draw:frame>
-        <draw:frame svg:x="2cm" svg:y="8cm" svg:width="16cm" svg:height="1cm">
-          <draw:text-box><text:h text:outline-level="3">Section</text:h></draw:text-box>
-        </draw:frame>
         <draw:frame svg:x="2cm" svg:y="9cm" svg:width="16cm" svg:height="2cm">
           <table:table>${tableRow('Items', 'Count')}${tableRow('Widgets', '8')}</table:table>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="8cm" svg:width="16cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="3">Section</text:h></draw:text-box>
         </draw:frame>
         <draw:frame svg:x="2cm" svg:y="11cm" svg:width="16cm" svg:height="1cm">
           <draw:text-box><text:p>Count excludes spares.</text:p></draw:text-box>

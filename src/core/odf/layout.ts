@@ -143,6 +143,7 @@ export function groupPositionedSections(
   const titles = textItems.filter((item) => item !== pageHeading && isSectionTitleCandidate(item));
   const titleSet = new Set(titles);
   const assignments = new Map<PositionedItem, PositionedItem[]>();
+  const consumed = new Set<PositionedItem>();
 
   for (const body of textItems) {
     if (body === pageHeading || titleSet.has(body)) {
@@ -157,13 +158,13 @@ export function groupPositionedSections(
     const bodies = assignments.get(title) || [];
     bodies.push(body);
     assignments.set(title, bodies);
+    consumed.add(body);
   }
 
   if (assignments.size === 0) {
     return items;
   }
 
-  const consumed = new Set<PositionedItem>();
   const grouped: PositionedItem[] = [];
 
   for (const item of items) {
@@ -174,7 +175,6 @@ export function groupPositionedSections(
     const bodies = assignments.get(item);
     if (bodies?.length) {
       bodies.sort((a, b) => comparePosition(a, b, pageSize));
-      bodies.forEach((body) => consumed.add(body));
       grouped.push(combineSection(item, bodies));
       continue;
     }
