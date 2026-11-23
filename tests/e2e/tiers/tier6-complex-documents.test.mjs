@@ -127,15 +127,14 @@ export function registerTier6Tests(harness) {
       },
     );
 
-    harness.test('ODP: Reads an inset heading before overlapping text in its column', async () => {
+    harness.test('ODP: Distinguishes inset headings from side-by-side frames', async () => {
       const markdown = await convertFixture(
         'inset-heading.odp',
         await generateListHeaderTableOdp(),
       );
-      assertEqual(
-        markdown.split('\n\n---\n\n').at(-3),
-        '## Overview\n\n### Inset heading\n\nBody in the same column.',
-      );
+      const [inset, columns] = markdown.split('\n\n---\n\n').slice(-4, -2);
+      assertEqual(inset, '## Overview\n\n### Inset heading\n\nBody in the same column.');
+      assertEqual(columns, '## Columns\n\nLeft column.\n\nRight column.');
     });
 
     harness.test(

@@ -197,12 +197,17 @@ function orderSlideItems(items: PositionedItem[], pageSize: Box): PositionedItem
   let row: PositionedItem[] = [];
   let bottom = Infinity;
 
-  // Form rows of side-by-side items before sorting left-to-right.
+  // Allow neighboring frames to share a row even if their margins overlap.
   for (const item of sorted) {
     const rowStart = row[0]?.y ?? item.y;
     const belowRow =
       item.y > rowStart &&
-      (item.y >= bottom || row.some((peer) => peer.y < item.y && isSameVisualColumn(peer, item)));
+      (item.y >= bottom ||
+        row.some(
+          (peer) =>
+            peer.y < item.y &&
+            Math.abs(centerX(peer) - centerX(item)) < Math.max(peer.width, item.width) / 2,
+        ));
     if (item.y - rowStart > tolerance || belowRow) {
       ordered.push(...row.sort((a, b) => a.x - b.x || a.y - b.y || a.order - b.order));
       row = [];
