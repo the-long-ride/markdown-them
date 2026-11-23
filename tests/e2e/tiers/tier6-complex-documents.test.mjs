@@ -132,9 +132,13 @@ export function registerTier6Tests(harness) {
         'inset-heading.odp',
         await generateListHeaderTableOdp(),
       );
-      const [inset, columns] = markdown.split('\n\n---\n\n').slice(-4, -2);
+      const [inset, columns, titleless] = markdown.split('\n\n---\n\n').slice(-5, -2);
       assertEqual(inset, '## Overview\n\n### Inset heading\n\nBody in the same column.');
       assertEqual(columns, '## Columns\n\nLeft column.\n\nRight column.');
+      assertEqual(
+        titleless,
+        '### Left section\n\nLeft section body.\n\n### Wider right section\n\nRight section body.',
+      );
     });
 
     harness.test(

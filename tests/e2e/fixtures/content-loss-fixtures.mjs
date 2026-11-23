@@ -141,6 +141,20 @@ export async function generateListHeaderTableOdp(imageColumn) {
           <draw:text-box><text:p>Right column.</text:p></draw:text-box>
         </draw:frame>
       </draw:page>
+      <draw:page>
+        <draw:frame svg:x="2cm" svg:y="2cm" svg:width="6cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="3">Left section</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="14cm" svg:y="2cm" svg:width="10cm" svg:height="1cm">
+          <draw:text-box><text:h text:outline-level="3">Wider right section</text:h></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="2cm" svg:y="3.5cm" svg:width="6cm" svg:height="2cm">
+          <draw:text-box><text:p>Left section body.</text:p></draw:text-box>
+        </draw:frame>
+        <draw:frame svg:x="14cm" svg:y="3.5cm" svg:width="10cm" svg:height="2cm">
+          <draw:text-box><text:p>Right section body.</text:p></draw:text-box>
+        </draw:frame>
+      </draw:page>
       <draw:page>${sideTable}${centerNote}${rightHeading}</draw:page>
       <draw:page>${rightHeading}${centerNote}${sideTable}</draw:page>
       </office:presentation></office:body>
