@@ -16,9 +16,12 @@ export interface OleStreams {
 
 export function readOleStreams(data: Uint8Array): OleStreams {
   const container = XLSX.CFB.read(data, { type: 'array' });
+  const fullPaths = container.FullPaths.map((fullPath: string) => fullPath.toUpperCase());
+  const root = fullPaths[0] ?? '';
   return {
     get(name: string) {
-      const entry = XLSX.CFB.find(container, name);
+      const index = fullPaths.indexOf(`${root}${name.toUpperCase()}`);
+      const entry = index >= 0 ? container.FileIndex[index] : undefined;
       if (!entry || !entry.content) {
         return undefined;
       }
