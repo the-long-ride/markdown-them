@@ -51,7 +51,7 @@ async function readDiagramMarkdown(frame: any, context: SlideCollectorContext): 
     return '';
   }
 
-  const points = toArray(parseXml(xml, relationship.target)?.dataModel?.ptLst?.pt);
+  const points = toArray(parseXml(xml, relationship.target, true)?.dataModel?.ptLst?.pt);
   return points
     .filter((point) => {
       const type = readAttr(point, 'type') ?? 'node';

@@ -29,7 +29,9 @@ export async function generateSmartArtPptx() {
     `<dgm:dataModel xmlns:dgm="${drawingNamespace}/diagram" xmlns:a="${drawingNamespace}/main">
       <dgm:ptLst>
         <dgm:pt modelId="root" type="doc"/>
-        <dgm:pt modelId="first"><dgm:t><a:p><a:r><a:t>Collect input</a:t></a:r></a:p></dgm:t></dgm:pt>
+        <dgm:pt modelId="first"><dgm:t><a:p>
+          <a:r><a:t>Collect</a:t></a:r><a:br/><a:r><a:t>input</a:t></a:r>
+        </a:p></dgm:t></dgm:pt>
         <dgm:pt modelId="second" type="node"><dgm:t><a:p><a:r><a:t>Review output</a:t></a:r></a:p></dgm:t></dgm:pt>
         <dgm:pt modelId="layout" type="pres"><dgm:t><a:p><a:r><a:t>Layout placeholder</a:t></a:r></a:p></dgm:t></dgm:pt>
       </dgm:ptLst>

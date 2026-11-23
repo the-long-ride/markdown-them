@@ -129,7 +129,8 @@ export function readParagraph(paragraph: any): TextParagraph | undefined {
 
   const runs: TextRun[] = [];
 
-  for (const [tagName, value] of Object.entries(paragraph)) {
+  const children: [string, unknown][] = paragraph.paragraphChildren ?? Object.entries(paragraph);
+  for (const [tagName, value] of children) {
     switch (tagName) {
       case 'r':
         toArray(value).forEach((run) => runs.push(readRun(run)));
