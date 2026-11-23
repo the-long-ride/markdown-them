@@ -39,6 +39,7 @@ const FC_STSHF = 1;
 const FC_PLCF_BTE_PAPX = 13;
 const FC_CLX = 33;
 const ISTD_HEADING_STI_MAX = 9;
+const SPRM_P_HUGE_PAPX = 0x6646;
 
 const cp1252 = new TextDecoder('windows-1252');
 const utf16 = new TextDecoder('utf-16le');
@@ -79,7 +80,11 @@ export function readWordBinary(data: Uint8Array): WordBinaryDocument {
   const pieces = readPieces(tableView, fcLcb(FC_CLX));
   const text = readText(word, pieces, ccpText);
   const styles = readStyleIdentifiers(tableView, fcLcb(FC_STSHF));
-  const runs = readPapxRuns(view, tableView, fcLcb(FC_PLCF_BTE_PAPX), styles);
+  const dataStream = streams.get('Data');
+  const dataView = dataStream
+    ? new DataView(dataStream.buffer, dataStream.byteOffset, dataStream.byteLength)
+    : undefined;
+  const runs = readPapxRuns(view, tableView, fcLcb(FC_PLCF_BTE_PAPX), styles, dataView);
 
   return {
     text,
@@ -159,6 +164,7 @@ function readPapxRuns(
   table: DataView,
   { fc, lcb }: { fc: number; lcb: number },
   styles: number[],
+  data: DataView | undefined,
 ): PapxRun[] {
   const runs: PapxRun[] = [];
   const count = lcb >= 4 ? (lcb - 4) / 8 : 0;
@@ -174,7 +180,9 @@ function readPapxRuns(
         fcStart: word.getUint32(pageStart + run * 4, true),
         fcEnd: word.getUint32(pageStart + (run + 1) * 4, true),
         props:
-          bOffset === 0 ? defaultProps(styles, 0) : readPapx(word, pageStart + bOffset * 2, styles),
+          bOffset === 0
+            ? defaultProps(styles, 0)
+            : readPapx(word, pageStart + bOffset * 2, styles, data),
       });
     }
   }
@@ -193,34 +201,56 @@ function defaultProps(styles: number[], istd: number): ParagraphProps {
   };
 }
 
-function readPapx(word: DataView, offset: number, styles: number[]): ParagraphProps {
+function readPapx(
+  word: DataView,
+  offset: number,
+  styles: number[],
+  data: DataView | undefined,
+): ParagraphProps {
   const cb = word.getUint8(offset);
   const start = cb === 0 ? offset + 2 : offset + 1;
   const end = start + (cb === 0 ? word.getUint8(offset + 1) * 2 : cb * 2 - 1);
   const props = defaultProps(styles, word.getUint16(start, true));
-  let hasList = false;
-  let listLevel = 0;
-  let pos = start + 2;
+  const list = { has: false, level: 0 };
+  applySprms(word, start + 2, end, props, list, data);
+  props.listLevel = list.has ? list.level : -1;
+  return props;
+}
+
+function applySprms(
+  view: DataView,
+  pos: number,
+  end: number,
+  props: ParagraphProps,
+  list: { has: boolean; level: number },
+  data?: DataView,
+): void {
   while (pos + 2 <= end) {
-    const sprm = word.getUint16(pos, true);
+    const sprm = view.getUint16(pos, true);
     pos += 2;
-    const size = operandSize(word, sprm, pos);
+    const size = operandSize(view, sprm, pos);
     if (size < 0 || pos + size > end) {
       break;
     }
-    const operand = size >= 1 ? word.getUint8(pos) : 0;
+    const operand = size >= 1 ? view.getUint8(pos) : 0;
     if (sprm === 0x2416) props.inTable = operand !== 0;
     else if (sprm === 0x2417) props.tableRowEnd = operand !== 0;
     else if (sprm === 0x244b) props.innerCell = operand !== 0;
     else if (sprm === 0x244c) props.innerRowEnd = operand !== 0;
-    else if (sprm === 0x6649) props.inTable ||= word.getUint32(pos, true) > 0;
-    else if (sprm === 0x460b) hasList = word.getUint16(pos, true) > 0;
-    else if (sprm === 0x260a) listLevel = operand;
+    else if (sprm === 0x6649) props.inTable ||= view.getUint32(pos, true) > 0;
+    else if (sprm === 0x460b) list.has = view.getUint16(pos, true) > 0;
+    else if (sprm === 0x260a) list.level = operand;
     else if (sprm === 0x2640) props.outlineLevel = operand < 9 ? operand : -1;
+    else if (sprm === SPRM_P_HUGE_PAPX && data) {
+      // Oversized paragraph properties live in the Data stream as cbGrpprl + grpprl.
+      const at = view.getUint32(pos, true);
+      if (at + 2 <= data.byteLength) {
+        const hugeEnd = Math.min(at + 2 + data.getUint16(at, true), data.byteLength);
+        applySprms(data, at + 2, hugeEnd, props, list);
+      }
+    }
     pos += size;
   }
-  props.listLevel = hasList ? listLevel : -1;
-  return props;
 }
 
 function operandSize(word: DataView, sprm: number, pos: number): number {
