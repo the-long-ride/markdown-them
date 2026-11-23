@@ -5,20 +5,11 @@ import {
   npmPackageUrl,
   openVsxUrl,
   vscodeMarketplaceUrl,
-  webappUrl,
 } from '../app-constants';
 import { useLanguage } from '../context/LanguageContext';
 import { ExternalLink } from './ExternalLink';
 
-interface VariantsMenuProps {
-  isDesktop: boolean;
-}
-
-export function VariantsMenu({ isDesktop }: VariantsMenuProps) {
-  if (isDesktop) {
-    return null;
-  }
-
+export function VariantsMenu() {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -39,13 +30,11 @@ export function VariantsMenu({ isDesktop }: VariantsMenuProps) {
   }, [isOpen]);
 
   const links = [
-    isDesktop
-      ? { description: t('webAppVariantDetail'), href: webappUrl, label: t('webApp') }
-      : {
-          description: t('desktopVariantDetail'),
-          href: desktopDownloadUrl,
-          label: t('desktopApplication'),
-        },
+    {
+      description: t('desktopVariantDetail'),
+      href: desktopDownloadUrl,
+      label: t('desktopApplication'),
+    },
     { description: t('openVsxVariantDetail'), href: openVsxUrl, label: 'Open VSX' },
     {
       description: t('vscodeMarketplaceVariantDetail'),

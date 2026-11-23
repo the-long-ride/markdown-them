@@ -49,8 +49,6 @@ export const ko: Record<string, string> = {
   words: '단어',
   chars: '글자',
   lines: '줄',
-  webApp: '웹 애플리케이션',
-  webAppVariantDetail: 'GitHub Pages에서 브라우저 버전을 엽니다.',
   desktopApp: '데스크톱 애플리케이션',
   desktopApplication: '데스크톱 애플리케이션',
   desktopVariantDetail:

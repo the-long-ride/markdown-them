@@ -48,8 +48,6 @@ export const zh: Record<string, string> = {
   words: '字',
   chars: '字符',
   lines: '行',
-  webApp: 'Web 应用',
-  webAppVariantDetail: '在 GitHub Pages 上打开浏览器版本。',
   desktopApp: '桌面应用',
   desktopApplication: '桌面应用',
   desktopVariantDetail: '打开发布页面，并选择适合你设备的 Windows、macOS 或 Linux 文件。',

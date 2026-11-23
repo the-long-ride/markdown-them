@@ -75,9 +75,6 @@ export function recordConversionAndCheckPrompt(): boolean {
   return shouldPrompt;
 }
 
-// Backward-compatible alias
-export const recordFirstConversionAndPrompt = recordConversionAndCheckPrompt;
-
 export function setSupportPromptNeverShowAgain(): void {
   const state = loadSupportPromptState();
   state.neverShowAgain = true;
