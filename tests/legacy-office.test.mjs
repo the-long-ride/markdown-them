@@ -79,3 +79,16 @@ test('rejects an OLE file without a Word stream with a DOC error', async () => {
     /missing WordDocument stream/,
   );
 });
+
+test('decodes codepage text in a BIFF5 workbook in the browser converter', async () => {
+  const XLSX = require('xlsx');
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([['QQQQQQ']]), 'Sheet1');
+  const data = Buffer.from(XLSX.write(workbook, { bookType: 'biff5', type: 'buffer' }));
+  Buffer.from([0xcf, 0xf0, 0xe8, 0xe2, 0xe5, 0xf2]).copy(data, data.indexOf('QQQQQQ'));
+  const codepage = data.indexOf(Buffer.from([0x42, 0x00, 0x02, 0x00]));
+  data.writeUInt16LE(1251, codepage + 4);
+
+  const markdown = await convertBufferToMarkdown('cp1251.xls', new Uint8Array(data));
+  assert.match(markdown, /\| Привет \|/);
+});

@@ -1,9 +1,12 @@
 import * as XLSX from 'xlsx';
+import * as cptable from 'xlsx/dist/cpexcel';
 import {
   appendMarkdownTable,
   normalizeMarkdown,
   normalizeMarkdownHeading,
 } from '../markdown-utils';
+
+XLSX.set_cptable(cptable);
 
 /**
  * Converts legacy Excel workbooks (BIFF .xls/.xlm in an OLE compound file, and the
