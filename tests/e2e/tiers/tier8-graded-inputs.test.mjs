@@ -123,6 +123,24 @@ export function registerTier8Tests(harness) {
         assertEqual(convertTextToMarkdown(input), input);
       });
 
+      harness.test('Pairs list fences without treating their closers as top-level openers', () => {
+        const rootFence = '```\nroot code   \n\n\n\n```';
+        const listFences = [
+          '- ```text\n  list code   \n\n\n\n  ```',
+          '10. ```text\n    list code   \n\n\n\n       ```',
+        ];
+        for (const listFence of listFences) {
+          const input = `${listFence}\n\n\n\nProse\t\n\n${rootFence}`;
+          assertEqual(convertTextToMarkdown(input), `${listFence}\n\n\nProse\n\n${rootFence}`);
+        }
+      });
+
+      harness.test('Ends an unclosed nested fence when its Markdown container ends', () => {
+        const fence = '> - Item\n>   ~~~\n>   body   \n>\n>\n>\n';
+        const input = `${fence}Outside\t\n\n\n\nNext`;
+        assertEqual(convertTextToMarkdown(input), `${fence}Outside\n\n\nNext`);
+      });
+
       harness.test(
         'Converts a large Markdown file without dropping or reordering lines',
         async () => {

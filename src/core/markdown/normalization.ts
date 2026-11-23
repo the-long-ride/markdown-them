@@ -9,15 +9,62 @@ export function cleanLine(line: string): string {
   return trimmed;
 }
 
+type MarkdownContainer = 'quote' | number;
+
+function quotePrefixLength(line: string): number {
+  return /^ {0,3}>[ \t]?/.exec(line)?.[0].length ?? 0;
+}
+
+function listPrefixLength(line: string): number {
+  const marker = /^ {0,3}(?:[-+*]|\d{1,9}[.)])( +|$)/.exec(line);
+  if (!marker) return 0;
+
+  const padding = marker[1].length;
+  return marker[0].length - padding + (padding >= 1 && padding <= 4 ? padding : 1);
+}
+
 export function normalizeMarkdown(markdown: string): string {
   const normalized = (markdown || '').replace(/\r\n|\r/g, '\n');
   const lines = normalized.split('\n');
   const output: string[] = [];
+  const containers: MarkdownContainer[] = [];
   let blankLines = 0;
   let fence: string | undefined;
 
   for (const line of lines) {
-    const delimiter = /^ {0,3}(`{3,}|~{3,})(.*)$/s.exec(line);
+    let content = line;
+    let depth = 0;
+    for (const container of containers) {
+      const prefix = container === 'quote' ? quotePrefixLength(content) : container;
+      if (
+        !prefix ||
+        (container !== 'quote' &&
+          !content.startsWith(' '.repeat(prefix)) &&
+          !/^[ \t]*$/.test(content))
+      ) {
+        break;
+      }
+      content = content.slice(prefix);
+      depth += 1;
+    }
+
+    if (depth < containers.length) {
+      containers.length = depth;
+      fence = undefined;
+    }
+
+    if (!fence) {
+      for (;;) {
+        const quote = quotePrefixLength(content);
+        const prefix = quote || listPrefixLength(content);
+        if (!prefix) break;
+
+        containers.push(quote ? 'quote' : prefix);
+        content = content.slice(prefix);
+      }
+    }
+
+    const delimiter = /^ {0,3}(`{3,}|~{3,})(.*)$/s.exec(content);
     if (fence) {
       if (
         delimiter &&
