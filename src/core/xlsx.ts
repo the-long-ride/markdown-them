@@ -1,6 +1,11 @@
 import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
 import {
+  columnIndexFromCellRef,
+  formatCellHyperlink,
+  indexCellHyperlinks,
+} from './xlsx/hyperlinks';
+import {
   appendMarkdownTable,
   decodeXmlEntities,
   normalizeMarkdown,
@@ -52,9 +57,13 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
       continue;
     }
 
-    const worksheet = xmlParser.parse(worksheetXml);
-    const rows = toArray(worksheet?.worksheet?.sheetData?.row);
-    const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings));
+    const worksheet = xmlParser.parse(worksheetXml)?.worksheet;
+    const hyperlinks = toArray(worksheet?.hyperlinks?.hyperlink);
+    const findHyperlink = hyperlinks.length
+      ? indexCellHyperlinks(hyperlinks, await readWorksheetRelationships(zip, sheetPath))
+      : undefined;
+    const rows = toArray(worksheet?.sheetData?.row);
+    const tableRows = rows.map((row) => readXlsxRow(row, sharedStrings, findHyperlink));
 
     const isAllEmpty = tableRows.every((row) =>
       row.every((cell) => cell === null || cell === undefined || String(cell).trim() === ''),
@@ -106,12 +115,24 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
   return toArray(sharedStrings?.sst?.si).map(readRichText);
 }
 
+async function readWorksheetRelationships(zip: JSZip, sheetPath: string): Promise<any[]> {
+  const basenameIndex = sheetPath.lastIndexOf('/') + 1;
+  const directory = sheetPath.slice(0, basenameIndex);
+  const basename = sheetPath.slice(basenameIndex);
+  const xml = await readZipText(zip, `${directory}_rels/${basename}.rels`);
+  return xml ? toArray(xmlParser.parse(xml)?.Relationships?.Relationship) : [];
+}
+
 async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
   const file = zip.file(filePath);
   return file ? file.async('text') : undefined;
 }
 
-function readXlsxRow(row: any, sharedStrings: string[]): string[] {
+function readXlsxRow(
+  row: any,
+  sharedStrings: string[],
+  findHyperlink?: ReturnType<typeof indexCellHyperlinks>,
+): string[] {
   const values: string[] = [];
   let nextColumn = 1;
 
@@ -123,7 +144,9 @@ function readXlsxRow(row: any, sharedStrings: string[]): string[] {
       values.push('');
     }
 
-    values.push(readXlsxCell(cell, sharedStrings));
+    const value = readXlsxCell(cell, sharedStrings);
+    const link = cellRef ? findHyperlink?.(String(cellRef)) : undefined;
+    values.push(link ? formatCellHyperlink(value, link) : value);
     nextColumn = column + 1;
   }
 
@@ -209,14 +232,6 @@ function resolveWorkbookTarget(target: string): string {
     throw new Error(`Invalid workbook relationship target outside xl/: ${target}`);
   }
   return result;
-}
-
-function columnIndexFromCellRef(cellRef: string): number {
-  const columnLetters = cellRef.match(/^[A-Z]+/i)?.[0]?.toUpperCase() || 'A';
-
-  return columnLetters.split('').reduce((index, char) => {
-    return index * 26 + char.charCodeAt(0) - 64;
-  }, 0);
 }
 
 function toArray<T>(value: T | T[] | undefined): T[] {

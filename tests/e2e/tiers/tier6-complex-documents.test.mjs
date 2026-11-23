@@ -21,8 +21,18 @@ import {
   generateComplexRtf,
   generateComplexPdf,
 } from '../fixtures/complex-fixtures.mjs';
+import {
+  generateListHeaderTableOdp,
+  generateSmartArtPptx,
+  generateWorksheetHyperlinksXlsx,
+} from '../fixtures/content-loss-fixtures.mjs';
 import { generateMarkdown } from '../framework/conversion-adapter.mjs';
-import { assert, assertContains } from '../framework/assertions.mjs';
+import {
+  assert,
+  assertContains,
+  assertEqual,
+  assertNotContains,
+} from '../framework/assertions.mjs';
 
 export function registerTier6Tests(harness) {
   harness.suite('Tier 6: Complex Multi-Feature Document Coverage', () => {
@@ -36,6 +46,65 @@ export function registerTier6Tests(harness) {
       if (tmpDir) {
         await fs.rm(tmpDir, { recursive: true, force: true });
       }
+    });
+
+    async function convertFixture(name, data) {
+      const filePath = path.join(tmpDir, name);
+      await fs.writeFile(filePath, data);
+      return generateMarkdown(filePath);
+    }
+
+    harness.test('PPTX: Recovers related SmartArt nodes on the slide that owns them', async () => {
+      const markdown = await convertFixture('smartart.pptx', await generateSmartArtPptx());
+      const [firstSlide, nextSlide] = markdown.split('\n\n---\n\n');
+      assertContains(firstSlide, 'Flow diagram');
+      assertContains(firstSlide, 'Collect input\n\nReview output');
+      assertContains(nextSlide, 'Next slide');
+      assertNotContains(nextSlide, 'Collect input');
+      assertNotContains(markdown, 'Layout placeholder');
+    });
+
+    harness.test('ODP: Preserves editable table cells wrapped in list headers', async () => {
+      const markdown = await convertFixture(
+        'list-header-table.odp',
+        await generateListHeaderTableOdp(),
+      );
+      assertEqual(
+        markdown,
+        '| Format | Extension |\n| --- | --- |\n| Text | ODT |\n| Drawing | ODG |',
+      );
+    });
+
+    harness.test(
+      'RTF: Preserves smart quotes and ignores source wrapping inside words',
+      async () => {
+        const rtf =
+          '{\\rtf1\\ansi Govern\r\nment\\rquote \ns Res{\\lang2057 pon}se\\par ' +
+          'A dis\\-\r\ncount named \\ldblquote Test\\rdblquote\\line \\lquote Next line\\rquote\\cell ' +
+          'New cell{\\*\\ignored \\par hidden} text\\row}';
+        const markdown = await convertFixture('wrapped-source.rtf', rtf);
+        assertEqual(
+          markdown,
+          'Government’s Response\n\nA discount named “Test”\n‘Next line’\n\nNew cell text',
+        );
+      },
+    );
+
+    harness.test('XLSX: Preserves external and workbook targets in the linked cells', async () => {
+      const markdown = await convertFixture(
+        'cell-links.xlsx',
+        await generateWorksheetHyperlinksXlsx(),
+      );
+      assertContains(
+        markdown,
+        '[Read &#91;details&#93; \\| here](https://example.org/a%28b%29?x=1&y=2#part-1)',
+      );
+      assertContains(markdown, "Other sheet (target: 'Source Data'!B3)");
+      assertContains(markdown, '[First](https://example.org/range) | Keep the label');
+      assertContains(
+        markdown,
+        '| Not linked |  | [Second](https://example.org/range) | [Email support](mailto:support@example.org) |',
+      );
     });
 
     harness.test(

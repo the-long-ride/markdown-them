@@ -57,7 +57,17 @@ export function applyControlWord(
     case 'line':
       pushText('\n');
       break;
+    case 'ldblquote':
+      pushText('“');
+      break;
+    case 'lquote':
+      pushText('‘');
+      break;
+    case 'cell':
+    case 'nestcell':
+    case 'nestrow':
     case 'par':
+    case 'row':
       flushParagraph();
       break;
     case 'plain':
@@ -65,6 +75,12 @@ export function applyControlWord(
       state.italic = false;
       state.strikethrough = false;
       state.fontSize = 0;
+      break;
+    case 'rdblquote':
+      pushText('”');
+      break;
+    case 'rquote':
+      pushText('’');
       break;
     case 'strike':
       state.strikethrough = parameter !== 0;
@@ -136,6 +152,11 @@ export function readRtfParagraphs(rtf: string): RtfRun[][] {
   for (let index = 0; index < rtf.length; index += 1) {
     const char = rtf[index];
 
+    // Unescaped line endings wrap the RTF source, not the document text.
+    if (char === '\r' || char === '\n') {
+      continue;
+    }
+
     if (skipFallbackChars > 0) {
       skipFallbackChars -= 1;
       // A \'xx hex escape is a single fallback character
@@ -181,7 +202,13 @@ export function readRtfParagraphs(rtf: string): RtfRun[][] {
       continue;
     }
 
-    if (!next || !/[a-zA-Z*~_\-:|{}]/.test(next)) {
+    if (next === '*') {
+      state.skip = true;
+      index += 1;
+      continue;
+    }
+
+    if (!next || !/[a-zA-Z]/.test(next)) {
       index += 1;
       pushText(symbolForControl(next));
       continue;
@@ -189,12 +216,6 @@ export function readRtfParagraphs(rtf: string): RtfRun[][] {
 
     const controlStart = index + 1;
     let cursor = controlStart;
-
-    if (rtf[cursor] === '*') {
-      state.skip = true;
-      index = cursor;
-      continue;
-    }
 
     while (cursor < rtf.length && /[a-zA-Z]/.test(rtf[cursor])) {
       cursor += 1;
@@ -220,6 +241,9 @@ export function readRtfParagraphs(rtf: string): RtfRun[][] {
     }
 
     index = cursor - 1;
+    if (state.skip) {
+      continue;
+    }
     const unicodeFallback = applyControlWord(word, numericValue, state, pushText, flushParagraph);
     if (unicodeFallback > 0) {
       skipFallbackChars = unicodeFallback;

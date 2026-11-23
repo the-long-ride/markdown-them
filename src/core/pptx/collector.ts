@@ -8,6 +8,8 @@ import { formatTextBody, inferHeadingLevel, normalizeInlineText, readTextBody } 
 import { readTableMarkdown } from './table';
 import { isImagePart, mimeTypeForPart, preferredAltText } from './image';
 
+type SlideCollectorContext = CollectorContext & { zip: JSZip };
+
 export function collectPicture(
   picture: any,
   context: CollectorContext,
@@ -37,19 +39,43 @@ export function collectPicture(
   });
 }
 
-export function collectGraphicFrame(
+async function readDiagramMarkdown(frame: any, context: SlideCollectorContext): Promise<string> {
+  const id = readAnyAttr(frame?.graphic?.graphicData?.relIds, ['r:dm', 'dm']);
+  const relationship = id ? context.relationships.get(id) : undefined;
+  if (!relationship || relationship.external || !relationship.type.endsWith('/diagramData')) {
+    return '';
+  }
+
+  const xml = await readZipText(context.zip, relationship.target);
+  if (!xml) {
+    return '';
+  }
+
+  const points = toArray(parseXml(xml, relationship.target)?.dataModel?.ptLst?.pt);
+  return points
+    .filter((point) => {
+      const type = readAttr(point, 'type') ?? 'node';
+      return type === 'node' || type === 'asst';
+    })
+    .map((point) => formatTextBody(readTextBody(point?.t).paragraphs))
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+export async function collectGraphicFrame(
   frame: any,
-  context: CollectorContext,
+  context: SlideCollectorContext,
   transform: Transform,
-): void {
+): Promise<void> {
   const tableMarkdown = readTableMarkdown(frame);
-  if (!tableMarkdown) {
+  const markdown = tableMarkdown ?? (await readDiagramMarkdown(frame, context));
+  if (!markdown) {
     return;
   }
 
   context.items.push({
-    kind: 'table',
-    markdown: tableMarkdown,
+    kind: tableMarkdown ? 'table' : 'diagram',
+    markdown,
     order: context.nextOrder++,
     ...applyTransform(transform, readElementBox(frame?.xfrm)),
   });
@@ -85,16 +111,20 @@ export function collectTextShape(
   });
 }
 
-export function collectGroup(group: any, context: CollectorContext, transform: Transform): void {
+export async function collectGroup(
+  group: any,
+  context: SlideCollectorContext,
+  transform: Transform,
+): Promise<void> {
   const groupTransform = composeGroupTransform(transform, group?.grpSpPr?.xfrm);
-  collectShapeTree(group, context, groupTransform);
+  await collectShapeTree(group, context, groupTransform);
 }
 
-export function collectShapeTree(
+export async function collectShapeTree(
   shapeTree: any,
-  context: CollectorContext,
+  context: SlideCollectorContext,
   transform: Transform,
-): void {
+): Promise<void> {
   if (!shapeTree || typeof shapeTree !== 'object') {
     return;
   }
@@ -112,10 +142,14 @@ export function collectShapeTree(
         toArray(value).forEach((picture) => collectPicture(picture, context, transform));
         break;
       case 'graphicFrame':
-        toArray(value).forEach((frame) => collectGraphicFrame(frame, context, transform));
+        for (const frame of toArray(value)) {
+          await collectGraphicFrame(frame, context, transform);
+        }
         break;
       case 'grpSp':
-        toArray(value).forEach((group) => collectGroup(group, context, transform));
+        for (const group of toArray(value)) {
+          await collectGroup(group, context, transform);
+        }
         break;
       default:
         break;
@@ -143,14 +177,15 @@ export async function readSlide(
   );
   const slide = parseXml(slideXml, slidePath)?.sld;
   const spTree = slide?.cSld?.spTree;
-  const context: CollectorContext = {
+  const context: SlideCollectorContext = {
+    zip,
     relationships,
     contentTypes,
     items: [],
     nextOrder: 0,
   };
 
-  collectShapeTree(spTree, context, IDENTITY_TRANSFORM);
+  await collectShapeTree(spTree, context, IDENTITY_TRANSFORM);
 
   return {
     index: slideIndex,
