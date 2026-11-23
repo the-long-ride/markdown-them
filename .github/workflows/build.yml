@@ -78,7 +78,7 @@ jobs:
     name: Rust Coverage
     runs-on: ubuntu-latest
     env:
-      RUST_COVERAGE_MIN: '0'
+      RUST_COVERAGE_MIN: 90
 
     steps:
       - name: Checkout repository

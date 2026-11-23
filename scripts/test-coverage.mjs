@@ -8,9 +8,7 @@ import { build } from 'esbuild';
 const root = path.resolve(import.meta.dirname, '..');
 const require = createRequire(import.meta.url);
 
-const COVERAGE_THRESHOLD = 0;
-const VARIANT_MINIMUM = 90;
-const threshold = Math.max(COVERAGE_THRESHOLD, VARIANT_MINIMUM);
+const COVERAGE_THRESHOLD = 90;
 const variants = new Map([
   ['core', 'out/core/**/*.js'],
   ['nodejs-package', 'nodejs-package/dist/nodejs-package/**/*.js'],
@@ -75,7 +73,7 @@ run(require.resolve('c8/bin/c8.js'), c8Args);
 const { total, ...files } = JSON.parse(
   readFileSync(path.join(root, 'coverage/coverage-summary.json'), 'utf8'),
 );
-console.log('\nTypeScript coverage (minimum %d%% per metric)', threshold);
+console.log('\nTypeScript coverage (minimum %d%% per metric)', COVERAGE_THRESHOLD);
 console.log('Variant\t\tLines\tFunctions\tBranches\tStatements');
 let passed = true;
 for (const name of [...variants.keys(), 'overall']) {
@@ -95,7 +93,7 @@ for (const name of [...variants.keys(), 'overall']) {
       passed = false;
       return 'unmeasured';
     }
-    if (covered * 100 < threshold * count) passed = false;
+    if (covered * 100 < COVERAGE_THRESHOLD * count) passed = false;
     return ((covered * 100) / count).toFixed(2);
   });
   console.log(`${name.padEnd(16)} ${percentages.join('\t')}`);
