@@ -293,6 +293,51 @@ jobs:
             fi
           fi
 
+  publish-github-package:
+    name: Publish Node Package to GitHub Packages
+    runs-on: ubuntu-latest
+    needs:
+      - detect-changes
+      - build-node-package
+    if: needs.detect-changes.outputs.node == 'true'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Setup Node.js for GitHub Packages
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@the-long-ride'
+
+      - name: Download node package artifact
+        uses: actions/download-artifact@v8
+        with:
+          pattern: markdown-them-node-package-*
+          path: ./artifacts
+          merge-multiple: true
+
+      - name: Publish package tarball to GitHub Packages
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GPR_LOG="$(mktemp)"
+          set +e
+          npm publish ./artifacts/*.tgz --registry=https://npm.pkg.github.com 2>&1 | tee "$GPR_LOG"
+          GPR_STATUS=${PIPESTATUS[0]}
+          set -e
+
+          if [ "$GPR_STATUS" -ne 0 ]; then
+            if grep -Eiq 'cannot publish over the previously published versions|previously published|already exists|code EPUBLISHCONFLICT' "$GPR_LOG"; then
+              echo "::warning::Skipping GitHub Packages publish because package version is already published."
+            else
+              exit "$GPR_STATUS"
+            fi
+          fi
+
   deploy-web:
     name: Deploy Web App to GitHub Pages
     runs-on: ubuntu-latest
