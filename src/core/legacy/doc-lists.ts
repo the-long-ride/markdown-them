@@ -92,9 +92,11 @@ export function readDocLists(
       if (flags & 0x20) {
         const result = readLevel(view, cursor, end);
         if (!result) return lists;
+        const startOverride = flags & 0x10 ? result.level.start : undefined;
         levels[index] = {
           ...result.level,
-          startOverride: flags & 0x10 ? result.level.start : undefined,
+          start: startOverride ?? levels[index]?.start ?? 1,
+          startOverride,
         };
         cursor = result.next;
       } else if (flags & 0x10 && levels[index]) {
