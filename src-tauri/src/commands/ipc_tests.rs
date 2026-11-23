@@ -5,7 +5,7 @@ use std::fs;
 use tauri::ipc::CallbackFn;
 use tauri::test::{get_ipc_response, mock_builder, MockRuntime, INVOKE_KEY};
 use tauri::webview::InvokeRequest;
-use tauri::{App, WebviewWindow, WebviewWindowBuilder};
+use tauri::{App, Listener, PhysicalSize, WebviewWindow, WebviewWindowBuilder, WindowEvent};
 use tempfile::tempdir;
 
 fn invoke<T: DeserializeOwned>(
@@ -43,6 +43,21 @@ fn app_and_window() -> (App<MockRuntime>, WebviewWindow<MockRuntime>) {
         .build()
         .unwrap();
     (app, window)
+}
+
+#[test]
+fn only_resize_events_publish_the_current_maximized_state() {
+    let (app, webview) = app_and_window();
+    let window = webview.as_ref().window();
+    let (tx, rx) = std::sync::mpsc::channel();
+    app.listen_any("window:maximized-change", move |event| {
+        tx.send(event.payload().to_owned()).unwrap();
+    });
+
+    crate::emit_maximized_on_resize(&window, &WindowEvent::Focused(true));
+    assert!(rx.try_recv().is_err());
+    crate::emit_maximized_on_resize(&window, &WindowEvent::Resized(PhysicalSize::new(800, 600)));
+    assert_eq!(rx.try_recv().unwrap(), "false");
 }
 
 #[test]
