@@ -172,7 +172,7 @@ export function getPackageVersion(): string {
   } catch {
     // Fallback if filesystem error occurs
   }
-  return '1.4.0';
+  return '1.4.2';
 }
 
 export function printHelp(): void {

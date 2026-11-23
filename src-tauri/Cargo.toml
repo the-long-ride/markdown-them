@@ -1,6 +1,6 @@
 [package]
 name = "markdown-them"
-version = "1.4.0"
+version = "1.4.2"
 description = "Markdown Them - Local Desktop Document to Markdown Converter"
 authors = ["the-long-ride <thelong1406@gmail.com>"]
 edition = "2021"
