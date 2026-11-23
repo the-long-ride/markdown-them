@@ -173,9 +173,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Compile core and extension
-        run: npm run compile
-
       - name: Run coverage for all TypeScript variants
         run: node scripts/test-coverage.mjs
 

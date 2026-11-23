@@ -7,7 +7,7 @@
  *   - Cargo format check (`cargo fmt --check`)
  *   - Prettier code style check (`prettier --check`)
  *   - LOC lint limit checks (`scripts/loc-lint.mjs`)
- *   - TypeScript typechecks (`tsc -p ./` & `tsc -p ./tsconfig.app.json`)
+ *   - App TypeScript typecheck (`tsc -p ./tsconfig.app.json`)
  *
  * Stage 2 (Parallel Test Suites):
  *   - Tauri Rust backend tests (`cargo test`)
@@ -97,7 +97,6 @@ async function main() {
     runStep('Prettier Style Check', 'npx', ['prettier', '--check', '.']),
     runStep('LOC Limit Lint Check', process.execPath, ['scripts/loc-lint.mjs']),
     runStep('TypeScript Core & Apps Typecheck', 'npm', ['run', 'typecheck:apps']),
-    runStep('TypeScript Root Compilation', 'npm', ['run', 'compile']),
   ];
 
   await Promise.all(stage1Steps);

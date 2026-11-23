@@ -24,6 +24,9 @@ function run(script, args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+const tsc = require.resolve('typescript/lib/tsc.js');
+run(tsc, ['-p', 'tsconfig.json']);
+
 rmSync(path.join(root, 'out/app'), { recursive: true, force: true });
 await build({
   absWorkingDir: root,
@@ -43,7 +46,7 @@ await build({
 
 const cliDir = path.join(root, 'nodejs-package/dist');
 rmSync(cliDir, { recursive: true, force: true });
-run(require.resolve('typescript/lib/tsc.js'), ['-p', 'tsconfig.node-package.json', '--sourceMap']);
+run(tsc, ['-p', 'tsconfig.node-package.json', '--sourceMap']);
 
 const c8Args = [
   '--all',

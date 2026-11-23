@@ -36,12 +36,11 @@ Enforces code quality, structural modularity, and regression testing across the 
 1. **Stage 1: Fast Parallel Verification**:
    - `LOC Limit Lint Check`: validates all tracked files against lines-of-code policies (`scripts/loc-lint.mjs`).
    - `Cargo Format Check`: runs `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`.
-   - `TypeScript Root Compilation`: verifies root TypeScript build via `tsc -p ./`.
    - `TypeScript Core & Apps Typecheck`: verifies frontend and app builds via `tsc -p ./tsconfig.app.json`.
    - `Prettier Style Check`: checks repository code formatting via `prettier --check .`.
 2. **Stage 2: Parallel Full Test Execution**:
    - `Tauri Rust Backend Tests`: executes 51 backend integration tests (`cargo test --manifest-path src-tauri/Cargo.toml`).
-   - `TypeScript Unit & E2E Coverage Suite`: runs unit, legacy Office and Tiers 1–7 end-to-end tests. The `c8` report gates lines, functions, branches and statements at 90% for core, the Node.js package, VS Code, the app, shared code and the combined total (`scripts/test-coverage.mjs`).
+   - `TypeScript Unit & E2E Coverage Suite`: compiles the TypeScript variants before running unit, legacy Office and Tiers 1–7 end-to-end tests. The `c8` report gates lines, functions, branches and statements at 90% for core, the Node.js package, VS Code, the app, shared code and the combined total (`scripts/test-coverage.mjs`).
 3. **CI Automation**:
    - `.github/workflows/build.yml` executes this unified workflow on all pushes and pull requests across Linux, macOS, and Windows.
 
