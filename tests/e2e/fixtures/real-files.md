@@ -2,9 +2,9 @@
 
 Tier 6 runs the originals in the fixture archive with no network access. Each case verifies the original byte length and SHA-256 before converting and checks selected Markdown, not full output fidelity. The archive contains unmodified inputs and this notice. These works retain their own licenses; the project's license is not applied to them.
 
-The [manifest](real-files.json) lists each source URL and expected bytes. The five entries marked `external` are not redistributed: the LibreOffice presentation is 12 MB; the three third-party documents from Apache POI have no verified per-file redistribution permission; and the arXiv copy is not vendored because its redistribution terms were not verified. The test gate still runs generated fixtures for those formats offline, including the SmartArt and editable-table regressions.
+The [manifest](real-files.json) lists each source URL and expected bytes. The four entries marked `external` are not redistributed: the three third-party documents from Apache POI have no verified per-file redistribution permission, and the arXiv paper carries a distribution license for arXiv, not for downstream redistributors. The test gate still runs generated fixtures for those formats offline, including the SmartArt regression. The 12 MiB LibreOffice presentation is kept intact for the editable-table regression; it is not shipped in release packages.
 
-To run all 17 original-file cases, save the five external documents from their sources under the manifest names in a local directory. Then run:
+To run all 17 original-file cases, save the four external documents from their sources under the manifest names in a local directory. Then run:
 
 ```sh
 npm run compile
@@ -24,6 +24,8 @@ The TIFF-like appearance of the amendment PDF does not make this an OCR test: it
 | `commonmark-spec.md`                                                  | John MacFarlane, CommonMark Spec 0.31.2, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The Markdown filename differs from the source .txt; the bytes are unchanged.                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `jekyll-post.markdown`, `docusaurus-intro.mdx`                        | Jekyll and Docusaurus, MIT license below.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `rfc9110.txt`                                                         | IETF Trust and document authors, 2022; [IETF Trust Legal Provisions](https://trustee.ietf.org/documents/trust-legal-provisions/tlp-5/). Original notices retained.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+The `libreoffice-intro.odp` presentation is by Italo Vignoli, via [The Document Foundation](https://wiki.documentfoundation.org/File:Final-libreofficeintro.odp), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 
 ### MIT license
 

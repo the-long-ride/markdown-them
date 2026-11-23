@@ -104,7 +104,6 @@
     "bytes": 12767626,
     "sha256": "7bb82b7fd51980864bcbb009fdf7e7527723f136a266cb920b8f7c4469a41021",
     "source": "https://wiki.documentfoundation.org/images/f/f1/Final-libreofficeintro.odp",
-    "external": true,
     "section": {
       "separator": "\n\n---\n\n",
       "heading": "LibreOffice File Extensions"
