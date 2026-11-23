@@ -1,16 +1,16 @@
 import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
 import {
-  columnIndexFromCellRef,
-  formatCellHyperlink,
-  indexCellHyperlinks,
-} from './xlsx/hyperlinks';
-import {
   appendMarkdownTable,
   decodeXmlEntities,
   normalizeMarkdown,
   normalizeMarkdownHeading,
 } from './markdown-utils';
+import {
+  columnIndexFromCellRef,
+  formatCellHyperlink,
+  indexCellHyperlinks,
+} from './xlsx/hyperlinks';
 
 function localTagName(tagName: string): string {
   const colonIndex = tagName.indexOf(':');
@@ -83,6 +83,14 @@ export async function convertXlsxData(data: ArrayBuffer | Uint8Array): Promise<s
   return normalizeMarkdown(markdown.join('\n'));
 }
 
+async function readWorksheetRelationships(zip: JSZip, sheetPath: string): Promise<any[]> {
+  const basenameIndex = sheetPath.lastIndexOf('/') + 1;
+  const directory = sheetPath.slice(0, basenameIndex);
+  const basename = sheetPath.slice(basenameIndex);
+  const xml = await readZipText(zip, `${directory}_rels/${basename}.rels`);
+  return xml ? toArray(xmlParser.parse(xml)?.Relationships?.Relationship) : [];
+}
+
 async function readWorkbookRelationships(zip: JSZip): Promise<Map<string, string>> {
   const relationships = new Map<string, string>();
   const relsXml = await readZipText(zip, 'xl/_rels/workbook.xml.rels');
@@ -113,14 +121,6 @@ async function readSharedStrings(zip: JSZip): Promise<string[]> {
 
   const sharedStrings = xmlParser.parse(sharedStringsXml);
   return toArray(sharedStrings?.sst?.si).map(readRichText);
-}
-
-async function readWorksheetRelationships(zip: JSZip, sheetPath: string): Promise<any[]> {
-  const basenameIndex = sheetPath.lastIndexOf('/') + 1;
-  const directory = sheetPath.slice(0, basenameIndex);
-  const basename = sheetPath.slice(basenameIndex);
-  const xml = await readZipText(zip, `${directory}_rels/${basename}.rels`);
-  return xml ? toArray(xmlParser.parse(xml)?.Relationships?.Relationship) : [];
 }
 
 async function readZipText(zip: JSZip, filePath: string): Promise<string | undefined> {
